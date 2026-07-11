@@ -1,0 +1,21 @@
+<aside id="pm-sidebar">
+    <h3>{{ trans('pm.folders') }}</h3>
+    <ul class="pm-folder-list">
+        <li class="{{ folder_key|default('') == 'inbox' ? 'active' : '' }}">
+            <a href="{{ path('/pm') }}">{{ trans('pm.inbox') }}</a>
+        </li>
+        <li class="{{ folder_key|default('') == 'outbox' ? 'active' : '' }}">
+            <a href="{{ path('/pm/outbox') }}">{{ trans('pm.outbox') }}</a>
+        </li>
+        {% for f in folders|default([]) %}
+            <li class="{{ folder_key|default('') == 'custom' and pm_folder_id|default(0) == f.pm_folder_id ? 'active' : '' }}">
+                <a href="{{ path('/pm/folder/' ~ f.pm_folder_id) }}">{{ f.foldername|e }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="pm-sidebar-actions">
+        <a class="button" href="{{ path('/pm/compose') }}">{{ trans('pm.compose') }}</a>
+        <a href="{{ path('/pm/folders') }}">{{ trans('pm.manage_folders') }}</a>
+        <a href="{{ path('/pm/buddies') }}">{{ trans('pm.buddy_list') }}</a>
+    </div>
+</aside>

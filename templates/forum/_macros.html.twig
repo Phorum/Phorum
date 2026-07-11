@@ -1,0 +1,50 @@
+{% macro forum_list(items) %}
+    {% import _self as self %}
+    <table class="tbl-boxed forum-list">
+        <caption class="visually-hidden">{{ trans('forum_list.col_forum') }}</caption>
+        <thead>
+            <tr>
+                <th scope="col" class="col-forum">{{ trans('forum_list.col_forum') }}</th>
+                <th scope="col" class="col-posts">{{ trans('forum_list.col_posts') }}</th>
+                <th scope="col" class="col-threads">{{ trans('forum_list.col_threads') }}</th>
+                <th scope="col" class="col-last">{{ trans('forum_list.col_last') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for forum in items %}
+            {% if forum.folder_flag %}
+                <tr class="forum-folder">
+                    <td class="bar-accent" colspan="4"><strong>{{ forum.name }}</strong>
+                        {% if forum.description %} &mdash; <small>{{ forum.description }}</small>{% endif %}
+                    </td>
+                </tr>
+                {% if forum.children %}
+                    {{ self.forum_rows(forum.children) }}
+                {% endif %}
+            {% else %}
+                {{ self.forum_row(forum, false) }}
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+
+{% macro forum_rows(forums) %}
+    {% import _self as self %}
+    {% for forum in forums %}
+        {{ self.forum_row(forum, true) }}
+    {% endfor %}
+{% endmacro %}
+
+{% macro forum_row(forum, indented) %}
+    {% set indented = indented ?? false %}
+    <tr class="forum-row{{ indented ? ' forum-row--indented' : '' }}">
+        <td class="col-forum">
+            <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a>
+            {% if forum.description %}<br><small class="forum-desc">{{ forum.description }}</small>{% endif %}
+        </td>
+        <td class="col-posts">{{ forum.message_count }}</td>
+        <td class="col-threads">{{ forum.thread_count }}</td>
+        <td class="col-last">{{ forum.last_post_time ? forum.last_post_time|relative_time : '&mdash;'|raw }}</td>
+    </tr>
+{% endmacro %}

@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('report.title') }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}">{{ msg.subject }}</a> &rsaquo;
+    {{ trans('report.title') }}
+</nav>
+
+<h1>{{ trans('report.title') }}</h1>
+<p>{{ trans('report.intro', {author: msg.author}) }}</p>
+<blockquote class="mod-preview">{{ msg.body|format(msg.meta) }}</blockquote>
+
+<form method="post">
+    {{ csrf_field() }}
+    <div class="form-row">
+        <label for="reason">{{ trans('report.reason_label') }}</label>
+        <textarea id="reason" name="reason" rows="4" maxlength="255"></textarea>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-danger">{{ trans('report.submit') }}</button>
+        <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}" class="btn-cancel">{{ trans('mod.cancel') }}</a>
+    </div>
+</form>
+{% endblock %}

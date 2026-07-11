@@ -1,0 +1,162 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ is_new ? 'New Forum' : 'Edit: ' ~ forum.name }}{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper" style="margin-bottom:8px">
+    <div class="col s12">
+        <a href="{{ path('/admin/forums') }}" class="grey-text"><i class="material-icons tiny">arrow_back</i> Forums</a>
+        <h4 class="page-title" style="margin-top:8px">{{ is_new ? 'New Forum / Folder' : 'Edit: ' ~ forum.name|e }}</h4>
+    </div>
+</div>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+            <div class="row">
+                <div class="input-field col s12 m8">
+                    <input id="name" type="text" name="name" value="{{ forum.name|e }}" required>
+                    <label for="name" class="{{ forum.name ? 'active' : '' }}">Name</label>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="display_order" type="number" name="display_order" value="{{ forum.display_order }}">
+                    <label for="display_order" class="active">Display Order</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-field col s12">
+                    <textarea id="description" name="description" class="materialize-textarea">{{ forum.description|e }}</textarea>
+                    <label for="description" class="{{ forum.description ? 'active' : '' }}">Description</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <select name="vroot">
+                        <option value="0">— None (top level) —</option>
+                        {% for f in folders %}
+                            <option value="{{ f.forum_id }}" {{ forum.vroot == f.forum_id ? 'selected' : '' }}>{{ f.name|e }}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Parent Folder</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <select name="template" id="template">
+                        {% for dir, name in themes %}
+                            <option value="{{ dir }}" {{ forum.template == dir ? 'selected' : '' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="template">Theme Override</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="folder_flag" value="1" {{ forum.folder_flag ? 'checked' : '' }}
+                               {{ not is_new ? 'disabled' : '' }}>
+                        <span>This is a folder (not a forum)</span>
+                    </label>
+                    {% if not is_new %}<small class="grey-text">Cannot change type after creation.</small>{% endif %}
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="active" value="1" {{ forum.active ? 'checked' : '' }}>
+                        <span>Active (visible to users)</span>
+                    </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="email_moderators" value="1" {{ forum.email_moderators ? 'checked' : '' }}>
+                        <span>Email moderators on new post</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Display</strong></p>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="threaded_list" value="1" {{ forum.threaded_list ? 'checked' : '' }}>
+                        <span>Threaded thread list</span>
+                    </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="threaded_read" value="1" {{ forum.threaded_read ? 'checked' : '' }}>
+                        <span>Threaded message view</span>
+                    </label>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="list_length_flat" type="number" name="list_length_flat"
+                           value="{{ forum.list_length_flat ?: 25 }}" min="1">
+                    <label for="list_length_flat" class="active">Threads per page</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Moderation</strong></p>
+                </div>
+                <div class="col s12 m6">
+                    <select name="moderation">
+                        <option value="0" {{ forum.moderation == 0 ? 'selected' : '' }}>No moderation (posts go live immediately)</option>
+                        <option value="1" {{ forum.moderation == 1 ? 'selected' : '' }}>Moderate all posts</option>
+                    </select>
+                    <label>Post moderation</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12" style="margin-bottom:8px">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:0"><strong>Default Permissions</strong></p>
+                </div>
+
+                <div class="col s12 m6">
+                    <p style="font-size:.85rem;font-weight:600;margin-bottom:6px;color:#555">
+                        Anonymous (not logged in)
+                    </p>
+                    {% for bit, label in perm_flags %}
+                    <div style="margin-bottom:4px">
+                        <label>
+                            <input type="checkbox" name="pub_perms[]" value="{{ bit }}"
+                                   {{ bit in pub_perm_bits ? 'checked' : '' }}>
+                            <span>{{ label }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col s12 m6">
+                    <p style="font-size:.85rem;font-weight:600;margin-bottom:6px;color:#555">
+                        Registered users (logged in)
+                    </p>
+                    {% for bit, label in perm_flags %}
+                    <div style="margin-bottom:4px">
+                        <label>
+                            <input type="checkbox" name="reg_perms[]" value="{{ bit }}"
+                                   {{ bit in reg_perm_bits ? 'checked' : '' }}>
+                            <span>{{ label }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <a href="{{ path('/admin/forums') }}" class="btn-flat waves-effect">Cancel</a>
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>{{ is_new ? 'Create' : 'Save' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+vendor/
+etc/phorum.php
+etc/config.ini
+*.cache
+.DS_Store
+.dev/
+dist/
+.idea

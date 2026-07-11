@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ is_new ? 'New Ban Entry' : 'Edit Ban Entry' }}{% endblock %}
+
+{% block content %}
+<h4 class="page-title">{{ is_new ? 'New Ban Entry' : 'Edit Ban Entry' }}</h4>
+
+{% if errors is not empty %}
+<div class="card-panel red lighten-4 red-text text-darken-4">
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <select name="type" id="field_type">
+                        {% for value, label in types %}
+                            <option value="{{ value }}" {{ ban.type == value ? 'selected' : '' }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_type">Ban Type</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <select name="forum_id" id="field_forum_id">
+                        <option value="0" {{ ban.forum_id == 0 ? 'selected' : '' }}>All Forums</option>
+                        {% for forum in forums %}
+                            <option value="{{ forum.forum_id }}" {{ ban.forum_id == forum.forum_id ? 'selected' : '' }}>{{ forum.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_forum_id">Applies To</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_string" type="text" name="string" value="{{ ban.string|e }}" maxlength="255">
+                    <label for="field_string" class="{{ ban.string ? 'active' : '' }}">Value to Match</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="pcre" value="1" {{ ban.pcre ? 'checked' : '' }}/>
+                        <span>Treat value as a regular expression</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <textarea id="field_comments" name="comments" class="materialize-textarea">{{ ban.comments|e }}</textarea>
+                    <label for="field_comments" class="{{ ban.comments ? 'active' : '' }}">Comments</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save
+                    </button>
+                    <a href="{{ path('/admin/bans') }}" class="btn-flat waves-effect">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

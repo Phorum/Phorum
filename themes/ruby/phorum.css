@@ -1,0 +1,19 @@
+/* ==========================================================================
+   Phorum — Ruby theme
+   Palette override on top of the Emerald base stylesheet.
+   ========================================================================== */
+
+@import url('../emerald/phorum.css');
+
+:root {
+    --accent:            #a63232;
+    --accent-header:     #c14f4f;
+    --accent-dark:       #7a1f1f;
+    --accent-light:      #f7eaea;
+    --accent-highlight:  #fbf2f2;
+    --info-bg:           #ffe6e6;
+    --info-bd:           #b06060;
+    --link:              #7a1f1f;
+    --link-hover:        #b33939;
+    --border:            #a63232;
+}

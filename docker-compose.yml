@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: phorum
+      MYSQL_USER: phorum
+      MYSQL_PASSWORD: phorum
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "phorum", "-pphorum"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  php:
+    image: brianlmoon/php
+    command: php-fpm
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PHP_MEMORY_LIMIT: 128M
+
+  nginx:
+    image: brianlmoon/nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      php:
+        condition: service_started
+
+volumes:
+  mysql_data:

@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('mod.reports_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    {{ trans('mod.reports_title') }}
+</nav>
+
+<h1>{{ trans('mod.reports_title') }}</h1>
+
+{% if reports is empty %}
+    <p>{{ trans('mod.reports_empty') }}</p>
+{% else %}
+    {% for item in reports %}
+        {% set reported_msg = attribute(messages_map, item.message_id) %}
+        <article class="message message-unapproved">
+            <header class="message-header">
+                <div class="msg-author-info">
+                    <div class="msg-subject-line">
+                        {{ reported_msg is defined ? reported_msg.subject : trans('mod.reports_message_missing') }}
+                    </div>
+                    <div class="msg-date-line">
+                        {{ trans('mod.queue_forum') }}: {{ forum_names[item.forum_id]|default('#' ~ item.forum_id) }}
+                        &mdash; {{ trans('mod.reports_reported') }} {{ item.created|relative_time }}
+                    </div>
+                </div>
+            </header>
+
+            {% if reported_msg is defined %}
+                <div class="message-body">
+                    {{ reported_msg.body|format(reported_msg.meta) }}
+                </div>
+            {% endif %}
+
+            {% if item.reason %}
+                <blockquote class="mod-preview">{{ item.reason|e }}</blockquote>
+            {% endif %}
+
+            <footer class="message-footer">
+                <span class="mod-actions">
+                    <form method="post" action="{{ path('/moderate/report/' ~ item.report_id ~ '/resolve') }}" class="form-inline">
+                        {{ csrf_field() }}
+                        <button type="submit">{{ trans('mod.reports_resolve') }}</button>
+                    </form>
+                    <form method="post" action="{{ path('/moderate/report/' ~ item.report_id ~ '/dismiss') }}" class="form-inline">
+                        {{ csrf_field() }}
+                        <button type="submit">{{ trans('mod.reports_dismiss') }}</button>
+                    </form>
+                    {% if reported_msg is defined %}
+                        <a href="{{ path('/forum/' ~ item.forum_id ~ '/thread/' ~ reported_msg.thread) }}#msg-{{ reported_msg.message_id }}">{{ trans('mod.reports_view') }}</a>
+                    {% endif %}
+                </span>
+            </footer>
+        </article>
+    {% endfor %}
+{% endif %}
+{% endblock %}

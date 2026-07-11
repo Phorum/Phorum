@@ -1,0 +1,107 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Edit User: {{ profile.username }}{% endblock %}
+
+{% block content %}
+<a href="{{ path('/admin/users') }}" class="grey-text"><i class="material-icons tiny">arrow_back</i> Users</a>
+<h4 class="page-title">Edit: {{ profile.username|e }}</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <input id="display_name" type="text" name="display_name"
+                           value="{{ profile.display_name|e }}" required>
+                    <label for="display_name" class="{{ profile.display_name ? 'active' : '' }}">Display Name</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <input id="email" type="email" name="email" value="{{ profile.email|e }}" required>
+                    <label for="email" class="active">Email</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px">Reset Password (leave blank to keep current)</p>
+                </div>
+                <div class="input-field col s12 m6">
+                    <input id="password" type="password" name="password" autocomplete="new-password">
+                    <label for="password">New Password</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="active" value="1" {{ profile.active ? 'checked' : '' }}>
+                        <span>Active</span>
+                    </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="admin" value="1" {{ profile.admin ? 'checked' : '' }}>
+                        <span>Administrator</span>
+                    </label>
+                </div>
+            </div>
+
+            {% if admin_fields|default([]) is not empty %}
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Custom Fields</strong></p>
+                </div>
+                {% for entry in admin_fields %}
+                <div class="input-field col s12 m6">
+                    <input id="cf_{{ entry.config.name }}" type="text"
+                           name="custom_fields[{{ entry.config.name }}]"
+                           maxlength="{{ entry.config.length }}"
+                           value="{{ entry.value|e }}">
+                    <label for="cf_{{ entry.config.name }}" class="{{ entry.value ? 'active' : '' }}">
+                        {{ entry.config.label() }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col s12 grey-text" style="font-size:.85rem">
+                    User ID: {{ profile.user_id }} &nbsp;|&nbsp;
+                    Joined: {{ profile.date_added|datestamp }} &nbsp;|&nbsp;
+                    Posts: {{ profile.posts }} &nbsp;|&nbsp;
+                    Last active: {{ profile.date_last_active|datestamp }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <a href="{{ path('/admin/users') }}" class="btn-flat waves-effect">Cancel</a>
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <span class="card-title grey-text">Quick Links</span>
+        <a href="{{ path('/user/' ~ profile.user_id) }}" target="_blank" class="btn-flat waves-effect green-text">
+            <i class="material-icons left">open_in_new</i>View Public Profile
+        </a>
+        {% if not profile.admin and profile.user_id != admin_user.user_id %}
+        <form method="post" action="{{ path('/admin/users/' ~ profile.user_id ~ '/impersonate') }}" style="display:inline">
+            {{ csrf_field() }}
+            <button type="submit" class="btn-flat waves-effect orange-text">
+                <i class="material-icons left">visibility</i>Impersonate
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

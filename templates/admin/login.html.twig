@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — {{ site_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        body { background: #e8f5e9; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-card { width: 100%; max-width: 400px; }
+        .login-card .card-title { color: #2e7d32; }
+        .login-header { background: #2e7d32; color: #fff; padding: 20px 24px; text-align: center; border-radius: 2px 2px 0 0; }
+        .login-header i { font-size: 3rem; }
+        .login-header h5 { margin: 8px 0 0; }
+    </style>
+</head>
+<body>
+    <div class="login-card card z-depth-3">
+        <div class="login-header">
+            <i class="material-icons">lock</i>
+            <h5>{{ site_name }} Admin</h5>
+        </div>
+        <div class="card-content">
+            {% if error %}
+                <div class="card-panel red lighten-4 red-text text-darken-4">{{ error }}</div>
+            {% endif %}
+            <form method="post" action="{{ path('/admin/login') }}">
+                {{ csrf_field() }}
+                <div class="input-field">
+                    <i class="material-icons prefix">person</i>
+                    <input id="username" type="text" name="username" required autofocus>
+                    <label for="username">Username</label>
+                </div>
+                <div class="input-field">
+                    <i class="material-icons prefix">lock</i>
+                    <input id="password" type="password" name="password" required>
+                    <label for="password">Password</label>
+                </div>
+                <div class="center-align" style="margin-top:20px">
+                    <button type="submit" class="btn btn-large green darken-3 waves-effect waves-light" style="width:100%">
+                        <i class="material-icons left">login</i>Log In
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-action center-align">
+            <a href="{{ path('/') }}" class="grey-text">← Back to forum</a>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function () { M.AutoInit(); });</script>
+</body>
+</html>

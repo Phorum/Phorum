@@ -1,0 +1,38 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Audit Log{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Audit Log</h4>
+<p class="grey-text">Most recent {{ entries|length }} moderator actions.</p>
+
+{% if entries is empty %}
+    <p class="grey-text">No moderator actions have been logged yet.</p>
+{% else %}
+    <div class="card z-depth-1">
+        <table class="striped responsive-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Type</th>
+                    <th>Forum</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.time|datestamp }}</td>
+                    <td>{{ attribute(users_map, entry.user_id) is defined ? attribute(users_map, entry.user_id).username : '#' ~ entry.user_id }}</td>
+                    <td>{{ entry.action }}</td>
+                    <td>{{ entry.object_type }} #{{ entry.object_id }}</td>
+                    <td>{{ entry.forum_id == 0 ? 'All Forums' : forum_names[entry.forum_id]|default('#' ~ entry.forum_id) }}</td>
+                    <td>{{ entry.details|e }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

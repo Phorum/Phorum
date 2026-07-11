@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ root.subject }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
+{% block head %}
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ root.subject }}">
+    {% if json_ld[0].text %}
+        <meta property="og:description" content="{{ json_ld[0].text|slice(0, 200) }}{% if json_ld[0].text|length > 200 %}&hellip;{% endif %}">
+    {% endif %}
+    <meta property="og:url" content="{{ json_ld[0].url }}">
+    {{ json_ld(json_ld) }}
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    {{ root.subject }}
+</nav>
+
+<div class="thread-header">
+    <h1>{{ root.subject }}</h1>
+    <div class="thread-actions">
+        {% if can_reply %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ root.message_id) }}" class="btn-post">{{ trans('thread.reply') }}</a>
+        {% endif %}
+        {% if user is defined and user %}
+            {% if current_sub != SUB_NONE %}
+                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow btn-follow-active">{{ trans('thread.following') }}</a>
+            {% else %}
+                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow">{{ trans('thread.follow') }}</a>
+            {% endif %}
+        {% endif %}
+        {% if can_moderate %}
+            <a href="{{ path('/moderate/queue') }}" class="btn-mod">{{ trans('mod.queue') }}</a>
+            <a href="{{ path('/moderate/reports') }}" class="btn-mod">{{ trans('mod.reports_title') }}</a>
+            {% if root.closed %}
+                <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/open') }}" class="btn-mod">{{ trans('thread.reopen') }}</a>
+            {% else %}
+                <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/close') }}" class="btn-mod">{{ trans('thread.close') }}</a>
+            {% endif %}
+            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}" class="btn-mod">{{ trans('thread.move') }}</a>
+            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="btn-mod btn-danger">{{ trans('thread.delete') }}</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if announcements %}
+    {% include 'announcements/_box.html.twig' %}
+{% endif %}
+
+{% set current_user_id = user.user_id|default(0) %}
+
+{% if threaded %}
+    {% import _self as macros %}
+    {% for msg in messages %}
+        {{ macros.message_node(msg, forum, can_reply, can_moderate, new_ids|default([]), current_user_id, users_map|default({}), track_edits|default(false)) }}
+    {% endfor %}
+{% else %}
+    {% for msg in messages %}
+        {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids|default([]), current_user_id: current_user_id, track_edits: track_edits|default(false), users_map: users_map|default({})} %}
+    {% endfor %}
+{% endif %}
+
+{% macro message_node(msg, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits) %}
+    {% import _self as macros %}
+    {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids, current_user_id: current_user_id, users_map: users_map, track_edits: track_edits} %}
+    {% if msg.children %}
+        <div class="thread-replies">
+            {% for child in msg.children %}
+                {{ macros.message_node(child, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+{% endblock %}

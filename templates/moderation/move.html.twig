@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('mod.move_title') }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}">{{ root.subject }}</a> &rsaquo;
+    {{ trans('mod.move_title') }}
+</nav>
+
+<div class="moderation-confirm">
+    <h1>{{ trans('mod.move_title') }}</h1>
+    <p>{{ trans('mod.move_prompt', {subject: root.subject}) }}</p>
+
+    <form method="post">
+        {{ csrf_field() }}
+        <div class="form-row">
+            <label for="to_forum_id">{{ trans('mod.destination') }}</label>
+            <select name="to_forum_id" id="to_forum_id" required>
+                <option value="">{{ trans('mod.choose_forum') }}</option>
+                {% for f in forum_list %}
+                    {% if f.forum_id != forum.forum_id %}
+                        <option value="{{ f.forum_id }}">{{ f.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-primary">{{ trans('mod.move_submit') }}</button>
+        <button type="button" class="btn-cancel" onclick="history.back()">{{ trans('mod.cancel') }}</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ folder_name }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div id="pm-layout">
+    {% include 'pm/_sidebar.html.twig' %}
+
+    <section id="pm-content">
+        <h1 id="pm-content-heading">{{ folder_name }}</h1>
+
+        {% if rows is empty %}
+            <p class="pm-empty">{{ trans('pm.no_messages') }}</p>
+        {% else %}
+            <table class="tbl-boxed pm-list" aria-labelledby="pm-content-heading">
+                <thead>
+                    <tr>
+                        <th scope="col"><span class="visually-hidden">Read status</span></th>
+                        <th scope="col">{{ trans('pm.col_subject') }}</th>
+                        <th scope="col">{{ folder_key == 'outbox' ? trans('pm.col_to') : trans('pm.col_from') }}</th>
+                        <th scope="col">{{ trans('pm.col_date') }}</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in rows %}
+                    <tr class="{{ row.read_flag ? '' : 'pm-unread' }}">
+                        <td class="pm-status">{{ row.read_flag ? '' : '&#9679;' }}</td>
+                        <td class="pm-subject">
+                            <a href="{{ path('/pm/read/' ~ row.pm_xref_id) }}">{{ row.subject|e }}</a>
+                        </td>
+                        <td class="pm-author">{{ row.author|e }}</td>
+                        <td class="pm-date">{{ row.datestamp|datestamp }}</td>
+                        <td class="pm-actions">
+                            <a href="{{ path('/pm/delete/' ~ row.pm_xref_id) }}">{{ trans('pm.delete') }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

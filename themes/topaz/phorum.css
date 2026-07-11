@@ -1,0 +1,19 @@
+/* ==========================================================================
+   Phorum — Topaz theme
+   Palette override on top of the Emerald base stylesheet.
+   ========================================================================== */
+
+@import url('../emerald/phorum.css');
+
+:root {
+    --accent:            #8a5a10;
+    --accent-header:     #ad7a2e;
+    --accent-dark:       #6b4400;
+    --accent-light:      #f7f1e6;
+    --accent-highlight:  #fbf7ee;
+    --info-bg:           #fff3d6;
+    --info-bd:           #b08d4e;
+    --link:              #6b4400;
+    --link-hover:        #8f5c14;
+    --border:            #8a5a10;
+}

@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('auth.resend_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ trans('auth.resend_title') }}</h1>
+
+{% if sent %}
+    <p class="success">{{ trans('auth.resend_sent') }}</p>
+{% else %}
+    {% include '_form_errors.html.twig' %}
+
+    <form method="post" action="{{ path('/resend-confirmation') }}">
+        {{ csrf_field() }}
+
+        <div class="form-row">
+            <label for="email">{{ trans('auth.resend_email_label') }}</label>
+            <input type="email" id="email" name="email" required autofocus
+                   value="{{ _post.email|default('')|e }}">
+        </div>
+
+        <div class="form-row">
+            <button type="submit">{{ trans('auth.resend_submit') }}</button>
+        </div>
+    </form>
+{% endif %}
+
+<p><a href="{{ path('/login') }}">{{ trans('auth.login_link') }}</a></p>
+{% endblock %}

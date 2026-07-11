@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if parent %}{{ trans('post.reply_to', {subject: parent.subject}) }}{% else %}{{ trans('post.new_thread') }}{% endif %}
+    &mdash; {{ forum.name }} &mdash; {{ site_name }}
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ path('/assets/vendor/font-awesome/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ path('/assets/vendor/easymde/easymde.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    {% if parent %}
+        <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ parent.thread) }}">{{ parent.subject }}</a> &rsaquo; {{ trans('post.reply') }}
+    {% else %}
+        {{ trans('post.new_thread') }}
+    {% endif %}
+</nav>
+
+<h1>{% if parent %}{{ trans('post.reply') }}{% else %}{{ trans('post.new_thread') }}{% endif %}</h1>
+
+{% include '_form_errors.html.twig' %}
+
+{% if parent %}
+<blockquote class="reply-quote">
+    <strong>{{ parent.author }}</strong> wrote:
+    <div>{{ parent.body|format(parent.meta) }}</div>
+</blockquote>
+{% endif %}
+
+<form method="post" action="{{ path('/forum/' ~ forum.forum_id ~ '/post' ~ (parent ? '?reply=' ~ parent.message_id : '')) }}" enctype="multipart/form-data">
+    {{ csrf_field() }}
+    <div class="form-row">
+        <label for="subject">{{ trans('post.subject') }}</label>
+        <input type="text" id="subject" name="subject" value="{{ subject|e }}" maxlength="255"
+               {% if not parent %}required{% endif %} autofocus>
+    </div>
+
+    <div class="form-row">
+        <label for="body">{{ trans('post.body') }}</label>
+        <textarea id="body" name="body" rows="12">{{ body|e }}</textarea>
+    </div>
+
+    {% if forum.max_attachments > 0 %}
+    <div class="form-row">
+        <label>{{ trans('attachment.label') }}</label>
+        <input type="file" name="files[]" multiple aria-describedby="attachment-hint"
+               {% if forum.allow_attachment_types %}accept=".{{ forum.allow_attachment_types|replace({';': ',.'}) }}"{% endif %}>
+        <small class="form-hint" id="attachment-hint">
+            {% if forum.max_attachments > 0 %}{{ trans('attachment.hint_count', {n: forum.max_attachments}) }}{% endif %}
+            {% if forum.max_attachment_size > 0 %}&nbsp;{{ trans('attachment.hint_size', {size: forum.max_attachment_size|filesizeformat}) }}{% endif %}
+        </small>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit">{% if parent %}{{ trans('post.submit_reply') }}{% else %}{{ trans('post.submit_thread') }}{% endif %}</button>
+        <a href="{{ path(parent ? '/forum/' ~ forum.forum_id ~ '/thread/' ~ parent.thread : '/forum/' ~ forum.forum_id) }}"
+           class="btn-cancel">{{ trans('post.cancel') }}</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ path('/assets/vendor/easymde/easymde.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new EasyMDE({ element: document.getElementById('body') });
+        });
+    </script>
+{% endblock %}

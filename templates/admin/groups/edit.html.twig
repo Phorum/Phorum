@@ -1,0 +1,151 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ is_new ? 'New Group' : 'Edit Group' }}{% endblock %}
+
+{% block content %}
+<h4 class="page-title">{{ is_new ? 'New Group' : 'Edit Group' }}</h4>
+
+{% if errors is not empty %}
+<div class="card-panel red lighten-4 red-text text-darken-4">
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_name" type="text" name="name" value="{{ group.name|e }}" maxlength="255">
+                    <label for="field_name" class="{{ group.name ? 'active' : '' }}">Group Name</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="open" value="1" {{ group.open ? 'checked' : '' }}/>
+                        <span>Open group (informational only &mdash; membership is still admin-managed)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save
+                    </button>
+                    <a href="{{ path('/admin/groups') }}" class="btn-flat waves-effect">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not is_new %}
+<div class="card z-depth-1">
+    <div class="card-content">
+        <span class="card-title" style="font-size:1.1rem">Members</span>
+
+        {% if members is empty %}
+            <p class="grey-text">No members yet.</p>
+        {% else %}
+            <table class="striped responsive-table">
+                <thead>
+                    <tr><th>User</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                {% for m in members %}
+                    <tr>
+                        <td>{{ m.user ? m.user.username : ('#' ~ m.membership.user_id) }}</td>
+                        <td>
+                            <form method="post" action="{{ path('/admin/groups/' ~ group.group_id ~ '/members/' ~ m.membership.user_id ~ '/status') }}" class="form-inline">
+                                {{ csrf_field() }}
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="-1" {{ m.membership.status == -1 ? 'selected' : '' }}>Suspended</option>
+                                    <option value="0"  {{ m.membership.status == 0  ? 'selected' : '' }}>Unapproved</option>
+                                    <option value="1"  {{ m.membership.status == 1  ? 'selected' : '' }}>Approved</option>
+                                    <option value="2"  {{ m.membership.status == 2  ? 'selected' : '' }}>Group Moderator</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="admin-actions">
+                            <form method="post" action="{{ path('/admin/groups/' ~ group.group_id ~ '/members/' ~ m.membership.user_id ~ '/remove') }}">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn-small waves-effect waves-light red lighten-1">
+                                    <i class="material-icons tiny">remove_circle</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <form method="post" action="{{ path('/admin/groups/' ~ group.group_id ~ '/members/add') }}" class="row" style="margin-top:16px">
+            {{ csrf_field() }}
+            <div class="input-field col s12 m5">
+                <input id="field_add_username" type="text" name="username" required>
+                <label for="field_add_username">Username</label>
+            </div>
+            <div class="input-field col s12 m4">
+                <select name="status" id="field_add_status">
+                    <option value="1">Approved</option>
+                    <option value="2">Group Moderator</option>
+                    <option value="0">Unapproved</option>
+                </select>
+            </div>
+            <div class="col s12 m3">
+                <button type="submit" class="btn waves-effect waves-light">Add Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <span class="card-title" style="font-size:1.1rem">Forum Permissions</span>
+        <p class="grey-text">Grants apply only when a member has no direct per-user permission override on that forum.</p>
+
+        <form method="post" action="{{ path('/admin/groups/' ~ group.group_id ~ '/permissions') }}">
+            {{ csrf_field() }}
+            <table class="striped responsive-table">
+                <thead>
+                    <tr>
+                        <th>Forum</th>
+                        {% for bit, label in perm_flags %}
+                            <th>{{ label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for forum in forums %}
+                    {% set current = grants[forum.forum_id]|default(0) %}
+                    <tr>
+                        <td>{{ forum.name|e }}</td>
+                        {% for bit, label in perm_flags %}
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="perms[{{ forum.forum_id }}][]" value="{{ bit }}" {{ (current b-and bit) ? 'checked' : '' }}/>
+                                    <span></span>
+                                </label>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col s12 right-align" style="margin-top:8px">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Permissions
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('error.404_title') }} &mdash; {{ site_name|default('Phorum') }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1>{{ trans('error.404_title') }}</h1>
+    <p>{{ trans('error.404_message') }}</p>
+    <p><a href="{{ path('/') }}">{{ trans('error.404_return') }}</a></p>
+</div>
+{% endblock %}

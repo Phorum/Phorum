@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('pm.delete_title') }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="mod-confirm">
+    <h1>{{ trans('pm.delete_title') }}</h1>
+    <p>{{ trans('pm.delete_confirm', {subject: message.subject, author: message.author}) }}</p>
+    <form method="post" action="{{ path('/pm/delete/' ~ xref.pm_xref_id) }}">
+        {{ csrf_field() }}
+        <button type="submit" class="button button-danger">{{ trans('pm.delete') }}</button>
+        <a href="{{ path('/pm') }}">{{ trans('pm.cancel') }}</a>
+    </form>
+</div>
+{% endblock %}

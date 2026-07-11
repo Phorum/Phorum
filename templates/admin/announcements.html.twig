@@ -1,0 +1,76 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Announcements{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Announcements</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <select name="forum_id" id="field_forum_id">
+                        <option value="0" {{ stored.forum_id == 0 ? 'selected' : '' }}>&mdash; Disabled &mdash;</option>
+                        {% for forum in forums %}
+                            <option value="{{ forum.forum_id }}" {{ stored.forum_id == forum.forum_id ? 'selected' : '' }}>{{ forum.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_forum_id">Announcement Forum</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m4">
+                    <input id="field_number_to_show" type="number" min="1" name="number_to_show"
+                           value="{{ stored.number_to_show }}">
+                    <label for="field_number_to_show" class="active">Number to Show</label>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="field_days_to_show" type="number" min="0" name="days_to_show"
+                           value="{{ stored.days_to_show }}">
+                    <label for="field_days_to_show" class="active">Max Age in Days (0 = no limit)</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="only_show_unread" value="1" {{ stored.only_show_unread ? 'checked' : '' }}/>
+                        <span>Only show unread announcements</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p><strong>Show announcements on:</strong></p>
+                    <label class="announcements-page-toggle">
+                        <input type="checkbox" name="pages[index]" value="1" {{ stored.pages.index ? 'checked' : '' }}/>
+                        <span>Forum index</span>
+                    </label><br>
+                    <label class="announcements-page-toggle">
+                        <input type="checkbox" name="pages[list]" value="1" {{ stored.pages.list ? 'checked' : '' }}/>
+                        <span>Forum thread list</span>
+                    </label><br>
+                    <label class="announcements-page-toggle">
+                        <input type="checkbox" name="pages[read]" value="1" {{ stored.pages.read ? 'checked' : '' }}/>
+                        <span>Thread view</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

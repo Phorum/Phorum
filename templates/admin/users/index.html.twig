@@ -1,0 +1,88 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Users</h4>
+
+<div class="card z-depth-1" style="margin-bottom:16px">
+    <div class="card-content" style="padding:12px 16px">
+        <form method="get" action="{{ path('/admin/users') }}" class="row" style="margin:0">
+            <div class="input-field col s10 m8" style="margin:0">
+                <i class="material-icons prefix">search</i>
+                <input id="search" type="text" name="search" value="{{ search|e }}">
+                <label for="search" class="{{ search ? 'active' : '' }}">Search username, display name or email</label>
+            </div>
+            <div class="col s2 m4" style="padding-top:16px">
+                <button type="submit" class="btn green darken-3 waves-effect waves-light">Search</button>
+                {% if search %}
+                    <a href="{{ path('/admin/users') }}" class="btn-flat waves-effect">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card z-depth-1">
+    <div class="card-content" style="padding:0">
+        <p class="grey-text" style="padding:12px 16px 0;font-size:.85rem">{{ total }} user{{ total != 1 ? 's' : '' }}</p>
+        {% if users is empty %}
+            <p class="grey-text" style="padding:12px 16px">No users found.</p>
+        {% else %}
+            <table class="striped responsive-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Display Name</th>
+                        <th>Email</th>
+                        <th>Posts</th>
+                        <th>Joined</th>
+                        <th>Flags</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for u in users %}
+                    <tr>
+                        <td>{{ u.username|e }}</td>
+                        <td>{{ u.display_name|e }}</td>
+                        <td style="font-size:.85rem">{{ u.email|e }}</td>
+                        <td>{{ u.posts }}</td>
+                        <td style="font-size:.85rem">{{ u.date_added|datestamp }}</td>
+                        <td>
+                            {% if u.admin %}    <span class="badge-admin">admin</span>{% endif %}
+                            {% if not u.active %}<span class="badge-inactive">inactive</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('/admin/users/' ~ u.user_id ~ '/edit') }}" class="btn-small waves-effect green lighten-1">
+                                <i class="material-icons tiny">edit</i>
+                            </a>
+                            {% if not u.admin and u.user_id != admin_user.user_id %}
+                            <form method="post" action="{{ path('/admin/users/' ~ u.user_id ~ '/impersonate') }}" style="display:inline">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn-small waves-effect orange lighten-1" title="Impersonate">
+                                    <i class="material-icons tiny">visibility</i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{% if pages > 1 %}
+<div class="center-align" style="margin-top:16px">
+    {% for p in 1..pages %}
+        {% if p == page %}
+            <span class="btn-small disabled">{{ p }}</span>
+        {% else %}
+            <a href="{{ path('/admin/users?page=' ~ p ~ (search ? '&search=' ~ (search|url_encode) : '')) }}"
+               class="btn-small waves-effect green lighten-2">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

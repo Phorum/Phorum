@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('sub.title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}">{{ root.subject }}</a> &rsaquo;
+    {{ trans('sub.follow') }}
+</nav>
+
+<div class="subscription-box">
+    <h1>{{ trans('sub.title') }}</h1>
+    <p><strong>{{ root.subject }}</strong></p>
+
+    {% if current_sub == SUB_MESSAGE %}
+        <p>{{ trans('sub.following_email') }}</p>
+    {% elseif current_sub == SUB_BOOKMARK %}
+        <p>{{ trans('sub.bookmarked') }}</p>
+    {% else %}
+        <p>{{ trans('sub.not_following') }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ path('/follow/' ~ root.message_id) }}">
+        {{ csrf_field() }}
+        <div class="subscription-actions">
+            {% if current_sub != SUB_MESSAGE %}
+                <button type="submit" name="action" value="subscribe_email" class="button">
+                    {{ trans('sub.follow_email') }}
+                </button>
+            {% endif %}
+            {% if current_sub != SUB_BOOKMARK %}
+                <button type="submit" name="action" value="subscribe_bookmark" class="button button-secondary">
+                    {{ trans('sub.bookmark') }}
+                </button>
+            {% endif %}
+            {% if current_sub != SUB_NONE %}
+                <button type="submit" name="action" value="unsubscribe" class="button button-danger">
+                    {{ trans('sub.unfollow') }}
+                </button>
+            {% endif %}
+        </div>
+    </form>
+
+    <p><a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}">{{ trans('sub.back_to_thread') }}</a></p>
+</div>
+{% endblock %}

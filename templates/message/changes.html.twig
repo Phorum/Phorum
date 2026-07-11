@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('message.changes_title') }} &mdash; {{ msg.subject }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">{{ msg.subject }}</a> &rsaquo;
+    {{ trans('message.changes_title') }}
+</nav>
+
+<h1>{{ trans('message.changes_title') }}</h1>
+
+<p>
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">
+        &larr; {{ trans('message.changes_back') }}
+    </a>
+</p>
+
+{% for version in versions %}
+<div class="edit-version">
+    <h2 class="edit-version-header">
+        {{ trans('message.changes_edit_n', {n: loop.revindex}) }}
+        &mdash;
+        {% if version.user_id > 0 %}
+            <a href="{{ path('/user/' ~ version.user_id) }}">{{ trans('message.changes_by') }}</a>
+        {% endif %}
+        {{ version.time|datestamp }}
+    </h2>
+
+    {% if not version.subject_same %}
+    <div class="edit-diff">
+        <strong>{{ trans('message.changes_subject') }}:</strong>
+        <pre class="diff-text">{{ version.subject_diff|raw }}</pre>
+    </div>
+    {% endif %}
+
+    <div class="edit-diff">
+        <strong>{{ trans('message.changes_body') }}:</strong>
+        <pre class="diff-text">{{ version.body_diff|raw }}</pre>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,5 @@
+{% if errors is not empty %}
+<ul class="form-errors" role="alert">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+</ul>
+{% endif %}

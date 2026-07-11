@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('error.403_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1>{{ trans('error.403_title') }}</h1>
+    <p>{{ trans('error.403_message') }}</p>
+    {% if not user %}
+        <p><a href="{{ path('/login') }}">{{ trans('error.403_login') }}</a> {{ trans('error.403_login_hint') }}</p>
+    {% endif %}
+    <p><a href="{{ path('/') }}">{{ trans('error.403_return') }}</a></p>
+</div>
+{% endblock %}

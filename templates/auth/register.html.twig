@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('auth.register_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ trans('auth.register_title') }}</h1>
+
+{% include '_form_errors.html.twig' %}
+
+<form method="post" action="{{ path('/register') }}">
+    {{ csrf_field() }}
+    <div class="form-row">
+        <label for="username">{{ trans('auth.username') }}</label>
+        <input type="text" id="username" name="username" required autofocus maxlength="50" autocomplete="username"
+               value="{{ _post.username|default('')|e }}">
+    </div>
+
+    <div class="form-row">
+        <label for="email">{{ trans('auth.email') }}</label>
+        <input type="email" id="email" name="email" required autocomplete="email"
+               value="{{ _post.email|default('')|e }}">
+    </div>
+
+    <div class="form-row">
+        <label for="password">{{ trans('auth.password') }} <small>({{ trans('auth.password_hint') }})</small></label>
+        <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+    </div>
+
+    <div class="form-row">
+        <label for="password2">{{ trans('auth.confirm_password') }}</label>
+        <input type="password" id="password2" name="password2" required minlength="6" autocomplete="new-password">
+    </div>
+
+    <div class="form-row">
+        <button type="submit">{{ trans('auth.register_submit') }}</button>
+    </div>
+</form>
+
+<p>{{ trans('auth.have_account') }} <a href="{{ path('/login') }}">{{ trans('auth.login_link') }}</a></p>
+{% endblock %}

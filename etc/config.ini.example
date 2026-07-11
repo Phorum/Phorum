@@ -1,0 +1,10 @@
+; Database configuration for dealnews/db
+; Copy to etc/config.ini and fill in your credentials.
+; The section key (e.g. "phorum") must match 'db_name' in etc/phorum.php.
+
+[db.phorum]
+db.phorum.type   = mysql
+db.phorum.server = 127.0.0.1  ; use "mysql" when running via docker-compose
+db.phorum.user   = phorum
+db.phorum.pass   = secret
+db.phorum.db     = phorum

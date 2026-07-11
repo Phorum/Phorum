@@ -1,0 +1,82 @@
+{% set msg_meta = msg.meta|decode_meta %}
+<article class="message{{ msg.status == 0 ? ' message-unapproved' : '' }}{{ (new_ids is defined and msg.message_id in new_ids) ? ' message-new' : '' }}" id="msg-{{ msg.message_id }}">
+    <header class="message-header">
+        <div class="msg-author-info">
+            <div class="msg-author-line">
+                {% if msg.user_id > 0 %}
+                    <img src="{{ path('/avatar/' ~ msg.user_id) }}" alt="" class="post-avatar-inline"
+                         onerror="this.style.display='none'">
+                    <a href="{{ path('/user/' ~ msg.user_id) }}" class="message-author">{{ msg.author }}</a>
+                    {% if current_user_id is defined and current_user_id > 0 and current_user_id != msg.user_id %}
+                        <span class="msg-pm-link">[<a href="{{ path('/pm/compose/' ~ msg.user_id) }}">PM</a>]</span>
+                    {% endif %}
+                {% else %}
+                    <span class="message-author">{{ msg.author }}</span>
+                {% endif %}
+                {% if msg.status == 0 %}
+                    <span class="unapproved-badge">{{ trans('message.awaiting_approval') }}</span>
+                {% endif %}
+            </div>
+            <div class="msg-subject-line">
+                <a href="#msg-{{ msg.message_id }}">{{ msg.subject }}</a>
+            </div>
+            <div class="msg-date-line">
+                {{ msg.datestamp|datestamp }}
+                {% if msg_meta.editDate is not null %}
+                    &mdash; <span class="edit-note">{{ trans('message.edited_note') }} {{ msg_meta.editDate|datestamp }}{% if track_edits|default(false) and msg_meta.editCount > 0 %} &middot; <a href="{{ path('/message/' ~ msg.message_id ~ '/changes') }}">{{ trans('message.changes') }}</a>{% endif %}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if users_map is defined and msg.user_id > 0 and attribute(users_map, msg.user_id) is defined %}
+        <div class="msg-user-stats">
+            {{ trans('message.registered') }}: {{ attribute(users_map, msg.user_id).date_added|relative_time }}<br>
+            {{ trans('message.posts') }}: {{ attribute(users_map, msg.user_id).posts }}
+        </div>
+        {% endif %}
+    </header>
+
+    <div class="message-body">
+        {{ msg.body|format(msg.meta) }}
+    </div>
+
+    {% if users_map is defined and msg.user_id > 0 and attribute(users_map, msg.user_id) is defined %}
+        {% set post_author = attribute(users_map, msg.user_id) %}
+        {% if post_author.show_signature and post_author.signature %}
+        <div class="message-signature">
+            <div class="signature-body">{{ post_author.signature|markdown }}</div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {% if msg.attachments|default([])|length > 0 %}
+    <div class="message-attachments">
+        <strong>{{ trans('attachment.label') }}:</strong>
+        <ul class="attachment-list">
+            {% for f in msg.attachments %}
+            <li><a href="{{ path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) }}">{{ f.filename }}</a> <small>({{ f.filesize|filesizeformat }})</small></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <footer class="message-footer">
+        {% if can_reply %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ msg.message_id) }}">{{ trans('message.reply') }}</a>
+        {% endif %}
+        {% set can_edit_msg = (current_user_id is defined and current_user_id > 0) and (current_user_id == msg.user_id or can_moderate) %}
+        {% if can_edit_msg %}
+            <a href="{{ path('/message/' ~ msg.message_id ~ '/edit') }}">{{ trans('message.edit') }}</a>
+        {% endif %}
+        {% if current_user_id is defined and current_user_id > 0 and current_user_id != msg.user_id %}
+            <a href="{{ path('/message/' ~ msg.message_id ~ '/report') }}">{{ trans('message.report') }}</a>
+        {% endif %}
+        {% if can_moderate %}
+            <span class="mod-actions">
+                {% if msg.status == 0 %}
+                    <a href="{{ path('/moderate/message/' ~ msg.message_id ~ '/approve') }}">{{ trans('message.approve') }}</a>
+                {% endif %}
+                <a href="{{ path('/moderate/message/' ~ msg.message_id ~ '/delete') }}">{{ trans('message.delete') }}</a>
+            </span>
+        {% endif %}
+    </footer>
+</article>

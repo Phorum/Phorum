@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ profile.display_name ?: profile.username }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    {{ profile.display_name ?: profile.username }}
+</nav>
+
+<div class="user-profile">
+    {% if avatar %}
+    <div class="user-avatar">
+        <img src="{{ path('/avatar/' ~ profile.user_id) }}" alt="{{ profile.display_name ?: profile.username }}" class="avatar-img">
+    </div>
+    {% endif %}
+
+    <h1 id="profile-heading">{{ profile.display_name ?: profile.username }}</h1>
+
+    <table class="tbl-boxed profile-info" aria-labelledby="profile-heading">
+        <tr>
+            <th scope="row">{{ trans('profile.username') }}</th>
+            <td>{{ profile.username }}</td>
+        </tr>
+        {% if profile.real_name %}
+        <tr>
+            <th scope="row">{{ trans('profile.name') }}</th>
+            <td>{{ profile.real_name }}</td>
+        </tr>
+        {% endif %}
+        {% if not profile.hide_email and profile.email %}
+        <tr>
+            <th scope="row">{{ trans('profile.email') }}</th>
+            <td><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></td>
+        </tr>
+        {% endif %}
+        <tr>
+            <th scope="row">{{ trans('profile.joined') }}</th>
+            <td>{{ profile.date_added|datestamp }}</td>
+        </tr>
+        <tr>
+            <th scope="row">{{ trans('profile.posts') }}</th>
+            <td>{{ profile.posts }}</td>
+        </tr>
+        {% if not profile.hide_activity %}
+        <tr>
+            <th scope="row">{{ trans('profile.last_active') }}</th>
+            <td>{{ profile.date_last_active|relative_time }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    {% if profile.show_signature and profile.signature %}
+    <div class="profile-signature">
+        <h2 class="bar-accent">{{ trans('profile.signature') }}</h2>
+        <div class="signature-body">{{ profile.signature|markdown }}</div>
+    </div>
+    {% endif %}
+
+    {% if recent_posts %}
+    <div class="profile-recent-posts">
+        <h2 class="bar-accent">{{ trans('profile.recent_posts') }}</h2>
+        <table class="tbl-boxed profile-posts">
+            <caption class="visually-hidden">{{ trans('profile.recent_posts') }}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">{{ trans('profile.col_subject') }}</th>
+                    <th scope="col" class="col-lastpost">{{ trans('profile.col_date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for msg in recent_posts %}
+                <tr>
+                    <td>
+                        <a href="{{ path('/forum/' ~ msg.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">
+                            {{- msg.subject -}}
+                        </a>
+                    </td>
+                    <td>{{ msg.datestamp|relative_time }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="profile-actions">
+        {% if user and user.user_id == profile.user_id %}
+            <a href="{{ path('/user/settings') }}" class="btn-primary">{{ trans('profile.edit_settings') }}</a>
+        {% elseif user %}
+            <a href="{{ path('/pm/compose/' ~ profile.user_id) }}" class="btn-primary">{{ trans('pm.compose') }}</a>
+            {% if is_buddy %}
+                <form method="post" action="{{ path('/pm/buddies/remove/' ~ profile.user_id) }}" class="inline-form">
+                    {{ csrf_field() }}
+                    <input type="hidden" name="return_to" value="{{ path('/user/' ~ profile.user_id) }}">
+                    <button type="submit" class="btn-secondary">{{ trans('pm.remove_buddy') }}</button>
+                </form>
+            {% else %}
+                <form method="post" action="{{ path('/pm/buddies/add/' ~ profile.user_id) }}" class="inline-form">
+                    {{ csrf_field() }}
+                    <input type="hidden" name="return_to" value="{{ path('/user/' ~ profile.user_id) }}">
+                    <button type="submit" class="btn-secondary">{{ trans('pm.add_buddy') }}</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} — {{ site_name }} Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        body { display: flex; min-height: 100vh; flex-direction: column; background: #f5f5f5; }
+        main { flex: 1 0 auto; padding: 20px 0; }
+        @media only screen and (min-width: 993px) {
+            main { padding-left: 300px; }
+        }
+        .sidenav { padding-top: 0; }
+        .sidenav .user-view { padding: 16px; background: #2e7d32; }
+        .sidenav .user-view .name, .sidenav .user-view .email { color: #fff; }
+        .sidenav li > a { color: #333; }
+        .sidenav li > a i.material-icons { color: #388e3c; }
+        .sidenav li.active > a { color: #2e7d32; font-weight: 600; background: #e8f5e9; }
+        nav { background: #2e7d32; }
+        nav .brand-logo { font-size: 1.1rem; }
+        .page-title { color: #2e7d32; margin-bottom: 20px; }
+        .stat-card .card-content { padding: 16px; }
+        .stat-card .stat-value { font-size: 2.5rem; font-weight: 700; color: #2e7d32; }
+        .stat-card .stat-label { color: #757575; font-size: .85rem; }
+        .stat-card.warn .stat-value { color: #e65100; }
+        table.striped tbody tr:hover { background: #e8f5e9; }
+        .badge-admin { background: #2e7d32; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: .75rem; }
+        .badge-inactive { background: #bdbdbd; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: .75rem; }
+        .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .impersonation-banner {
+            background: #e65100;
+            color: #fff;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .impersonation-banner form { margin: 0; }
+        .impersonation-banner button {
+            background: #fff;
+            color: #e65100;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% if impersonating %}
+        <div class="impersonation-banner" role="alert">
+            <span>Viewing as {{ user.display_name ?: user.username }} — impersonated by {{ impersonator.display_name ?: impersonator.username }}.</span>
+            <form method="post" action="{{ path('/admin/stop-impersonating') }}">
+                {{ csrf_field() }}
+                <button type="submit">Stop Impersonating</button>
+            </form>
+        </div>
+    {% endif %}
+    <!-- Mobile trigger -->
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" data-target="admin-sidenav" class="sidenav-trigger">
+                <i class="material-icons">menu</i>
+            </a>
+            <a href="{{ path('/admin') }}" class="brand-logo center">
+                <i class="material-icons" style="vertical-align:middle;margin-right:6px">settings</i>
+                {{ block('title') }}
+            </a>
+            <ul class="right hide-on-med-and-down">
+                {% if admin_user %}
+                    <li><a href="{{ path('/admin/logout') }}">
+                        <i class="material-icons left">exit_to_app</i>Log Out
+                    </a></li>
+                {% endif %}
+                <li><a href="{{ path('/') }}" target="_blank">
+                    <i class="material-icons left">open_in_new</i>View Site
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidenav -->
+    <ul id="admin-sidenav" class="sidenav sidenav-fixed">
+        {% if admin_user %}
+        <li>
+            <div class="user-view">
+                <span class="name">{{ admin_user.display_name ?: admin_user.username }}</span><br>
+                <span class="email" style="font-size:.8rem">{{ admin_user.email }}</span>
+            </div>
+        </li>
+        {% endif %}
+        <li class="{{ app.request.pathinfo starts with '/admin' and app.request.pathinfo == '/admin' ? 'active' : '' }}">
+            <a href="{{ path('/admin') }}"><i class="material-icons">dashboard</i>Dashboard</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/forums') }}"><i class="material-icons">forum</i>Forums</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/users') }}"><i class="material-icons">people</i>Users</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/groups') }}"><i class="material-icons">groups</i>Groups</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/settings') }}"><i class="material-icons">tune</i>Settings</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/announcements') }}"><i class="material-icons">campaign</i>Announcements</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/modules') }}"><i class="material-icons">extension</i>Modules</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/custom-fields') }}"><i class="material-icons">list_alt</i>Custom Fields</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/bans') }}"><i class="material-icons">block</i>Ban List</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/audit-log') }}"><i class="material-icons">history</i>Audit Log</a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="{{ path('/') }}" target="_blank"><i class="material-icons">open_in_new</i>View Site</a>
+        </li>
+        <li>
+            <a href="{{ path('/admin/logout') }}"><i class="material-icons">exit_to_app</i>Log Out</a>
+        </li>
+    </ul>
+
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        M.AutoInit();
+        // Highlight active sidenav item
+        var path = window.location.pathname;
+        document.querySelectorAll('#admin-sidenav li a').forEach(function (a) {
+            if (a.getAttribute('href') === path) {
+                a.closest('li').classList.add('active');
+            }
+        });
+    });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Forums{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper">
+    <div class="col s8"><h4 class="page-title" style="margin:0">Forums &amp; Folders</h4></div>
+    <div class="col s4 right-align">
+        <a href="{{ path('/admin/forums/create') }}" class="btn green darken-3 waves-effect waves-light">
+            <i class="material-icons left">add</i>New
+        </a>
+    </div>
+</div>
+
+{% if forums is empty %}
+    <p class="grey-text">No forums or folders yet.</p>
+{% else %}
+    <div class="card z-depth-1">
+        <table class="striped responsive-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Active</th>
+                    <th>Posts</th>
+                    <th>Threads</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for f in forums %}
+                <tr>
+                    <td>
+                        {% if f.folder_flag %}
+                            <i class="material-icons tiny" style="color:#ffa000;vertical-align:middle">folder</i>
+                        {% else %}
+                            <i class="material-icons tiny" style="color:#388e3c;vertical-align:middle">forum</i>
+                        {% endif %}
+                        {{ f.name|e }}
+                    </td>
+                    <td>{{ f.folder_flag ? 'Folder' : 'Forum' }}</td>
+                    <td>
+                        {% if f.active %}
+                            <i class="material-icons tiny green-text">check_circle</i>
+                        {% else %}
+                            <i class="material-icons tiny grey-text">cancel</i>
+                        {% endif %}
+                    </td>
+                    <td>{{ f.message_count }}</td>
+                    <td>{{ f.thread_count }}</td>
+                    <td class="admin-actions">
+                        <a href="{{ path('/admin/forums/' ~ f.forum_id ~ '/edit') }}" class="btn-small waves-effect waves-light green lighten-1">
+                            <i class="material-icons tiny">edit</i>
+                        </a>
+                        <a href="{{ path('/admin/forums/' ~ f.forum_id ~ '/delete') }}" class="btn-small waves-effect waves-light red lighten-1">
+                            <i class="material-icons tiny">remove_circle</i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="{{ lang_locale|default('en') }}" dir="{{ lang_dir|default('ltr') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name|default('Phorum') }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ path('/theme/' ~ theme ~ '/phorum.css') }}">
+    {% if impersonating %}
+    <style>
+        .impersonation-banner {
+            background: #e65100;
+            color: #fff;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .impersonation-banner form { margin: 0; }
+        .impersonation-banner button {
+            background: #fff;
+            color: #e65100;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+    {% endif %}
+    {{ hook('css_register') }}
+    {{ hook('css_filter') }}
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% if impersonating %}
+        <div class="impersonation-banner" role="alert">
+            <span>Viewing as {{ user.display_name ?: user.username }} — impersonated by {{ impersonator.display_name ?: impersonator.username }}.</span>
+            <form method="post" action="{{ path('/admin/stop-impersonating') }}">
+                {{ csrf_field() }}
+                <button type="submit">Stop Impersonating</button>
+            </form>
+        </div>
+    {% endif %}
+    <a class="skip-link" href="#main-content">{{ trans('nav.skip_to_content') }}</a>
+    {{ hook('start_output') }}{{ hook('start_output_') }}
+    <div id="phorum-wrap">
+        <nav id="phorum-nav" aria-label="{{ trans('nav.primary') }}">
+            {% block nav %}
+                <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="phorum-nav-list">
+                    <span class="nav-toggle-icon" aria-hidden="true"></span>
+                    {{ trans('nav.menu') }}
+                </button>
+                <ul class="nav-list" id="phorum-nav-list">
+                    <li><a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a></li>
+                    <li><a href="{{ path('/search') }}">{{ trans('nav.search') }}</a></li>
+                    {% if user is defined and user %}
+                        <li><a href="{{ path('/pm') }}">{{ trans('nav.messages') }}{% if user.pm_new_count > 0 %} <span class="pm-badge">{{ user.pm_new_count }}</span>{% endif %}</a></li>
+                        <li><a href="{{ path('/user/' ~ user.user_id) }}">{{ user.display_name ?: user.username }}</a></li>
+                        <li><a href="{{ path('/user/settings') }}">{{ trans('nav.settings') }}</a></li>
+                        <li><a href="{{ path('/logout') }}">{{ trans('nav.log_out') }}</a></li>
+                    {% else %}
+                        <li><a href="{{ path('/login') }}">{{ trans('nav.log_in') }}</a></li>
+                        <li><a href="{{ path('/register') }}">{{ trans('nav.register') }}</a></li>
+                    {% endif %}
+                </ul>
+            {% endblock %}
+        </nav>
+        {{ hook('after_header') }}{{ hook('after_header_') }}
+
+        <main id="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        {{ hook('before_footer') }}{{ hook('before_footer_') }}
+        <footer id="phorum-footer">
+            <p>{{ trans('nav.powered_by') }}</p>
+        </footer>
+    </div>
+    {{ hook('javascript_filter') }}
+    {{ hook('end_output') }}{{ hook('end_output_') }}
+    {% block scripts %}
+        <script>
+            (function () {
+                var toggle = document.querySelector('.nav-toggle');
+                var list = document.getElementById('phorum-nav-list');
+                if (!toggle || !list) {
+                    return;
+                }
+                toggle.addEventListener('click', function () {
+                    var isOpen = list.classList.toggle('is-open');
+                    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            })();
+        </script>
+    {% endblock %}
+</body>
+</html>

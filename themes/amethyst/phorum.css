@@ -1,0 +1,19 @@
+/* ==========================================================================
+   Phorum — Amethyst theme
+   Palette override on top of the Emerald base stylesheet.
+   ========================================================================== */
+
+@import url('../emerald/phorum.css');
+
+:root {
+    --accent:            #6f3d84;
+    --accent-header:     #8f5aa3;
+    --accent-dark:       #4d2a5c;
+    --accent-light:      #f3ecf5;
+    --accent-highlight:  #f8f3f9;
+    --info-bg:           #f3e6ff;
+    --info-bd:           #8a67a0;
+    --link:              #4d2a5c;
+    --link-hover:        #8a4ca3;
+    --border:            #6f3d84;
+}

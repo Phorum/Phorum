@@ -1,0 +1,38 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ action == 'purge' ? 'Delete Forever' : 'Delete' }}: {{ config.name }}{% endblock %}
+
+{% block content %}
+<a href="{{ path('/admin/custom-fields') }}" class="grey-text">
+    <i class="material-icons tiny">arrow_back</i> Custom Fields
+</a>
+<h4 class="page-title">
+    {{ action == 'purge' ? 'Permanently Delete' : 'Delete' }}: {{ config.name|e }}
+</h4>
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        {% if action == 'purge' %}
+            <p>
+                Permanently delete the field <strong>{{ config.name|e }}</strong> and all stored values?
+                This cannot be undone.
+            </p>
+        {% else %}
+            <p>
+                Deactivate the field <strong>{{ config.name|e }}</strong>?
+                Existing values are preserved and the field can be restored later.
+            </p>
+        {% endif %}
+
+        <form method="post" action="{{ path('/admin/custom-fields/' ~ config.id ~ '/' ~ action) }}">
+            {{ csrf_field() }}
+            <div style="margin-top:16px">
+                <a href="{{ path('/admin/custom-fields') }}" class="btn-flat waves-effect">Cancel</a>
+                <button type="submit" class="btn {{ action == 'purge' ? 'red' : 'orange' }} waves-effect waves-light">
+                    <i class="material-icons left">{{ action == 'purge' ? 'delete_forever' : 'remove_circle' }}</i>
+                    {{ action == 'purge' ? 'Yes, Delete Forever' : 'Yes, Deactivate' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

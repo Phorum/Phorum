@@ -1,0 +1,10 @@
+{% if success %}
+<div class="card-panel green lighten-4 green-text text-darken-4">
+    <i class="material-icons left">check_circle</i>{{ success }}
+</div>
+{% endif %}
+{% if errors is not empty %}
+<div class="card-panel red lighten-4 red-text text-darken-4">
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}

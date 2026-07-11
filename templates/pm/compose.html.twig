@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('pm.compose_title') }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ path('/assets/vendor/easymde/easymde.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="pm-layout">
+    {% include 'pm/_sidebar.html.twig' %}
+
+    <section id="pm-content">
+        <h1>{{ trans('pm.compose_title') }}</h1>
+
+        {% include '_form_errors.html.twig' %}
+
+        <form method="post" action="{{ path('/pm/compose') }}" class="pm-compose-form">
+            {{ csrf_field() }}
+            <div class="form-row">
+                <label for="to_username">{{ trans('pm.to_label') }}</label>
+                <input type="text" id="to_username" name="to_username"
+                       value="{{ to_user ? (to_user.display_name ?: to_user.username) : (post.to_username ?? '') }}"
+                       required>
+            </div>
+            <div class="form-row">
+                <label for="subject">{{ trans('pm.subject') }}</label>
+                <input type="text" id="subject" name="subject"
+                       value="{{ subject|e }}" required>
+            </div>
+            <div class="form-row">
+                <label for="body">{{ trans('pm.body') }}</label>
+                <textarea id="body" name="body" rows="15" required>{{ body|e }}</textarea>
+            </div>
+            <div class="form-row form-actions">
+                <button type="submit" class="button">{{ trans('pm.send') }}</button>
+                <a href="{{ path('/pm') }}">{{ trans('pm.cancel') }}</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ path('/assets/vendor/easymde/easymde.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new EasyMDE({ element: document.getElementById('body') });
+        });
+    </script>
+{% endblock %}

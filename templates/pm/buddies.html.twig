@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('pm.buddy_list') }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div id="pm-layout">
+    {% include 'pm/_sidebar.html.twig' with { folder_key: 'buddies' } %}
+
+    <section id="pm-content">
+        <h1>{{ trans('pm.buddy_list') }}</h1>
+
+        {% if buddies is empty %}
+            <p class="pm-empty">{{ trans('pm.no_buddies') }}</p>
+        {% else %}
+            <table class="tbl-boxed pm-list buddy-list">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ trans('pm.col_buddy') }}</th>
+                        <th scope="col">{{ trans('pm.col_mutual') }}</th>
+                        <th scope="col">{{ trans('pm.col_last_active') }}</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for buddy in buddies %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('/user/' ~ buddy.buddy_user_id) }}">
+                                {{- (buddy.display_name ?: buddy.username)|e -}}
+                            </a>
+                        </td>
+                        <td>
+                            {% if buddy.mutual %}
+                                <span class="buddy-mutual">{{ trans('pm.mutual') }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="pm-date">{{ buddy.date_last_active|relative_time }}</td>
+                        <td class="pm-actions">
+                            <a href="{{ path('/pm/compose/' ~ buddy.buddy_user_id) }}">{{ trans('pm.compose') }}</a>
+                            &nbsp;
+                            <form method="post" action="{{ path('/pm/buddies/remove/' ~ buddy.buddy_user_id) }}" class="inline-form">
+                                {{ csrf_field() }}
+                                <input type="hidden" name="return_to" value="{{ path('/pm/buddies') }}">
+                                <button type="submit" class="button-link">{{ trans('pm.remove_buddy') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Modules{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Modules</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+{% if modules is empty %}
+    <p class="grey-text">No modules found in the <code>mods/</code> directory.</p>
+{% else %}
+    <div class="card z-depth-1">
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for mod in modules %}
+                <tr>
+                    <td>
+                        <strong>{{ mod.info.title ?: mod.name|e }}</strong>
+                        {% if mod.info.title %}<br><small class="grey-text">{{ mod.name }}</small>{% endif %}
+                    </td>
+                    <td class="grey-text" style="font-size:.85rem">{{ mod.info.desc|e }}</td>
+                    <td>
+                        {% if mod.enabled %}
+                            <span class="badge-admin">Enabled</span>
+                        {% else %}
+                            <span class="badge-inactive">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" action="{{ path('/admin/modules') }}" style="display:inline">
+                            {{ csrf_field() }}
+                            <input type="hidden" name="mod" value="{{ mod.name|e }}">
+                            {% if mod.enabled %}
+                                <button type="submit" name="action" value="disable"
+                                        class="btn-small waves-effect red lighten-2">Disable</button>
+                            {% else %}
+                                <button type="submit" name="action" value="enable"
+                                        class="btn-small waves-effect green lighten-1">Enable</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<div class="card blue-grey lighten-5 z-depth-0">
+    <div class="card-content">
+        <p class="grey-text">Modules are loaded from the <code>mods/</code> directory.
+           Each module must have a directory named after itself with a matching <code>.php</code> file
+           (e.g. <code>mods/bbcode/bbcode.php</code>). Changes take effect on the next page load.</p>
+    </div>
+</div>
+{% endblock %}

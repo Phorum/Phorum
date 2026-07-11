@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('sub.confirm_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}">{{ root.subject }}</a> &rsaquo;
+    {{ trans('sub.confirm_title') }}
+</nav>
+
+<div class="subscription-box">
+    <h1>{{ trans('sub.confirm_title') }}</h1>
+    <p><strong>{{ root.subject }}</strong></p>
+
+    {% if quick_action == 'remove' %}
+        <p>{{ trans('sub.confirm_remove') }}</p>
+    {% else %}
+        <p>{{ trans('sub.confirm_bookmark') }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ path('/follow/' ~ root.message_id ~ '?action=' ~ quick_action) }}">
+        {{ csrf_field() }}
+        <div class="subscription-actions">
+            <button type="submit" class="button button-danger">{{ trans('sub.confirm_yes') }}</button>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}" class="button button-secondary">
+                {{ trans('sub.confirm_cancel') }}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

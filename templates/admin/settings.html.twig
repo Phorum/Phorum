@@ -1,0 +1,65 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Settings</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+            {% for key, meta in fields %}
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_{{ key }}" type="{{ meta.type }}" name="{{ key }}"
+                           value="{{ stored[key]|default('')|e }}" class="">
+                    <label for="field_{{ key }}" class="{{ stored[key]|default('') ? 'active' : '' }}">
+                        {{ meta.label }}
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <select name="template" id="field_template">
+                        {% for dir, name in themes %}
+                            <option value="{{ dir }}" {{ stored.template|default('') == dir ? 'selected' : '' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_template">Default Theme</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <select name="language" id="field_language">
+                        {% for code, name in locales %}
+                            <option value="{{ code }}" {{ stored.language|default('en') == code ? 'selected' : '' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_language">Default Language</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card blue-grey lighten-5 z-depth-0">
+    <div class="card-content">
+        <span class="card-title grey-text text-darken-2" style="font-size:1rem">Infrastructure Settings</span>
+        <p class="grey-text">Database connection, session security, and other low-level settings are configured in
+           <code>etc/phorum.php</code> and <code>etc/config.ini</code> — not editable here.</p>
+    </div>
+</div>
+{% endblock %}

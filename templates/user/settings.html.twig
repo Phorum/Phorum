@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('settings.title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/user/' ~ profile.user_id) }}">{{ profile.display_name ?: profile.username }}</a> &rsaquo;
+    {{ trans('settings.title') }}
+</nav>
+
+<h1>{{ trans('settings.title') }}</h1>
+
+{% if success %}
+    <div class="info-box">{{ trans('settings.saved') }}</div>
+{% endif %}
+
+{% include '_form_errors.html.twig' %}
+
+<form method="post" action="{{ path('/user/settings') }}" class="settings-form" enctype="multipart/form-data">
+    {{ csrf_field() }}
+
+    <fieldset>
+        <legend class="bar-accent">{{ trans('settings.identity') }}</legend>
+
+        <div class="form-row">
+            <label for="display_name">{{ trans('settings.display_name') }}</label>
+            <input type="text" id="display_name" name="display_name" maxlength="50" required
+                   value="{{ profile.display_name|e }}">
+        </div>
+
+        <div class="form-row">
+            <label for="email">{{ trans('settings.email') }}</label>
+            <input type="email" id="email" name="email" required autocomplete="email"
+                   value="{{ profile.email|e }}">
+        </div>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="hide_email" value="1"
+                       {{ profile.hide_email ? 'checked' : '' }}>
+                {{ trans('settings.hide_email') }}
+            </label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend class="bar-accent">{{ trans('settings.password_section') }}</legend>
+        <p class="form-hint">{{ trans('settings.password_hint') }}</p>
+
+        <div class="form-row">
+            <label for="password">{{ trans('settings.new_password') }}</label>
+            <input type="password" id="password" name="password" autocomplete="new-password">
+        </div>
+
+        <div class="form-row">
+            <label for="password2">{{ trans('settings.confirm_password') }}</label>
+            <input type="password" id="password2" name="password2" autocomplete="new-password">
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend class="bar-accent">{{ trans('settings.signature_section') }}</legend>
+
+        <div class="form-row">
+            <label for="signature">{{ trans('settings.signature_text') }}</label>
+            <textarea id="signature" name="signature" rows="4">{{ profile.signature|e }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="show_signature" value="1"
+                       {{ profile.show_signature ? 'checked' : '' }}>
+                {{ trans('settings.show_signature') }}
+            </label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend class="bar-accent">{{ trans('settings.preferences') }}</legend>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="threaded_list" value="1"
+                       {{ profile.threaded_list ? 'checked' : '' }}>
+                {{ trans('settings.threaded_list') }}
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="threaded_read" value="1"
+                       {{ profile.threaded_read ? 'checked' : '' }}>
+                {{ trans('settings.threaded_read') }}
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="email_notify" value="1"
+                       {{ profile.email_notify ? 'checked' : '' }}>
+                {{ trans('settings.email_notify') }}
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="pm_email_notify" value="1"
+                       {{ profile.pm_email_notify ? 'checked' : '' }}>
+                {{ trans('settings.pm_email_notify') }}
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label for="tz_offset">{{ trans('settings.tz_offset') }}</label>
+            <input type="number" id="tz_offset" name="tz_offset" min="-99" max="14" step="0.5"
+                   style="width:6em" value="{{ profile.tz_offset }}">
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend class="bar-accent">{{ trans('settings.avatar_section') }}</legend>
+
+        {% if avatar %}
+        <div class="form-row">
+            <label>{{ trans('settings.avatar_current') }}</label>
+            <div>
+                <img src="{{ path('/avatar/' ~ profile.user_id) }}" alt="{{ trans('settings.avatar_current') }}" class="avatar-img">
+                <div class="form-row" style="margin-top:6px">
+                    <label>
+                        <input type="checkbox" name="delete_avatar" value="1">
+                        {{ trans('settings.avatar_delete') }}
+                    </label>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-row">
+            <label for="avatar">{{ trans('settings.avatar_upload') }}</label>
+            <div>
+                <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp">
+                <p class="form-hint">{{ trans('settings.avatar_hint') }}</p>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit">{{ trans('settings.save') }}</button>
+        <a href="{{ path('/user/' ~ profile.user_id) }}" class="btn-cancel">{{ trans('settings.cancel') }}</a>
+    </div>
+
+</form>
+{% endblock %}

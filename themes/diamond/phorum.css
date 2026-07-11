@@ -1,0 +1,19 @@
+/* ==========================================================================
+   Phorum — Diamond theme
+   Palette override on top of the Emerald base stylesheet.
+   ========================================================================== */
+
+@import url('../emerald/phorum.css');
+
+:root {
+    --accent:            #5a6268;
+    --accent-header:     #7d8790;
+    --accent-dark:       #343a40;
+    --accent-light:      #eef0f1;
+    --accent-highlight:  #f4f5f6;
+    --info-bg:           #eef0f1;
+    --info-bd:           #8a9298;
+    --link:              #343a40;
+    --link-hover:        #5a6268;
+    --border:            #5a6268;
+}

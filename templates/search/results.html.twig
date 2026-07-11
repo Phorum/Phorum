@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('search.title') }} &mdash; {{ site_name }}{% endblock %}
+{% block head %}
+    {% if submitted %}
+        <link rel="canonical" href="{{ absolute_url(pagination_url(base_url, page)) }}">
+        {% if page > 1 %}<link rel="prev" href="{{ absolute_url(pagination_url(base_url, page - 1)) }}">{% endif %}
+        {% if page < pages %}<link rel="next" href="{{ absolute_url(pagination_url(base_url, page + 1)) }}">{% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>{{ trans('search.title') }}</h1>
+
+<form method="get" action="{{ path('/search') }}" class="search-form">
+    <div class="search-row">
+        <div class="form-row">
+            <label for="search">{{ trans('search.messages_label') }}</label>
+            <input type="text" id="search" name="search" value="{{ query|default('')|e }}" size="40">
+        </div>
+        <div class="form-row">
+            <label for="author">{{ trans('search.author') }}</label>
+            <input type="text" id="author" name="author" value="{{ author|default('')|e }}" size="20">
+        </div>
+    </div>
+
+    <div class="search-options">
+        <div class="form-row">
+            <label for="match_type">{{ trans('search.match_type') }}</label>
+            <select id="match_type" name="match_type">
+                <option value="ALL"    {{ (match_type ?? 'ALL') == 'ALL'    ? 'selected' : '' }}>{{ trans('search.all_words') }}</option>
+                <option value="ANY"    {{ (match_type ?? 'ALL') == 'ANY'    ? 'selected' : '' }}>{{ trans('search.any_word') }}</option>
+                <option value="PHRASE" {{ (match_type ?? 'ALL') == 'PHRASE' ? 'selected' : '' }}>{{ trans('search.exact_phrase') }}</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="match_dates">{{ trans('search.posted_within') }}</label>
+            <select id="match_dates" name="match_dates">
+                <option value="30"  {{ (match_dates ?? 30) == 30  ? 'selected' : '' }}>{{ trans('search.last_30') }}</option>
+                <option value="90"  {{ (match_dates ?? 30) == 90  ? 'selected' : '' }}>{{ trans('search.last_90') }}</option>
+                <option value="365" {{ (match_dates ?? 30) == 365 ? 'selected' : '' }}>{{ trans('search.last_year') }}</option>
+                <option value="0"   {{ (match_dates ?? 30) == 0   ? 'selected' : '' }}>{{ trans('search.any_time') }}</option>
+            </select>
+        </div>
+        <div class="form-row form-row-check">
+            <label>
+                <input type="checkbox" name="match_threads" value="1"
+                       {{ (match_threads ?? false) ? 'checked' : '' }}>
+                {{ trans('search.threads_only') }}
+            </label>
+        </div>
+    </div>
+
+    {% if readable_forums is not empty %}
+    <div class="form-row">
+        <label>{{ trans('search.forums_label') }}</label>
+        <div class="search-forum-list">
+            <label><input type="checkbox" class="forum-all-toggle" checked> {{ trans('search.all_forums') }}</label>
+            {% for f in readable_forums %}
+                <label>
+                    <input type="checkbox" name="match_forum[]" value="{{ f.forum_id }}"
+                           {{ (match_forum is defined and f.forum_id in match_forum) ? 'checked' : '' }}>
+                    {{ f.name|e }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-row form-actions">
+        <button type="submit" class="button">{{ trans('search.submit') }}</button>
+    </div>
+</form>
+
+{% if submitted %}
+    <hr>
+    {% if messages is empty %}
+        <p class="search-no-results">{{ trans('search.no_results') }}</p>
+    {% else %}
+        <p class="search-count">
+            {{ trans('search.showing') }} {{ (page - 1) * 20 + 1 }}&ndash;{{ min((page - 1) * 20 + messages|length, total) }}
+            {{ trans('search.of') }} {{ total }} {{ total != 1 ? trans('search.results') : trans('search.result') }}
+        </p>
+
+        <table class="search-results">
+            <caption class="visually-hidden">{{ trans('search.results') }}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">{{ trans('search.col_subject') }}</th>
+                    <th scope="col">{{ trans('search.col_author') }}</th>
+                    <th scope="col">{{ trans('search.col_forum') }}</th>
+                    <th scope="col">{{ trans('search.col_date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for msg in messages %}
+                <tr>
+                    <td class="search-subject">
+                        <a href="{{ path('/forum/' ~ msg.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">
+                            {{- msg.subject|e -}}
+                        </a>
+                        <div class="search-excerpt">
+                            {{ msg.body|striptags|slice(0, 300) }}{% if msg.body|striptags|length > 300 %}&hellip;{% endif %}
+                        </div>
+                    </td>
+                    <td class="search-author">
+                        {% if msg.user_id > 0 %}
+                            <a href="{{ path('/user/' ~ msg.user_id) }}">{{ msg.author|e }}</a>
+                        {% else %}
+                            {{ msg.author|e }}
+                        {% endif %}
+                    </td>
+                    <td class="search-forum">
+                        <a href="{{ path('/forum/' ~ msg.forum_id) }}">{{ msg.forum_name|e }}</a>
+                    </td>
+                    <td class="search-date">{{ msg.datestamp|datestamp }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% include '_pagination.html.twig' %}
+    {% endif %}
+{% endif %}
+
+<script>
+(function () {
+    var toggle = document.querySelector('.forum-all-toggle');
+    var boxes  = document.querySelectorAll('[name="match_forum[]"]');
+    if (!toggle || !boxes.length) return;
+    toggle.addEventListener('change', function () {
+        boxes.forEach(function (b) { b.checked = toggle.checked; });
+    });
+    boxes.forEach(function (b) {
+        b.addEventListener('change', function () {
+            var all = Array.from(boxes).every(function (x) { return x.checked; });
+            toggle.checked = all;
+        });
+    });
+})();
+</script>
+{% endblock %}

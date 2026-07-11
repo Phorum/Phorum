@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% set item     = msg  is defined ? msg  : root %}
+{% set is_thread = msg is not defined %}
+
+{% block title %}
+    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% endif %}
+    &mdash; {{ forum.name }} &mdash; {{ site_name }}
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    {% if not is_thread %}
+        <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ item.thread) }}">{{ item.subject }}</a> &rsaquo;
+    {% endif %}
+    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% endif %}
+</nav>
+
+<div class="moderation-confirm">
+    {% if action == 'delete' %}
+        {% if is_thread or item.parent_id == 0 %}
+            <h1>{{ trans('mod.delete_thread') }}</h1>
+            <p>{{ trans('mod.delete_thread_confirm', {subject: item.subject}) }}</p>
+        {% else %}
+            <h1>{{ trans('mod.delete_message') }}</h1>
+            <p>{{ trans('mod.delete_message_confirm', {author: item.author}) }}</p>
+            <blockquote class="mod-preview">{{ item.body|format(item.meta)|raw }}</blockquote>
+        {% endif %}
+
+    {% elseif action == 'approve' %}
+        <h1>{{ trans('mod.approve_message') }}</h1>
+        <p>{{ trans('mod.approve_confirm', {author: item.author}) }}</p>
+        <blockquote class="mod-preview">{{ item.body|format(item.meta)|raw }}</blockquote>
+
+    {% elseif action == 'close' %}
+        <h1>{{ trans('mod.close_thread') }}</h1>
+        <p>{{ trans('mod.close_confirm', {subject: item.subject}) }}</p>
+
+    {% elseif action == 'open' %}
+        <h1>{{ trans('mod.reopen_thread') }}</h1>
+        <p>{{ trans('mod.open_confirm', {subject: item.subject}) }}</p>
+    {% endif %}
+
+    <form method="post">
+        {{ csrf_field() }}
+        <button type="submit" class="btn-danger">
+            {% if action == 'delete' %}{{ trans('mod.yes_delete') }}{% elseif action == 'approve' %}{{ trans('mod.approve') }}{% elseif action == 'close' %}{{ trans('mod.close') }}{% elseif action == 'open' %}{{ trans('mod.reopen') }}{% endif %}
+        </button>
+        <button type="button" class="btn-cancel" onclick="history.back()">{{ trans('mod.cancel') }}</button>
+    </form>
+</div>
+{% endblock %}

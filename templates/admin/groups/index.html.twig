@@ -1,0 +1,51 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Groups{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper">
+    <div class="col s8"><h4 class="page-title" style="margin:0">Groups</h4></div>
+    <div class="col s4 right-align">
+        <a href="{{ path('/admin/groups/create') }}" class="btn green darken-3 waves-effect waves-light">
+            <i class="material-icons left">add</i>New
+        </a>
+    </div>
+</div>
+
+{% if groups is empty %}
+    <p class="grey-text">No groups yet.</p>
+{% else %}
+    <div class="card z-depth-1">
+        <table class="striped responsive-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Open</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for group in groups %}
+                <tr>
+                    <td>{{ group.name|e }}</td>
+                    <td>
+                        {% if group.open %}
+                            <i class="material-icons tiny green-text">check_circle</i>
+                        {% else %}
+                            <i class="material-icons tiny grey-text">cancel</i>
+                        {% endif %}
+                    </td>
+                    <td class="admin-actions">
+                        <a href="{{ path('/admin/groups/' ~ group.group_id ~ '/edit') }}" class="btn-small waves-effect waves-light green lighten-1">
+                            <i class="material-icons tiny">edit</i>
+                        </a>
+                        <a href="{{ path('/admin/groups/' ~ group.group_id ~ '/delete') }}" class="btn-small waves-effect waves-light red lighten-1">
+                            <i class="material-icons tiny">remove_circle</i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

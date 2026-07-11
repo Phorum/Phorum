@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('auth.confirm_pending_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ trans('auth.confirm_pending_title') }}</h1>
+
+<p class="success">{{ trans('auth.confirm_pending_body', {email: email}) }}</p>
+
+<p><a href="{{ path('/resend-confirmation') }}">{{ trans('auth.confirm_pending_resend') }}</a></p>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('pm.manage_folders') }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div id="pm-layout">
+    {% include 'pm/_sidebar.html.twig' %}
+
+    <section id="pm-content">
+        <h1>{{ trans('pm.manage_folders') }}</h1>
+
+        {% include '_form_errors.html.twig' %}
+
+        {% if folders is not empty %}
+            <table class="pm-folder-table">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ trans('pm.folder_name') }}</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for f in folders %}
+                    <tr>
+                        <td><a href="{{ path('/pm/folder/' ~ f.pm_folder_id) }}">{{ f.foldername|e }}</a></td>
+                        <td>
+                            <form method="post" action="{{ path('/pm/folders/' ~ f.pm_folder_id ~ '/delete') }}"
+                                  onsubmit="return confirm('Delete folder and move messages to inbox?')">
+                                {{ csrf_field() }}
+                                <button type="submit" class="button button-danger button-small">{{ trans('pm.delete') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>{{ trans('pm.no_messages') }}</p>
+        {% endif %}
+
+        <h3>{{ trans('pm.create_folder_title') }}</h3>
+        <form method="post" action="{{ path('/pm/folders') }}" class="pm-compose-form">
+            {{ csrf_field() }}
+            <div class="form-row">
+                <label for="foldername">{{ trans('pm.folder_name') }}</label>
+                <input type="text" id="foldername" name="foldername" maxlength="60" required>
+            </div>
+            <div class="form-row form-actions">
+                <button type="submit" class="button">{{ trans('pm.create') }}</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

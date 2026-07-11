@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ message.subject|e }} &mdash; {{ trans('pm.private_messages') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<div id="pm-layout">
+    {% include 'pm/_sidebar.html.twig' %}
+
+    <section id="pm-content">
+        <div class="pm-read">
+            <table class="tbl-boxed pm-headers">
+                <tr>
+                    <th scope="row">{{ trans('pm.subject') }}</th>
+                    <td>{{ message.subject|e }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ trans('pm.col_from') }}</th>
+                    <td>
+                        {% if sender %}
+                            <a href="{{ path('/user/' ~ sender.user_id) }}">{{ sender.display_name ?: sender.username }}</a>
+                        {% else %}
+                            {{ message.author|e }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ trans('pm.col_to') }}</th>
+                    <td>
+                        {% for r in recipients %}
+                            <a href="{{ path('/user/' ~ r.user_id) }}">{{ r.username|e }}</a>{% if not loop.last %}, {% endif %}
+                        {% else %}
+                            &mdash;
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ trans('pm.col_date') }}</th>
+                    <td>{{ message.datestamp|datestamp }}</td>
+                </tr>
+            </table>
+
+            <div class="pm-body">
+                {{ message.message|format(message.meta) }}
+            </div>
+
+            <div class="pm-read-actions">
+                <a class="button" href="{{ path('/pm/compose/' ~ message.user_id ~ '?reply=' ~ xref.pm_xref_id) }}">{{ trans('pm.reply') }}</a>
+                <a href="{{ path('/pm/delete/' ~ xref.pm_xref_id) }}">{{ trans('pm.delete') }}</a>
+                {% if folders is not empty %}
+                    <form method="post" action="{{ path('/pm/move/' ~ xref.pm_xref_id) }}" style="display:inline">
+                        {{ csrf_field() }}
+                        <select name="pm_folder_id">
+                            <option value="">{{ trans('pm.move_to_folder') }}</option>
+                            {% for f in folders %}
+                                <option value="{{ f.pm_folder_id }}">{{ f.foldername|e }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">{{ trans('pm.move') }}</button>
+                    </form>
+                {% endif %}
+                <a href="{{ path('/pm') }}">{{ trans('pm.back_to_inbox') }}</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

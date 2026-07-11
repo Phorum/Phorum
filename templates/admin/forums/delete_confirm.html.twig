@@ -1,0 +1,22 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Deactivate Forum{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Deactivate Forum</h4>
+<div class="card z-depth-1">
+    <div class="card-content">
+        <p>Deactivate <strong>{{ forum.name|e }}</strong>?</p>
+        <p class="grey-text">The forum will be hidden from users but its messages will be preserved.
+           You can reactivate it later from the edit page.</p>
+    </div>
+    <div class="card-action">
+        <form method="post" style="display:inline">
+            {{ csrf_field() }}
+            <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                <i class="material-icons left">remove_circle</i>Deactivate
+            </button>
+        </form>
+        <a href="{{ path('/admin/forums') }}" class="btn-flat waves-effect">Cancel</a>
+    </div>
+</div>
+{% endblock %}

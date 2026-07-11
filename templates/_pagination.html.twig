@@ -1,0 +1,13 @@
+{% if pages > 1 %}
+<nav class="pagination" aria-label="{{ trans('pagination.nav_label') }}">
+    {% for p in pagination_range(page, pages) %}
+        {% if p is null %}
+            <span class="page-ellipsis" aria-hidden="true">&hellip;</span>
+        {% elseif p == page %}
+            <span class="page-current" aria-current="page">{{ p }}</span>
+        {% else %}
+            <a href="{{ pagination_url(base_url, p) }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+</nav>
+{% endif %}

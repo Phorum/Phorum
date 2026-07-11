@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('auth.login_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ trans('auth.login_title') }}</h1>
+
+{% include '_form_errors.html.twig' %}
+
+<form method="post" action="{{ path('/login') }}">
+    {{ csrf_field() }}
+    <input type="hidden" name="redirect" value="{{ redirect|e }}">
+
+    <div class="form-row">
+        <label for="username">{{ trans('auth.username') }}</label>
+        <input type="text" id="username" name="username" required autofocus autocomplete="username"
+               value="{{ _post.username|default('')|e }}">
+    </div>
+
+    <div class="form-row">
+        <label for="password">{{ trans('auth.password') }}</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+
+    <div class="form-row">
+        <label>
+            <input type="checkbox" name="remember" value="1"> {{ trans('auth.remember_me') }}
+        </label>
+    </div>
+
+    <div class="form-row">
+        <button type="submit">{{ trans('auth.login_submit') }}</button>
+    </div>
+</form>
+
+<p><a href="{{ path('/register') }}">{{ trans('auth.create_account') }}</a></p>
+<p><a href="{{ path('/forgot-password') }}">{{ trans('auth.forgot_password') }}</a></p>
+{% endblock %}

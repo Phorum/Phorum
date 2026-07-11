@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('message.edit_title') }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ path('/assets/vendor/font-awesome/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ path('/assets/vendor/easymde/easymde.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">{{ msg.subject }}</a> &rsaquo;
+    {{ trans('message.edit_title') }}
+</nav>
+
+<h1>{{ trans('message.edit_title') }}</h1>
+
+{% include '_form_errors.html.twig' %}
+
+<form method="post" action="{{ path('/message/' ~ msg.message_id ~ '/edit') }}" enctype="multipart/form-data">
+    {{ csrf_field() }}
+
+    <div class="form-row">
+        <label for="subject">{{ trans('post.subject') }}</label>
+        <input type="text" id="subject" name="subject" maxlength="255" required
+               value="{{ subject|e }}">
+    </div>
+
+    <div class="form-row">
+        <label for="body">{{ trans('post.body') }}</label>
+        <textarea id="body" name="body" rows="12">{{ body|e }}</textarea>
+    </div>
+
+    {% if attachments|default([])|length > 0 %}
+    <div class="form-row">
+        <label>{{ trans('attachment.existing') }}</label>
+        <ul class="attachment-list">
+            {% for f in attachments %}
+            <li>
+                <a href="{{ path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) }}">{{ f.filename }}</a>
+                <label class="attachment-remove">
+                    <input type="checkbox" name="delete_file[]" value="{{ f.file_id }}">
+                    {{ trans('attachment.remove') }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if forum.max_attachments > 0 %}
+    <div class="form-row">
+        <label>{{ trans('attachment.add') }}</label>
+        <input type="file" name="files[]" multiple
+               {% if forum.allow_attachment_types %}accept=".{{ forum.allow_attachment_types|replace({';': ',.'}) }}"{% endif %}>
+    </div>
+    {% endif %}
+
+    <div class="form-row">
+        <button type="submit">{{ trans('message.save_edit') }}</button>
+        <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">{{ trans('post.cancel') }}</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ path('/assets/vendor/easymde/easymde.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new EasyMDE({ element: document.getElementById('body') });
+        });
+    </script>
+{% endblock %}

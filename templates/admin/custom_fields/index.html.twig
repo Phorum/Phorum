@@ -1,0 +1,95 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Custom Fields{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper">
+    <div class="col s8"><h4 class="page-title" style="margin:0">Custom Fields</h4></div>
+    <div class="col s4 right-align">
+        <a href="{{ path('/admin/custom-fields/create') }}" class="btn green darken-3 waves-effect waves-light">
+            <i class="material-icons left">add</i>New Field
+        </a>
+    </div>
+</div>
+
+{% if fields is empty %}
+    <p class="grey-text">No custom fields defined yet.</p>
+{% else %}
+    <div class="card z-depth-1">
+        <table class="striped responsive-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Max Length</th>
+                    <th>Escape HTML</th>
+                    <th>Show in Admin</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for f in fields %}
+                <tr class="{{ f.deleted ? 'grey-text' : '' }}">
+                    <td>{{ f.name|e }}</td>
+                    <td>{{ type_labels[f.field_type] ?? f.field_type }}</td>
+                    <td>{{ f.length }}</td>
+                    <td>
+                        {% if f.html_disabled %}
+                            <i class="material-icons tiny green-text">check</i>
+                        {% else %}
+                            <i class="material-icons tiny grey-text">remove</i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if f.show_in_admin %}
+                            <i class="material-icons tiny green-text">check</i>
+                        {% else %}
+                            <i class="material-icons tiny grey-text">remove</i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if f.deleted %}
+                            <span class="badge-inactive">Deleted</span>
+                        {% else %}
+                            <span class="badge-admin">Active</span>
+                        {% endif %}
+                    </td>
+                    <td class="admin-actions">
+                        {% if not f.deleted %}
+                            <a href="{{ path('/admin/custom-fields/' ~ f.id ~ '/edit') }}"
+                               class="btn-small waves-effect waves-light green lighten-1">
+                                <i class="material-icons tiny">edit</i>
+                            </a>
+                            <a href="{{ path('/admin/custom-fields/' ~ f.id ~ '/delete') }}"
+                               class="btn-small waves-effect waves-light orange lighten-1">
+                                <i class="material-icons tiny">remove_circle</i>
+                            </a>
+                        {% else %}
+                            <form method="post" action="{{ path('/admin/custom-fields/' ~ f.id ~ '/restore') }}" style="display:inline">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn-small waves-effect waves-light blue lighten-1">
+                                    <i class="material-icons tiny">restore</i>
+                                </button>
+                            </form>
+                            <a href="{{ path('/admin/custom-fields/' ~ f.id ~ '/purge') }}"
+                               class="btn-small waves-effect waves-light red lighten-1">
+                                <i class="material-icons tiny">delete_forever</i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<div class="card z-depth-0" style="background:#e8f5e9;margin-top:16px">
+    <div class="card-content" style="padding:12px 16px">
+        <span class="grey-text text-darken-2" style="font-size:.85rem">
+            <strong>Deleted fields</strong> are hidden but their data is preserved.
+            Use <em>Restore</em> to re-activate or <em>Delete Forever</em> to permanently remove the field and all its data.
+        </span>
+    </div>
+</div>
+{% endblock %}

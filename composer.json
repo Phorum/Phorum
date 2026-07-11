@@ -1,0 +1,34 @@
+{
+    "name": "phorum/phorum",
+    "description": "Phorum web message board",
+    "type": "project",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": ">=8.3",
+        "dealnews/data-mapper": "^3.4",
+        "dealnews/db": "^4.1",
+        "dealnews/schema-org": "^0.1.0",
+        "league/commonmark": "^2.8",
+        "pagemill/router": "^3.0",
+        "phpmailer/phpmailer": "^6.9",
+        "sebastian/diff": "^6.0",
+        "twig/twig": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Phorum\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phorum\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

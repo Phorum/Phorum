@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ site_name }} &mdash; {{ trans('nav.forum_index') }}{% endblock %}
+{% block head %}
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ site_name }}">
+    <meta property="og:url" content="{{ absolute_url(path('/')) }}">
+    {{ json_ld(json_ld) }}
+{% endblock %}
+
+{% block content %}
+<h1 class="forum-index-title">{{ site_name }}</h1>
+
+{% if announcements %}
+    {% include 'announcements/_box.html.twig' %}
+{% endif %}
+
+{% if tree is empty %}
+    <p>{{ trans('forum_list.no_forums') }}</p>
+{% else %}
+    {% import 'forum/_macros.html.twig' as macros %}
+    {{ macros.forum_list(tree) }}
+{% endif %}
+{% endblock %}
