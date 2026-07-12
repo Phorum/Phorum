@@ -75,10 +75,6 @@
                 <img src="{{ path('/assets/logo_white.svg') }}" alt="{{ site_name }}" style="height:32px;width:auto">
                 <span style="font-size:.7rem;color:rgba(255,255,255,.7)">v{{ phorum_version }}</span>
             </a>
-            <a href="{{ path('/admin') }}" class="brand-logo center">
-                <i class="material-icons" style="vertical-align:middle;margin-right:6px">settings</i>
-                {{ block('title') }}
-            </a>
             <ul class="right hide-on-med-and-down">
                 {% if admin_user %}
                     <li><a href="{{ path('/admin/logout') }}">
