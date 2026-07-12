@@ -10,7 +10,7 @@
         "dealnews/schema-org": "^0.1.0",
         "league/commonmark": "^2.8",
         "pagemill/router": "^3.0",
-        "phpmailer/phpmailer": "^6.9",
+        "phpmailer/phpmailer": "^7.1",
         "sebastian/diff": "^6.0",
         "twig/twig": "^3.0"
     },
