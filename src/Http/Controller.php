@@ -8,6 +8,7 @@ use Phorum\Core\Config;
 use Phorum\Core\CsrfGuard;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
+use Phorum\Core\SiteStatus;
 use Phorum\Model\Forum;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -52,13 +53,14 @@ abstract class Controller
     protected function baseData(): array
     {
         return [
-            'site_name'     => $this->config->get('site_name', 'Phorum'),
-            'user'          => Auth::user(),
-            'theme'         => $this->config->get('template', 'emerald'),
-            'lang_locale'   => Lang::locale(),
-            'lang_dir'      => Lang::dir(),
-            'impersonating' => Impersonation::isActive(),
-            'impersonator'  => Impersonation::admin(),
+            'site_name'      => $this->config->get('site_name', 'Phorum'),
+            'user'           => Auth::user(),
+            'theme'          => $this->config->get('template', 'emerald'),
+            'lang_locale'    => Lang::locale(),
+            'lang_dir'       => Lang::dir(),
+            'impersonating'  => Impersonation::isActive(),
+            'impersonator'   => Impersonation::admin(),
+            'site_read_only' => SiteStatus::isReadOnly(),
         ];
     }
 

@@ -9,22 +9,26 @@ use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Service\SiteStatusService;
 use Twig\Environment;
 
 class DashboardController extends AdminController
 {
-    private readonly UserMapper    $users;
-    private readonly MessageMapper $messages;
+    private readonly UserMapper        $users;
+    private readonly MessageMapper     $messages;
+    private readonly SiteStatusService $siteStatus;
 
     public function __construct(
-        Config         $config,
-        Environment    $twig,
-        ?UserMapper    $users    = null,
-        ?MessageMapper $messages = null,
+        Config              $config,
+        Environment         $twig,
+        ?UserMapper         $users      = null,
+        ?MessageMapper      $messages   = null,
+        ?SiteStatusService  $siteStatus = null,
     ) {
         parent::__construct($config, $twig);
-        $this->users    = $users    ?? new UserMapper();
-        $this->messages = $messages ?? new MessageMapper();
+        $this->users      = $users      ?? new UserMapper();
+        $this->messages   = $messages   ?? new MessageMapper();
+        $this->siteStatus = $siteStatus ?? new SiteStatusService();
     }
 
     public function index(Request $request): Response
@@ -59,9 +63,22 @@ class DashboardController extends AdminController
         $recentPosts = $this->messages->findRecent(limit: 5) ?? [];
 
         return $this->respond($this->renderAdmin('admin/dashboard.html.twig', [
-            'stats'        => $stats,
-            'recent_users' => $recentUsers,
-            'recent_posts' => $recentPosts,
+            'stats'          => $stats,
+            'recent_users'   => $recentUsers,
+            'recent_posts'   => $recentPosts,
+            'current_status' => $this->siteStatus->current(),
+            'status_labels'  => SiteStatusService::LABELS,
         ]));
+    }
+
+    /** Set the site-wide status (normal/read-only/admin-only/disabled). */
+    public function setStatus(Request $request): Response
+    {
+        if ($r = $this->requireAdmin()) { return $r; }
+        if ($r = $this->checkCsrf($request)) { return $r; }
+
+        $this->siteStatus->set((string) ($request->post['status'] ?? ''));
+
+        return $this->redirect('/admin');
     }
 }

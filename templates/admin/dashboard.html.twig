@@ -2,7 +2,20 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h4 class="page-title">Dashboard</h4>
+<div class="row valign-wrapper">
+    <div class="col s12 m8"><h4 class="page-title" style="margin:0">Dashboard</h4></div>
+    <div class="col s12 m4 right-align">
+        <form method="post" action="{{ path('/admin/status') }}" style="display:inline-flex;align-items:center;gap:8px">
+            {{ csrf_field() }}
+            <span>Site Status:</span>
+            <select name="status" class="browser-default" onchange="this.form.submit()" style="width:auto">
+                {% for value, label in status_labels %}
+                    <option value="{{ value }}" {{ current_status == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
 
 <!-- Stat cards -->
 <div class="row">

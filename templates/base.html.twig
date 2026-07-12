@@ -29,6 +29,16 @@
         }
     </style>
     {% endif %}
+    {% if site_read_only %}
+    <style>
+        .site-status-banner {
+            background: #f9a825;
+            color: #000;
+            padding: 8px 16px;
+            text-align: center;
+        }
+    </style>
+    {% endif %}
     {{ hook('css_register') }}
     {{ hook('css_filter') }}
     {% block head %}{% endblock %}
@@ -42,6 +52,9 @@
                 <button type="submit">Stop Impersonating</button>
             </form>
         </div>
+    {% endif %}
+    {% if site_read_only %}
+        <div class="site-status-banner" role="status">{{ trans('banner.read_only') }}</div>
     {% endif %}
     <a class="skip-link" href="#main-content">{{ trans('nav.skip_to_content') }}</a>
     {{ hook('start_output') }}{{ hook('start_output_') }}

@@ -11,6 +11,7 @@ use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Service\SiteStatusService;
 use Phorum\Twig\PhorumExtension;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -47,6 +48,7 @@ class App
             Auth::initialize(new UserMapper());
             AdminAuth::initialize($this->config);
             Impersonation::initialize($this->config);
+            SiteStatus::initialize(new SiteStatusService());
             $this->initLang();
             phorum_api_hook('common_post_user', Auth::user());
         } else {
@@ -63,6 +65,10 @@ class App
             return;
         }
 
+        if ($installed && $this->blockedBySiteStatus($route)) {
+            return;
+        }
+
         phorum_api_hook('common_pre', $route);
 
         $hasForum = !empty($route['tokens']['forum_id']);
@@ -73,6 +79,52 @@ class App
         phorum_api_hook('common', $route);
 
         $this->dispatch($route);
+    }
+
+    /**
+     * Site-wide status gate, ported from Phorum 6's $PHORUM['status'].
+     * The admin panel and theme assets are always exempt (an admin must
+     * always be able to reach /admin to flip the status back). Returns true
+     * (and has already sent a response) if the request should stop here.
+     */
+    private function blockedBySiteStatus(array $route): bool
+    {
+        $action = (string) ($route['action'] ?? '');
+        if (str_starts_with($action, 'Admin\\') || str_starts_with($action, 'ThemeController@')) {
+            return false;
+        }
+
+        $status = SiteStatus::current();
+
+        if ($status === SiteStatusService::DISABLED) {
+            $this->respondSiteStatus('error.disabled_title', 'error.disabled_message', 503);
+            return true;
+        }
+
+        if ($status === SiteStatusService::ADMIN_ONLY && !Auth::isAdmin()) {
+            $this->respondSiteStatus('error.admin_only_title', 'error.admin_only_message', 503);
+            return true;
+        }
+
+        if ($status === SiteStatusService::READ_ONLY
+            && strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
+        ) {
+            $this->respondSiteStatus('error.read_only_title', 'error.read_only_message', 403);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function respondSiteStatus(string $titleKey, string $messageKey, int $status): void
+    {
+        $this->respond($this->twig->render('error/site_status.html.twig', [
+            'site_name' => $this->config->get('site_name', 'Phorum'),
+            'theme'     => (string) $this->config->get('template', 'emerald'),
+            'user'      => Auth::user(),
+            'title'     => Lang::get($titleKey),
+            'message'   => Lang::get($messageKey),
+        ]), $status);
     }
 
     private function dispatch(array $route): void

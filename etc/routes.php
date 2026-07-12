@@ -499,4 +499,9 @@ return [
         'pattern' => '/admin',
         'action'  => 'Admin\DashboardController@index',
     ],
+    [
+        'type'    => 'exact',
+        'pattern' => '/admin/status',
+        'action'  => 'Admin\DashboardController@setStatus',
+    ],
 ];

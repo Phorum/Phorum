@@ -322,6 +322,13 @@ return [
     'error.403_login'        => 'Log in',
     'error.403_login_hint'   => 'to access forums that require registration.',
     'error.403_return'       => 'Return to Forum Index',
+    'error.disabled_title'    => 'Site Unavailable',
+    'error.disabled_message'  => 'This site is temporarily disabled. Please check back later.',
+    'error.admin_only_title'   => 'Site Unavailable',
+    'error.admin_only_message' => 'This site is temporarily closed for maintenance. Please check back later.',
+    'error.read_only_title'    => 'Read Only',
+    'error.read_only_message'  => 'This site is currently read only. Posting and logging in are temporarily disabled.',
+    'banner.read_only'         => 'This site is currently read only — posting and logging in are temporarily disabled.',
 
     // -------------------------------------------------------------------------
     // Announcements

@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }} &mdash; {{ site_name|default('Phorum') }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+</div>
+{% endblock %}
