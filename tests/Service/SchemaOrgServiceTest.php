@@ -87,6 +87,32 @@ class SchemaOrgServiceTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // folderShow
+    // -------------------------------------------------------------------------
+
+    public function testFolderShowSetsBreadcrumbAndScopedItems(): void
+    {
+        $service = new SchemaOrgService($this->makeConfig());
+        $folder  = $this->makeForum(1, 'Official Forums', folderFlag: 1);
+        $forums  = [
+            $this->makeForum(2, 'Support'),
+            $this->makeForum(3, 'Development'),
+        ];
+
+        [$page] = $service->folderShow($folder, $forums, 'Test Forum');
+
+        $this->assertSame('https://forum.example.com/forum/1', $page->id);
+        $this->assertSame('Official Forums', $page->name);
+
+        $this->assertNotNull($page->breadcrumb);
+        $this->assertCount(2, $page->breadcrumb->itemListElement);
+        $this->assertSame('Official Forums', $page->breadcrumb->itemListElement[1]->item->name);
+
+        $this->assertSame(2, $page->mainEntity->numberOfItems);
+        $this->assertSame('https://forum.example.com/forum/2', $page->mainEntity->itemListElement[0]->item->id);
+    }
+
+    // -------------------------------------------------------------------------
     // forumShow
     // -------------------------------------------------------------------------
 

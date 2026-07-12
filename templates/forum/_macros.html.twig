@@ -6,7 +6,7 @@
         {% set ungrouped_header_shown = false %}
         {% for forum in items %}
             {% if forum.folder_flag %}
-                {{ self.group_header(forum.name) }}
+                {{ self.group_header(forum.name, path('/forum/' ~ forum.forum_id)) }}
                 {% set ungrouped_header_shown = false %}
                 {% if forum.children %}
                     {{ self.forum_rows(forum.children) }}
@@ -27,9 +27,15 @@
    top-level forums that aren't in a folder (using the generic "Forum"
    column label) — mirrors the Phorum 6 index, which repeats the
    Posts/Threads/Last Post column header bar for every group. #}
-{% macro group_header(label) %}
+{% macro group_header(label, url = null) %}
     <tr class="forum-group-header">
-        <th scope="col" class="col-forum">{{ label }}</th>
+        <th scope="col" class="col-forum">
+            {%- if url -%}
+                <a href="{{ url }}">{{ label }}</a>
+            {%- else -%}
+                {{ label }}
+            {%- endif -%}
+        </th>
         <th scope="col" class="col-posts">{{ trans('forum_list.col_posts') }}</th>
         <th scope="col" class="col-threads">{{ trans('forum_list.col_threads') }}</th>
         <th scope="col" class="col-last">{{ trans('forum_list.col_last') }}</th>

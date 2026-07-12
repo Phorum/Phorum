@@ -68,14 +68,34 @@ class ForumControllerTest extends ControllerTestCase
         $this->assertSame(404, $response->status);
     }
 
-    public function testShowReturns404ForFolder(): void
+    public function testShowRendersFolderView(): void
     {
-        $forums = $this->createMock(ForumMapper::class);
-        $forums->method('load')->willReturn($this->makeForum(1, ['folder_flag' => 1]));
+        $folder = $this->makeForum(1, ['folder_flag' => 1, 'name' => 'General Discussion']);
 
-        $ctrl     = $this->makeController(['forums' => $forums]);
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($folder);
+        $forums->method('find')->willReturn([]);
+
+        $twig = $this->createMock(\Twig\Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(\Twig\Loader\LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'forum/folder.html.twig',
+            $this->callback(fn(array $data) => ($data['folder'] ?? null) === $folder),
+        )->willReturn('<html>ok</html>');
+
+        $ctrl = new ForumController(
+            config:        $this->makeConfig(),
+            twig:          $twig,
+            forums:        $forums,
+            cfService:     new CustomFieldService(
+                $this->createMock(CustomFieldConfigMapper::class),
+                $this->createMock(CustomFieldMapper::class),
+            ),
+            announcements: $this->createMock(AnnouncementService::class),
+        );
+
         $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
-        $this->assertSame(404, $response->status);
+        $this->assertSame(200, $response->status);
     }
 
     public function testShowReturns403WhenCannotRead(): void

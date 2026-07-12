@@ -86,8 +86,12 @@ class ForumController extends Controller
         $forumId = (int) ($request->tokens['forum_id'] ?? 0);
         $forum   = $this->forums->load($forumId);
 
-        if ($forum === null || $forum->folder_flag) {
+        if ($forum === null) {
             return $this->notFound();
+        }
+
+        if ($forum->folder_flag) {
+            return $this->showFolder($forum);
         }
 
         if (!$this->perms->canRead($forum, Auth::user())) {
@@ -127,6 +131,29 @@ class ForumController extends Controller
             'theme'             => $this->resolveTheme($forum),
             'announcements'     => $this->announcements->getAnnouncementsFor('list', $currentUser?->user_id ?? 0),
             'json_ld'           => $this->schemaOrg->forumShow($forum, $threads ?? [], (string) $this->config->get('site_name', 'Phorum')),
+        ]));
+    }
+
+    /** Render a folder scoped to just its own forums/sub-folders. */
+    private function showFolder(Forum $folder): Response
+    {
+        $service    = new ForumService($this->forums);
+        $tree       = $service->getTree($folder->forum_id);
+        $flatForums = $this->flattenTree($tree);
+
+        $this->cfService->hydrateForums($flatForums);
+
+        $hookResult = phorum_api_hook('index', $tree);
+        if (is_array($hookResult)) {
+            $tree = $hookResult;
+        }
+
+        return $this->respond($this->render('forum/folder.html.twig', [
+            'folder'        => $folder,
+            'tree'          => $tree,
+            'theme'         => $this->resolveTheme($folder),
+            'announcements' => $this->announcements->getAnnouncementsFor('index', Auth::user()?->user_id ?? 0),
+            'json_ld'       => $this->schemaOrg->folderShow($folder, $flatForums, (string) $this->config->get('site_name', 'Phorum')),
         ]));
     }
 

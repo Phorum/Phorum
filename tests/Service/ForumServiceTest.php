@@ -96,4 +96,19 @@ class ForumServiceTest extends TestCase
 
         $this->assertCount(2, $tree);
     }
+
+    public function testGetTreeScopedToFolderReturnsOnlyItsChildren(): void
+    {
+        $folder    = $this->makeForum(1, 0, folder: true);
+        $child1    = $this->makeForum(2, 1);
+        $child2    = $this->makeForum(3, 1);
+        $rootForum = $this->makeForum(4, 0);
+
+        $svc  = $this->makeService([$folder, $child1, $child2, $rootForum]);
+        $tree = $svc->getTree(1);
+
+        $this->assertCount(2, $tree);
+        $this->assertSame(2, $tree[0]->forum_id);
+        $this->assertSame(3, $tree[1]->forum_id);
+    }
 }

@@ -25,6 +25,11 @@ return [
     // Legacy Phorum 6 redirects (301 permanent)
     [
         'type'    => 'exact',
+        'pattern' => '/index.php',
+        'action'  => 'LegacyRedirectController@index',
+    ],
+    [
+        'type'    => 'exact',
         'pattern' => '/list.php',
         'action'  => 'LegacyRedirectController@list',
     ],

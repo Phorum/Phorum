@@ -11,13 +11,15 @@ class ForumService
     public function __construct(private readonly ForumMapper $forums) {}
 
     /**
-     * Return the full forum tree as a flat list of top-level Forum objects,
-     * each with its children populated. Folders get their sub-forums in
-     * $forum->children; regular forums have an empty children array.
+     * Return a forum tree as a flat list of Forum objects, each with its
+     * children populated. Folders get their sub-forums in $forum->children;
+     * regular forums have an empty children array. Pass a folder's forum_id
+     * as $parentId to get just that folder's subtree instead of the full
+     * tree from the root.
      *
      * @return Forum[]
      */
-    public function getTree(): array
+    public function getTree(int $parentId = 0): array
     {
         $all = $this->forums->find(
             filter: ['active' => 1],
@@ -36,7 +38,7 @@ class ForumService
             $byParent[$forum->parent_id][]     = $forum;
         }
 
-        return $this->buildLevel($byParent, 0);
+        return $this->buildLevel($byParent, $parentId);
     }
 
     /** @return Forum[] */

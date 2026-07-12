@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ folder.name }} &mdash; {{ site_name }}{% endblock %}
+{% block head %}
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ folder.name }}">
+    {% if folder.description %}<meta property="og:description" content="{{ folder.description|striptags }}">{% endif %}
+    <meta property="og:url" content="{{ absolute_url(path('/forum/' ~ folder.forum_id)) }}">
+    {{ json_ld(json_ld) }}
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo; {{ folder.name }}
+</nav>
+
+<h1 class="forum-index-title">{{ folder.name }}</h1>
+{% if folder.description %}<p class="forum-desc">{{ folder.description|raw }}</p>{% endif %}
+
+{% if announcements %}
+    {% include 'announcements/_box.html.twig' %}
+{% endif %}
+
+{% if tree is empty %}
+    <p>{{ trans('forum_list.no_forums') }}</p>
+{% else %}
+    {% import 'forum/_macros.html.twig' as macros %}
+    {{ macros.forum_list(tree) }}
+{% endif %}
+{% endblock %}

@@ -38,11 +38,45 @@ class SchemaOrgService
      */
     public function forumIndex(array $forums, string $siteName): array
     {
-        $page       = new CollectionPage();
-        $page->id   = $this->absoluteUrl('/');
-        $page->url  = $page->id;
-        $page->name = $siteName;
+        $page             = new CollectionPage();
+        $page->id         = $this->absoluteUrl('/');
+        $page->url        = $page->id;
+        $page->name       = $siteName;
+        $page->mainEntity = $this->forumListItems($forums);
 
+        return [$page];
+    }
+
+    /**
+     * Same shape as forumIndex(), but scoped to a single folder's own
+     * subtree — used when a folder is visited directly at `/forum/{id}`.
+     *
+     * @param  Forum[] $forums flattened subtree of the folder (folders included; skipped internally)
+     * @return array{0: CollectionPage}
+     */
+    public function folderShow(Forum $folder, array $forums, string $siteName): array
+    {
+        $folderUrl = $this->absoluteUrl('/forum/' . $folder->forum_id);
+
+        $page       = new CollectionPage();
+        $page->id   = $folderUrl;
+        $page->url  = $folderUrl;
+        $page->name = $folder->name;
+        if ($folder->description !== '') {
+            $page->description = $this->plainTextFromHtml($folder->description);
+        }
+        $page->breadcrumb = $this->breadcrumb([
+            [$siteName, $this->absoluteUrl('/')],
+            [$folder->name, $folderUrl],
+        ]);
+        $page->mainEntity = $this->forumListItems($forums);
+
+        return [$page];
+    }
+
+    /** @param Forum[] $forums */
+    private function forumListItems(array $forums): ItemList
+    {
         $items    = [];
         $position = 0;
         foreach ($forums as $forum) {
@@ -66,12 +100,10 @@ class SchemaOrgService
             $items[]             = $listItem;
         }
 
-        $list                   = new ItemList();
-        $list->itemListElement  = $items;
-        $list->numberOfItems    = count($items);
-        $page->mainEntity       = $list;
-
-        return [$page];
+        $list                  = new ItemList();
+        $list->itemListElement = $items;
+        $list->numberOfItems   = count($items);
+        return $list;
     }
 
     /**

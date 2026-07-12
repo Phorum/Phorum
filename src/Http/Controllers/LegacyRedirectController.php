@@ -18,6 +18,25 @@ use Phorum\Http\Response;
 class LegacyRedirectController extends Controller
 {
     /**
+     * index.php[?{forum_id}]  →  /forum/{forum_id}, or / with no forum_id.
+     *
+     * Phorum 6 used index.php for both the forum index and, given a
+     * folder's forum_id, a view scoped to that folder — both now live at
+     * the same /forum/{id} route (which dispatches on folder_flag).
+     */
+    public function index(Request $request): Response
+    {
+        ['positional' => $pos] = $this->parseArgs($request->server['QUERY_STRING'] ?? '');
+        $forum_id = (int) ($pos[0] ?? 0);
+
+        if ($forum_id > 0) {
+            return $this->redirect("/forum/{$forum_id}", 301);
+        } else {
+            return $this->redirect('/', 301);
+        }
+    }
+
+    /**
      * list.php?{forum_id}[,page={n}]  →  /forum/{forum_id}[?page={n}]
      */
     public function list(Request $request): Response

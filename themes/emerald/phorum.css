@@ -914,6 +914,19 @@ table.search-results th {
     color: var(--header-text);
 }
 
+/* Folder names in the forum-list group header link to that folder's
+   scoped view — keep them readable against the accent background instead
+   of the default link color. */
+.forum-group-header a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.forum-group-header a:hover,
+.forum-group-header a:focus {
+    text-decoration: underline;
+}
+
 /* --- User profile -------------------------------------------------------- */
 
 .user-avatar {
