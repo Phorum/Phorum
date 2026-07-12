@@ -894,11 +894,13 @@ div.warn-box {
 
 .error-page p { font-size: 1em; color: #555; }
 
-/* --- Forum index folder rows --------------------------------------------- */
-
 /* --- Accent bar object (OOCSS skin) --------------------------------------- */
 /* Shared "on-brand header bar" skin: accent background, header-contrast     */
 /* text. Structure (padding, font-size, layout) stays on the type selector.  */
+/* table.forum-list/thread-list th also covers the repeated per-folder      */
+/* group-header rows on the forum index — those are <th> cells too, so no   */
+/* extra selector is needed to keep them out of the plain-td background     */
+/* rules below (nth-child/hover) that only ever target <td>.                */
 
 .bar-accent,
 .section-header,
@@ -910,15 +912,6 @@ table.pm-folder-table th,
 table.search-results th {
     background: var(--accent);
     color: var(--header-text);
-}
-
-.forum-folder td {
-    font-weight: bold;
-    padding: 5px 8px;
-}
-
-.forum-folder td a {
-    color: var(--white);
 }
 
 /* --- User profile -------------------------------------------------------- */
@@ -1134,10 +1127,6 @@ table.profile-posts tr:nth-child(even) td {
         overflow: visible;
     }
 
-    .forum-list thead {
-        display: none;
-    }
-
     .forum-list,
     .forum-list tbody,
     .forum-list tr {
@@ -1164,6 +1153,25 @@ table.profile-posts tr:nth-child(even) td {
         background: transparent;
         border-bottom: 0;
         padding: 2px 0;
+    }
+
+    /* Group-header rows collapse to just the name on narrow screens — the
+       Posts/Threads labels are already hidden above; Last Post has no such
+       rule for data rows, so it needs its own override here. */
+    table.forum-list tr.forum-group-header {
+        background: var(--accent);
+        border-color: var(--accent-dark);
+    }
+
+    table.forum-list tr.forum-group-header th.col-forum {
+        display: block;
+        width: 100%;
+        background: transparent;
+        padding: 2px 0;
+    }
+
+    table.forum-list tr.forum-group-header .col-last {
+        display: none;
     }
 
     .forum-list .col-forum > a {
