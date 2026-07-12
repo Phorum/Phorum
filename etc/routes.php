@@ -339,6 +339,18 @@ return [
         'tokens'  => ['forum_id'],
     ],
     [
+        'type'    => 'regex',
+        'pattern' => '!^/admin/forums/(\d+)/move-up$!',
+        'action'  => 'Admin\ForumController@moveUp',
+        'tokens'  => ['forum_id'],
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/admin/forums/(\d+)/move-down$!',
+        'action'  => 'Admin\ForumController@moveDown',
+        'tokens'  => ['forum_id'],
+    ],
+    [
         'type'    => 'exact',
         'pattern' => '/admin/users',
         'action'  => 'Admin\UserController@index',

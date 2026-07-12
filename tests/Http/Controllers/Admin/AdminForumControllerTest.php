@@ -326,4 +326,136 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(302, $response->status);
         $this->assertSame('/admin/forums/folder/5', $response->headers['Location']);
     }
+
+    // -------------------------------------------------------------------------
+    // moveUp / moveDown
+    // -------------------------------------------------------------------------
+
+    public function testMoveUpRedirectsWhenNotAdmin(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->moveUp($this->makePostRequest(tokens: ['forum_id' => '1']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/login', $response->headers['Location']);
+    }
+
+    public function testMoveUpReturns404ForGetRequest(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $ctrl     = $this->makeController();
+        $response = $ctrl->moveUp(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testMoveUpReturns403WithBadCsrf(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $ctrl    = $this->makeController();
+        $badPost = new Request(
+            post:   ['csrf_token' => 'bad'],
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: ['forum_id' => '1'],
+        );
+        $response = $ctrl->moveUp($badPost);
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testMoveUpReturns404ForUnknownForum(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->moveUp($this->makePostRequest(tokens: ['forum_id' => '99']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testMoveUpNoOpForFirstSibling(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $a = $this->makeForum(1, ['name' => 'A']);
+        $b = $this->makeForum(2, ['name' => 'B']);
+        $c = $this->makeForum(3, ['name' => 'C']);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($a);
+        $forums->method('find')->willReturn([$a, $b, $c]);
+        $forums->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->moveUp($this->makePostRequest(tokens: ['forum_id' => '1']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/forums', $response->headers['Location']);
+    }
+
+    public function testMoveDownNoOpForLastSibling(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $a = $this->makeForum(1, ['name' => 'A']);
+        $b = $this->makeForum(2, ['name' => 'B']);
+        $c = $this->makeForum(3, ['name' => 'C']);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($c);
+        $forums->method('find')->willReturn([$a, $b, $c]);
+        $forums->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->moveDown($this->makePostRequest(tokens: ['forum_id' => '3']));
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testMoveUpSwapsWithPreviousSiblingAndRenumbers(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        // All three start tied at display_order 0, the common case (nothing
+        // ever sets it explicitly until a move happens).
+        $a = $this->makeForum(1, ['name' => 'A']);
+        $b = $this->makeForum(2, ['name' => 'B']);
+        $c = $this->makeForum(3, ['name' => 'C']);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($b);
+        $forums->method('find')->willReturn([$a, $b, $c]);
+
+        $saved = [];
+        $forums->expects($this->exactly(2))->method('save')->willReturnCallback(function ($forum) use (&$saved) {
+            $saved[$forum->forum_id] = $forum->display_order;
+            return $forum;
+        });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->moveUp($this->makePostRequest(tokens: ['forum_id' => '2']));
+
+        $this->assertSame(302, $response->status);
+        // New order is B, A, C (0, 1, 2) — B's value doesn't change (already
+        // 0), so only A and C actually get saved.
+        $this->assertArrayNotHasKey(2, $saved);
+        $this->assertSame(1, $saved[1]);
+        $this->assertSame(2, $saved[3]);
+    }
+
+    public function testMoveUpRedirectsToFolderWhenForumHasParent(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $a = $this->makeForum(1, ['name' => 'A', 'parent_id' => 5]);
+        $b = $this->makeForum(2, ['name' => 'B', 'parent_id' => 5]);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($b);
+        $forums->method('find')->willReturn([$a, $b]);
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->moveUp($this->makePostRequest(tokens: ['forum_id' => '2']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/forums/folder/5', $response->headers['Location']);
+    }
 }

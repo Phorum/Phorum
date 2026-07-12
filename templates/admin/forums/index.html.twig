@@ -64,6 +64,18 @@
                     <td>{{ f.message_count }}</td>
                     <td>{{ f.thread_count }}</td>
                     <td class="admin-actions">
+                        <form method="post" action="{{ path('/admin/forums/' ~ f.forum_id ~ '/move-up') }}">
+                            {{ csrf_field() }}
+                            <button type="submit" class="btn-small waves-effect waves-light grey lighten-1" {% if loop.first %}disabled{% endif %}>
+                                <i class="material-icons tiny">keyboard_arrow_up</i>
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('/admin/forums/' ~ f.forum_id ~ '/move-down') }}">
+                            {{ csrf_field() }}
+                            <button type="submit" class="btn-small waves-effect waves-light grey lighten-1" {% if loop.last %}disabled{% endif %}>
+                                <i class="material-icons tiny">keyboard_arrow_down</i>
+                            </button>
+                        </form>
                         <a href="{{ path('/admin/forums/' ~ f.forum_id ~ '/edit') }}" class="btn-small waves-effect waves-light green lighten-1">
                             <i class="material-icons tiny">edit</i>
                         </a>

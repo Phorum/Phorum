@@ -142,7 +142,64 @@ class ForumController extends AdminController
         ]));
     }
 
+    /** Move a forum/folder one position earlier within its sibling group. */
+    public function moveUp(Request $request): Response
+    {
+        return $this->move($request, -1);
+    }
+
+    /** Move a forum/folder one position later within its sibling group. */
+    public function moveDown(Request $request): Response
+    {
+        return $this->move($request, 1);
+    }
+
     // -------------------------------------------------------------------------
+
+    /**
+     * Swap $forumId with the sibling immediately before ($direction = -1) or
+     * after ($direction = 1) it in display order, then renumber the whole
+     * sibling group to a clean 0..N-1 sequence matching the new order.
+     * Renumbering (rather than swapping the two raw display_order values) is
+     * necessary because ties are the common case — most rows default to
+     * display_order = 0, so swapping two equal values would be a silent no-op.
+     */
+    private function move(Request $request, int $direction): Response
+    {
+        if ($r = $this->requireAdmin()) { return $r; }
+        if (!$request->isPost()) { return $this->notFound(); }
+        if ($r = $this->checkCsrf($request)) { return $r; }
+
+        $forumId = (int) ($request->tokens['forum_id'] ?? 0);
+        $forum   = $this->forums->load($forumId);
+        if ($forum === null) { return $this->notFound(); }
+
+        $siblings = $this->forums->find(
+            filter: ['parent_id' => $forum->parent_id],
+            order:  'display_order ASC, name ASC'
+        ) ?? [];
+
+        $index = null;
+        foreach ($siblings as $i => $sibling) {
+            if ($sibling->forum_id === $forum->forum_id) {
+                $index = $i;
+                break;
+            }
+        }
+        $target = $index !== null ? $index + $direction : null;
+
+        if ($index !== null && $target !== null && $target >= 0 && $target < count($siblings)) {
+            [$siblings[$index], $siblings[$target]] = [$siblings[$target], $siblings[$index]];
+            foreach ($siblings as $position => $sibling) {
+                if ($sibling->display_order !== $position) {
+                    $sibling->display_order = $position;
+                    $this->forums->save($sibling);
+                }
+            }
+        }
+
+        return $this->redirect($this->backUrlFor($forum));
+    }
 
     /** Render the forum list scoped to $folder's children, or the root level when null. */
     private function renderForumList(?Forum $folder): Response
