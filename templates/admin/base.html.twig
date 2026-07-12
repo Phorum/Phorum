@@ -71,6 +71,9 @@
             <a href="#" data-target="admin-sidenav" class="sidenav-trigger">
                 <i class="material-icons">menu</i>
             </a>
+            <a href="{{ path('/admin') }}" class="left" style="height:100%;display:flex;align-items:center;padding:0 8px">
+                <img src="{{ path('/assets/logo_white.svg') }}" alt="{{ site_name }}" style="height:32px;width:auto">
+            </a>
             <a href="{{ path('/admin') }}" class="brand-logo center">
                 <i class="material-icons" style="vertical-align:middle;margin-right:6px">settings</i>
                 {{ block('title') }}
