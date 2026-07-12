@@ -1,18 +1,33 @@
 {% extends 'admin/base.html.twig' %}
-{% block title %}Forums{% endblock %}
+{% block title %}{{ folder ? folder.name : 'Forums' }}{% endblock %}
 
 {% block content %}
+{% if folder %}
+    <div class="grey-text" style="margin-bottom:8px;font-size:.9rem">
+        <a href="{{ path('/admin/forums') }}">Forums</a>
+        {% for crumb in breadcrumb %}
+            <span style="margin:0 4px">&rsaquo;</span>
+            {% if not loop.last %}
+                <a href="{{ path(crumb.url) }}">{{ crumb.name|e }}</a>
+            {% else %}
+                <span>{{ crumb.name|e }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="row valign-wrapper">
-    <div class="col s8"><h4 class="page-title" style="margin:0">Forums &amp; Folders</h4></div>
+    <div class="col s8"><h4 class="page-title" style="margin:0">{{ folder ? folder.name|e : 'Forums & Folders' }}</h4></div>
     <div class="col s4 right-align">
-        <a href="{{ path('/admin/forums/create') }}" class="btn green darken-3 waves-effect waves-light">
+        <a href="{{ folder ? path('/admin/forums/create') ~ '?parent_id=' ~ folder.forum_id : path('/admin/forums/create') }}"
+           class="btn green darken-3 waves-effect waves-light">
             <i class="material-icons left">add</i>New
         </a>
     </div>
 </div>
 
 {% if forums is empty %}
-    <p class="grey-text">No forums or folders yet.</p>
+    <p class="grey-text">No forums or folders yet{{ folder ? ' in ' ~ folder.name|e : '' }}.</p>
 {% else %}
     <div class="card z-depth-1">
         <table class="striped responsive-table">
@@ -32,10 +47,11 @@
                     <td>
                         {% if f.folder_flag %}
                             <i class="material-icons tiny" style="color:#ffa000;vertical-align:middle">folder</i>
+                            <a href="{{ path('/admin/forums/folder/' ~ f.forum_id) }}">{{ f.name|e }}</a>
                         {% else %}
                             <i class="material-icons tiny" style="color:#388e3c;vertical-align:middle">forum</i>
+                            {{ f.name|e }}
                         {% endif %}
-                        {{ f.name|e }}
                     </td>
                     <td>{{ f.folder_flag ? 'Folder' : 'Forum' }}</td>
                     <td>

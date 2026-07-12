@@ -322,6 +322,12 @@ return [
     ],
     [
         'type'    => 'regex',
+        'pattern' => '!^/admin/forums/folder/(\d+)$!',
+        'action'  => 'Admin\ForumController@folder',
+        'tokens'  => ['forum_id'],
+    ],
+    [
+        'type'    => 'regex',
         'pattern' => '!^/admin/forums/(\d+)/edit$!',
         'action'  => 'Admin\ForumController@edit',
         'tokens'  => ['forum_id'],

@@ -68,6 +68,64 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testIndexScopesToRootLevelOnly(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->expects($this->once())->method('find')->with(
+            $this->callback(fn(array $filter) => $filter === ['parent_id' => 0]),
+            $this->anything(),
+        )->willReturn([]);
+
+        $ctrl = $this->makeController(['forums' => $forums]);
+        $ctrl->index(new Request());
+    }
+
+    // -------------------------------------------------------------------------
+    // folder
+    // -------------------------------------------------------------------------
+
+    public function testFolderReturns404ForUnknownId(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->folder(new Request(tokens: ['forum_id' => '99']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testFolderReturns404ForNonFolderForum(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['folder_flag' => 0]));
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->folder(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testFolderReturns200AndScopesToItsChildren(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['folder_flag' => 1]));
+        $forums->expects($this->once())->method('find')->with(
+            $this->callback(fn(array $filter) => $filter === ['parent_id' => 1]),
+            $this->anything(),
+        )->willReturn([]);
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->folder(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
     // -------------------------------------------------------------------------
     // create
     // -------------------------------------------------------------------------
@@ -108,6 +166,41 @@ class AdminForumControllerTest extends ControllerTestCase
         $response = $ctrl->create($this->makePostRequest(['name' => 'New Forum', 'active' => '1']));
         $this->assertSame(302, $response->status);
         $this->assertSame('/admin/forums', $response->headers['Location']);
+    }
+
+    public function testCreatePostSuccessRedirectsToFolderWhenParentSet(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([]);
+        $forums->expects($this->once())->method('save');
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->create($this->makePostRequest(['name' => 'New Forum', 'active' => '1', 'vroot' => '5']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/forums/folder/5', $response->headers['Location']);
+    }
+
+    public function testCreateGetPreselectsParentFolderFromQueryParam(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([]);
+
+        $twig = $this->createMock(\Twig\Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(\Twig\Loader\LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'admin/forums/edit.html.twig',
+            $this->callback(fn(array $data) => ($data['forum']->vroot ?? null) === 5
+                && ($data['back_url'] ?? null) === '/admin/forums/folder/5'),
+        )->willReturn('<html>ok</html>');
+
+        $ctrl = new ForumController(config: $this->makeConfig(), twig: $twig, forums: $forums);
+
+        $response = $ctrl->create($this->makeGetRequest(query: ['parent_id' => '5']));
+        $this->assertSame(200, $response->status);
     }
 
     // -------------------------------------------------------------------------
@@ -157,6 +250,24 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame('/admin/forums', $response->headers['Location']);
     }
 
+    public function testEditPostSuccessRedirectsToFolderWhenParentSet(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['parent_id' => 5]));
+        $forums->method('find')->willReturn([]);
+        $forums->expects($this->once())->method('save');
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['name' => 'Updated Name', 'active' => '1', 'vroot' => '5'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/forums/folder/5', $response->headers['Location']);
+    }
+
     // -------------------------------------------------------------------------
     // delete
     // -------------------------------------------------------------------------
@@ -199,5 +310,20 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(302, $response->status);
         $this->assertSame('/admin/forums', $response->headers['Location']);
         $this->assertSame(0, $forum->active);
+    }
+
+    public function testDeletePostRedirectsToFolderWhenForumHasParent(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forum  = $this->makeForum(1, ['parent_id' => 5]);
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($forum);
+        $forums->expects($this->once())->method('save');
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->delete($this->makePostRequest(tokens: ['forum_id' => '1']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/forums/folder/5', $response->headers['Location']);
     }
 }

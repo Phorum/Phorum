@@ -28,21 +28,34 @@ class ForumController extends AdminController
     {
         if ($r = $this->requireAdmin()) { return $r; }
 
-        $forums = $this->forums->find(filter: [], order: 'vroot ASC, display_order ASC, name ASC') ?? [];
+        return $this->renderForumList(null);
+    }
 
-        return $this->respond($this->renderAdmin('admin/forums/index.html.twig', [
-            'forums' => $forums,
-        ]));
+    /** Show just one folder's own forums/sub-folders (`/admin/forums/folder/{id}`). */
+    public function folder(Request $request): Response
+    {
+        if ($r = $this->requireAdmin()) { return $r; }
+
+        $folderId = (int) ($request->tokens['forum_id'] ?? 0);
+        $folder   = $this->forums->load($folderId);
+        if ($folder === null || !$folder->folder_flag) {
+            return $this->notFound();
+        }
+
+        return $this->renderForumList($folder);
     }
 
     public function create(Request $request): Response
     {
         if ($r = $this->requireAdmin()) { return $r; }
 
-        $errors  = [];
-        $forum   = new Forum();
-        $folders = $this->loadFolders();
-        $themes  = $this->loadThemes(withDefault: true);
+        $errors    = [];
+        $forum     = new Forum();
+        $folders   = $this->loadFolders();
+        $themes    = $this->loadThemes(withDefault: true);
+        $parentId  = (int) ($request->query['parent_id'] ?? 0);
+        $backUrl   = $parentId > 0 ? '/admin/forums/folder/' . $parentId : '/admin/forums';
+        $forum->vroot = $parentId;
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
@@ -50,7 +63,7 @@ class ForumController extends AdminController
 
             if (empty($errors)) {
                 $this->forums->save($forum);
-                return $this->redirect('/admin/forums');
+                return $this->redirect($this->backUrlFor($forum));
             }
         }
 
@@ -60,6 +73,7 @@ class ForumController extends AdminController
             'themes'         => $themes,
             'errors'         => $errors,
             'is_new'         => true,
+            'back_url'       => $backUrl,
             'perm_flags'     => PermissionFlags::FLAGS,
             'pub_perm_bits'  => PermissionFlags::decode($forum->pub_perms),
             'reg_perm_bits'  => PermissionFlags::decode($forum->reg_perms),
@@ -84,7 +98,7 @@ class ForumController extends AdminController
 
             if (empty($errors)) {
                 $this->forums->save($forum);
-                return $this->redirect('/admin/forums');
+                return $this->redirect($this->backUrlFor($forum));
             }
         }
 
@@ -94,6 +108,7 @@ class ForumController extends AdminController
             'themes'         => $themes,
             'errors'         => $errors,
             'is_new'         => false,
+            'back_url'       => $this->backUrlFor($forum),
             'perm_flags'     => PermissionFlags::FLAGS,
             'pub_perm_bits'  => PermissionFlags::decode($forum->pub_perms),
             'reg_perm_bits'  => PermissionFlags::decode($forum->reg_perms),
@@ -118,15 +133,69 @@ class ForumController extends AdminController
             } else {
                 phorum_api_hook('admin_forum_delete', $forum->forum_id);
             }
-            return $this->redirect('/admin/forums');
+            return $this->redirect($this->backUrlFor($forum));
         }
 
         return $this->respond($this->renderAdmin('admin/forums/delete_confirm.html.twig', [
-            'forum' => $forum,
+            'forum'    => $forum,
+            'back_url' => $this->backUrlFor($forum),
         ]));
     }
 
     // -------------------------------------------------------------------------
+
+    /** Render the forum list scoped to $folder's children, or the root level when null. */
+    private function renderForumList(?Forum $folder): Response
+    {
+        $forums = $this->forums->find(
+            filter: ['parent_id' => $folder?->forum_id ?? 0],
+            order:  'display_order ASC, name ASC'
+        ) ?? [];
+
+        return $this->respond($this->renderAdmin('admin/forums/index.html.twig', [
+            'forums'     => $forums,
+            'folder'     => $folder,
+            'breadcrumb' => $folder !== null ? $this->breadcrumbFor($folder) : [],
+        ]));
+    }
+
+    /**
+     * Walk parent_id up from $folder to the root, returning an ordered
+     * root-to-leaf list of ['name' => ..., 'url' => ...] pairs (leaf = $folder
+     * itself). Capped at a fixed depth as a guard against a self-referential
+     * parent_id cycle, since nothing currently prevents one on save.
+     *
+     * @return array<int, array{name: string, url: string}>
+     */
+    private function breadcrumbFor(Forum $folder): array
+    {
+        $chain = [[
+            'name' => $folder->name,
+            'url'  => '/admin/forums/folder/' . $folder->forum_id,
+        ]];
+
+        $current = $folder;
+        for ($i = 0; $i < 20 && $current->parent_id !== 0; $i++) {
+            $current = $this->forums->load($current->parent_id);
+            if ($current === null) {
+                break;
+            }
+            array_unshift($chain, [
+                'name' => $current->name,
+                'url'  => '/admin/forums/folder/' . $current->forum_id,
+            ]);
+        }
+
+        return $chain;
+    }
+
+    /** Where to redirect/link back to after saving/deleting $forum. */
+    private function backUrlFor(Forum $forum): string
+    {
+        return $forum->parent_id > 0
+            ? '/admin/forums/folder/' . $forum->parent_id
+            : '/admin/forums';
+    }
 
     private function applyPost(Forum $forum, Request $request, array $themes = []): array
     {
