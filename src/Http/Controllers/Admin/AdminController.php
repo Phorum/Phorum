@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Http\Controllers\Admin;
 
 use Phorum\Core\AdminAuth;
+use Phorum\Core\Version;
 use Phorum\Http\Controller;
 use Phorum\Http\Response;
 use Phorum\Model\User;
@@ -67,6 +68,7 @@ abstract class AdminController extends Controller
         return $this->render($template, array_merge([
             'admin_user'     => AdminAuth::user(),
             'addon_sections' => is_array($addonSections) ? $addonSections : [],
+            'phorum_version' => Version::CURRENT,
         ], $data));
     }
 }

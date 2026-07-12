@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# release.sh — tag a release, build a clean release tree, and package it
-# as .tar.gz and .zip archives under dist/.
+# release.sh — bump the version constant, tag a release, build a clean
+# release tree, and package it as .tar.gz and .zip archives under dist/.
 #
 # Usage: ./release.sh <version>
 # Example: ./release.sh 1.0.0
@@ -15,12 +15,19 @@ if [ "$#" -ne 1 ]; then
 fi
 
 VERSION="${1#v}"
+
+if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+    echo "Error: '${VERSION}' is not a valid version (expected X.Y.Z or X.Y.Z-suffix)" >&2
+    exit 1
+fi
+
 TAG="v${VERSION}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"
 RELEASE_NAME="phorum-${VERSION}"
 BUILD_DIR="$(mktemp -d)"
 STAGE_DIR="${BUILD_DIR}/${RELEASE_NAME}"
+VERSION_FILE="${ROOT_DIR}/src/Core/Version.php"
 TAG_CREATED=0
 
 # Files/directories that are tracked in git but have no business in a
@@ -62,6 +69,23 @@ if git rev-parse "${TAG}" >/dev/null 2>&1; then
     echo "Error: tag ${TAG} already exists." >&2
     exit 1
 fi
+
+echo "==> Bumping version to ${VERSION} in ${VERSION_FILE#"${ROOT_DIR}"/}"
+php -r '
+$file    = $argv[1];
+$version = $argv[2];
+$pattern = "/public const CURRENT = \x27[^\x27]+\x27;/";
+$content = preg_replace($pattern, "public const CURRENT = \x27{$version}\x27;", file_get_contents($file));
+file_put_contents($file, $content);
+' -- "${VERSION_FILE}" "${VERSION}"
+
+if ! grep -q "public const CURRENT = '${VERSION}';" "${VERSION_FILE}"; then
+    echo "Error: failed to update the version constant in ${VERSION_FILE#"${ROOT_DIR}"/}" >&2
+    exit 1
+fi
+
+git add "${VERSION_FILE}"
+git commit -m "Version changed to ${VERSION}"
 
 echo "==> Tagging ${TAG}"
 git tag -a "${TAG}" -m "Release ${VERSION}"
