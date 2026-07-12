@@ -15,7 +15,7 @@
             {% if forum.folder_flag %}
                 <tr class="forum-folder">
                     <td class="bar-accent" colspan="4"><strong>{{ forum.name }}</strong>
-                        {% if forum.description %} &mdash; <small>{{ forum.description }}</small>{% endif %}
+                        {% if forum.description %} &mdash; <small>{{ forum.description|raw }}</small>{% endif %}
                     </td>
                 </tr>
                 {% if forum.children %}
@@ -41,7 +41,7 @@
     <tr class="forum-row{{ indented ? ' forum-row--indented' : '' }}">
         <td class="col-forum">
             <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a>
-            {% if forum.description %}<br><small class="forum-desc">{{ forum.description }}</small>{% endif %}
+            {% if forum.description %}<br><small class="forum-desc">{{ forum.description|raw }}</small>{% endif %}
         </td>
         <td class="col-posts">{{ forum.message_count }}</td>
         <td class="col-threads">{{ forum.thread_count }}</td>

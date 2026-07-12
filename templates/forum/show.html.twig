@@ -9,7 +9,7 @@
     <meta property="og:site_name" content="{{ site_name }}">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ forum.name }}">
-    {% if forum.description %}<meta property="og:description" content="{{ forum.description }}">{% endif %}
+    {% if forum.description %}<meta property="og:description" content="{{ forum.description|striptags }}">{% endif %}
     <meta property="og:url" content="{{ canonical_url }}">
     {{ json_ld(json_ld) }}
 {% endblock %}
@@ -21,7 +21,7 @@
 
 <div class="forum-header">
     <h1 id="forum-heading" class="forum-title">{{ forum.name }}</h1>
-    {% if forum.description %}<p class="forum-desc">{{ forum.description }}</p>{% endif %}
+    {% if forum.description %}<p class="forum-desc">{{ forum.description|raw }}</p>{% endif %}
     <div class="forum-header-actions">
         {% if can_post %}
             <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post') }}" class="btn-post">{{ trans('forum.new_thread') }}</a>

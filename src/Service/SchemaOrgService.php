@@ -57,7 +57,7 @@ class SchemaOrgService
             $entry->url  = $entry->id;
             $entry->name = $forum->name;
             if ($forum->description !== '') {
-                $entry->description = $forum->description;
+                $entry->description = $this->plainTextFromHtml($forum->description);
             }
 
             $listItem           = new ListItem();
@@ -87,7 +87,7 @@ class SchemaOrgService
         $page->url  = $forumUrl;
         $page->name = $forum->name;
         if ($forum->description !== '') {
-            $page->description = $forum->description;
+            $page->description = $this->plainTextFromHtml($forum->description);
         }
         $page->breadcrumb = $this->breadcrumb([
             [$siteName, $this->absoluteUrl('/')],
@@ -228,6 +228,15 @@ class SchemaOrgService
         $result     = $dispatcher->dispatch('format', $body, $format);
         $html       = $dispatcher->lastDispatchWasClaimed() ? (string) $result : $body;
 
+        return $this->plainTextFromHtml($html);
+    }
+
+    /**
+     * Strip HTML markup down to plain text, for embedding admin-authored
+     * HTML (e.g. Forum::$description) in a schema.org `description` property.
+     */
+    private function plainTextFromHtml(string $html): string
+    {
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         return trim(preg_replace('/\s+/', ' ', $text) ?? $text);
     }
