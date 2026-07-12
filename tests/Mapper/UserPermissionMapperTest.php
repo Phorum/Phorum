@@ -11,7 +11,6 @@ class UserPermissionMapperTest extends MapperTestCase
     {
         $mapper = new UserPermissionMapper();
         $ref    = new \ReflectionProperty(UserPermissionMapper::class, 'crud');
-        $ref->setAccessible(true);
         $ref->setValue($mapper, self::$crud);
         return $mapper;
     }

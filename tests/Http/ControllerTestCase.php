@@ -144,7 +144,6 @@ abstract class ControllerTestCase extends TestCase
     protected function setAdminUser(User $user): void
     {
         $ref = new \ReflectionProperty(AdminAuth::class, 'admin');
-        $ref->setAccessible(true);
         $ref->setValue(null, $user);
     }
 
@@ -154,7 +153,6 @@ abstract class ControllerTestCase extends TestCase
     protected function resetAdminAuth(): void
     {
         $ref = new \ReflectionProperty(AdminAuth::class, 'admin');
-        $ref->setAccessible(true);
         $ref->setValue(null, null);
     }
 
@@ -164,7 +162,6 @@ abstract class ControllerTestCase extends TestCase
     protected function resetImpersonation(): void
     {
         $ref = new \ReflectionProperty(Impersonation::class, 'admin');
-        $ref->setAccessible(true);
         $ref->setValue(null, null);
         unset($_COOKIE['phorum_impersonate']);
     }
