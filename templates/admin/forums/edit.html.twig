@@ -103,7 +103,7 @@
                 <div class="col s12">
                     <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Moderation</strong></p>
                 </div>
-                <div class="col s12 m6">
+                <div class="input-field col s12 m6">
                     <select name="moderation">
                         <option value="0" {{ forum.moderation == 0 ? 'selected' : '' }}>No moderation (posts go live immediately)</option>
                         <option value="1" {{ forum.moderation == 1 ? 'selected' : '' }}>Moderate all posts</option>
