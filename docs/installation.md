@@ -187,23 +187,45 @@ To host Phorum under a URL prefix (e.g. `https://example.com/community/`):
        Require all granted
    </Directory>
    ```
-3. In Nginx, wrap everything in a `location /community` block and pass
-   `PATH_INFO` so PHP sees the full URI:
+3. In Nginx, wrap everything in a `location /community` block:
    ```nginx
-   location /community {
+   location ^~ /community {
        alias /var/www/phorum/public;
-       try_files $uri $uri/ @phorum_community;
+       try_files $uri @phorum_community;
    }
    location @phorum_community {
        rewrite ^/community/(.*)$ /community/index.php?$query_string last;
    }
-   location ~ ^/community/index\.php$ {
+   location ^~ /community/index.php {
        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
        fastcgi_param SCRIPT_FILENAME /var/www/phorum/public/index.php;
        fastcgi_param REQUEST_URI $request_uri;
        include fastcgi_params;
    }
    ```
+
+   The `^~` modifier on both `location` blocks matters if this server block has
+   *other* `location ~ regex` blocks anywhere (common when Phorum shares a
+   vhost with another app) — nginx always prefers a matching regex location
+   over a plain prefix one, evaluated in the order they appear in the config,
+   regardless of how specific the prefix is. Without `^~`, a broad catch-all
+   regex elsewhere in the same server block (e.g. `location ~ (\.html|\.php|/[^\.]*)$`)
+   can silently swallow every request under `/community/*` before Phorum's own
+   block ever gets a chance — typically presenting as "the forum index page
+   works, but every other URL 404s," since the index request may still
+   accidentally resolve through the other app's root/try_files by coincidence
+   while deeper routes don't. `^~` tells nginx to stop at the prefix match and
+   skip regex checking entirely. The PHP-handling block has to be a literal
+   prefix (not a regex) for the same reason — `^~` can only be used on prefix
+   locations, and it needs to keep winning as the more specific match once the
+   outer block starts short-circuiting regex checks.
+
+   Also note there's no `$uri/` check in `try_files` — it isn't needed here
+   (there are no real directories under `public/` that need index-file
+   resolution; everything other than static assets like `public/assets/`
+   routes through the front controller) and depending on it would require an
+   `index` directive to be configured somewhere in the server block, which
+   isn't guaranteed.
 
 ---
 

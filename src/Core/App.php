@@ -55,7 +55,7 @@ class App
 
         $route = $this->router->match((string) $uri);
 
-        if ($route === null) {
+        if (empty($route)) {
             $this->respond($this->twig->render('error/404.html.twig', [
                 'site_name' => $this->config->get('site_name', 'Phorum'),
                 'user'      => $installed ? Auth::user() : null,
