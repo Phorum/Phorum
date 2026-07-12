@@ -246,6 +246,15 @@ table.thread-list th a {
     color: var(--header-text);
 }
 
+.forum-list .col-forum > a {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.thread-list .col-subject > a {
+    font-size: 1rem;
+}
+
 table.forum-list td,
 table.thread-list td {
     padding: 6px 8px;
@@ -255,7 +264,6 @@ table.thread-list td {
     vertical-align: middle;
 }
 
-table.forum-list tr:nth-child(even) td,
 table.thread-list tr:nth-child(even) td {
     background: var(--accent-light);
 }
