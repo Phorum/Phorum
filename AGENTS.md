@@ -69,6 +69,7 @@ db/                     Schema files: mysql.sql, postgresql.sql
 - **DealNews private Composer packages** use the `php-libraries/` namespace in composer.json. The `dealnews/` namespace is for open-source packages only. When adding new internal dependencies, check both namespaces.
 - **CSRF on every POST**: call `if (!$this->checkCsrf()) { return; }` as the first line of every POST handler. Every `<form method="post">` template must include `{{ csrf_field() }}`.
 - **i18n**: all user-visible strings go through `{{ trans('key') }}` in Twig or `Lang::get('key')` in PHP. Add new keys to `lang/en.php` first — other locale files fall back to English automatically via the 3-layer chain: `en.php` → `{base}.php` → `{locale}.php`.
+- **CSS font-size is always `rem`, never `em`**: `em` compounds with ancestor font-size, so nesting silently changes the rendered size. `rem` is fixed to the root element, so it stays predictable regardless of where a rule is used. When adding a new font-size, check the existing values in the theme's `phorum.css` first and reuse one rather than introducing a new one.
 - **`.dev/phorum_old/`** exists only as a reference for the original behavior and schema. Read it when uncertain about legacy behavior; never modify it.
 
 ## Workflow

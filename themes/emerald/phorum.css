@@ -55,7 +55,7 @@ body {
     padding: 6px 14px;
     background: var(--accent-dark);
     color: var(--white);
-    font-size: 0.9em;
+    font-size: 0.9rem;
     text-decoration: none;
     border-bottom-right-radius: 3px;
 }
@@ -104,7 +104,9 @@ p { margin: 0.5em 0; }
 
 #phorum-nav {
     padding: 4px 8px 5px;
-    font-size: 0.82em;
+    /* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-
+       column size (~0.32px difference). */
+    font-size: 0.8rem;
     border-bottom: 1px solid var(--border-light);
     background: var(--accent-light);
     color: #333;
@@ -152,7 +154,10 @@ p { margin: 0.5em 0; }
 .pm-badge {
     background: #c62828;
     color: #fff;
-    font-size: 0.75em;
+    /* Rounded from the compounded 0.615rem to consolidate with the
+       .sticky-badge/.closed-badge/.new-badge group's 0.625rem (a ~0.16px
+       difference, imperceptible). */
+    font-size: 0.625rem;
     font-weight: bold;
     line-height: 1;
     padding: 2px 5px;
@@ -165,7 +170,7 @@ p { margin: 0.5em 0; }
 
 .forum-index-title {
     margin: 10px 0 8px;
-    font-size: 1.4em;
+    font-size: 1.4rem;
     color: var(--accent-dark);
 }
 
@@ -180,7 +185,7 @@ p { margin: 0.5em 0; }
 #phorum-footer {
     margin-top: 24px;
     padding: 6px 8px;
-    font-size: 0.7em;
+    font-size: 0.7rem;
     text-align: center;
     color: #666;
     border-top: 1px solid var(--border-light);
@@ -189,7 +194,7 @@ p { margin: 0.5em 0; }
 /* --- Breadcrumb ---------------------------------------------------------- */
 
 nav.breadcrumb {
-    font-size: 0.85em;
+    font-size: 0.85rem;
     padding: 5px 0;
     margin-bottom: 8px;
     border-bottom: 1px solid var(--border-light);
@@ -201,7 +206,7 @@ nav.breadcrumb {
 h2.section-header {
     padding: 5px 8px;
     margin: 0;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     font-weight: bold;
     border: 1px solid var(--border);
     border-bottom: 0;
@@ -239,7 +244,7 @@ table.forum-list th,
 table.thread-list th,
 table.announcements-list th {
     padding: 5px 8px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
@@ -259,6 +264,12 @@ table.announcements-list th a {
     font-size: 0.9rem;
 }
 
+/* Rounded to 0.7rem to consolidate with #phorum-footer's size — both are
+   small secondary text, and the ~0.36px difference isn't perceptible. */
+.forum-list .col-forum .forum-desc {
+    font-size: 0.7rem;
+}
+
 .thread-list .col-subject > a,
 .announcements-list .col-subject > a {
     font-size: 1rem;
@@ -268,7 +279,7 @@ table.forum-list td,
 table.thread-list td,
 table.announcements-list td {
     padding: 8px 8px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     background: var(--white);
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
@@ -305,9 +316,13 @@ table.announcements-list tr:hover td {
     display: block;
 }
 
+/* Rounded to 0.75rem to consolidate with .msg-pm-link/.msg-date-line/
+   .buddy-mutual (~0.24px difference). The .thread-list .thread-author rule
+   in the mobile breakpoint below carries its own value, since col-subject
+   is bumped to a full 1rem there and the compounded size differs. */
 .thread-author {
     display: block;
-    font-size: 0.9em;
+    font-size: 0.75rem;
     color: #555;
 }
 
@@ -328,7 +343,7 @@ table.announcements-list tr:hover td {
 .forum-title {
     grid-area: title;
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.2rem;
 }
 
 .forum-header-actions {
@@ -341,18 +356,21 @@ table.announcements-list tr:hover td {
 
 .forum-desc {
     grid-area: desc;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     color: #444;
     margin: 0;
 }
 
 /* --- Status badges ------------------------------------------------------- */
 
+/* Rounded to 0.625rem (10px) to consolidate with .pm-badge's compounded
+   size — both are small inline status badges and the ~0.2px difference
+   isn't perceptible. */
 .sticky-badge,
 .closed-badge,
 .unapproved-badge,
 .new-badge {
-    font-size: 0.75em;
+    font-size: 0.625rem;
     font-weight: bold;
     padding: 1px 5px;
     border-radius: 2px;
@@ -376,7 +394,7 @@ table.announcements-list tr:hover td {
 
 .thread-header h1 {
     margin: 0;
-    font-size: 1.1em;
+    font-size: 1.1rem;
     flex: 1;
 }
 
@@ -405,7 +423,7 @@ article.message.message-unapproved {
     background: linear-gradient(to bottom, #e4eee4 0%, var(--white) 100%);
     color: var(--text);
     padding: 6px 10px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -432,21 +450,35 @@ article.message.message-unapproved {
     flex-shrink: 0;
 }
 
-.message-author { font-weight: bold; font-size: 1.2em; }
+/* .message-author, .msg-pm-link, .msg-subject-line a, .msg-date-line, and
+   .msg-user-stats all nest inside .message-header (0.9rem); each was
+   originally old-em * 0.9, then rounded here to consolidate with nearby
+   values elsewhere in the sheet (each note below says which). */
+/* Consolidates with .thread-header h1 / .moderation-confirm h1's 1.1rem
+   (~0.32px difference). */
+.message-author { font-weight: bold; font-size: 1.1rem; }
 
-.msg-pm-link { font-size: 0.85em; }
+/* Consolidates with .thread-author/.buddy-mutual's 0.75rem (~0.24px
+   difference). */
+.msg-pm-link { font-size: 0.75rem; }
 
 .msg-subject-line { margin-bottom: 2px; }
 
-.msg-subject-line a { font-weight: bold; font-size: 0.95em; }
+/* Rounded to 0.85rem to consolidate with the table/form/profile text size
+   used throughout the sheet (~0.08px difference). */
+.msg-subject-line a { font-weight: bold; font-size: 0.85rem; }
 
-.msg-date-line { color: #333; font-size: 0.82em; }
+/* Consolidates with .msg-pm-link/.thread-author/.buddy-mutual's 0.75rem
+   (~0.19px difference). */
+.msg-date-line { color: #333; font-size: 0.75rem; }
 
 .edit-note { color: #555; font-style: italic; }
 
 .msg-user-stats {
     text-align: right;
-    font-size: 0.8em;
+    /* Rounded to 0.7rem to consolidate with #phorum-footer/.forum-desc's
+       size — a ~0.32px difference, imperceptible. */
+    font-size: 0.7rem;
     color: #333;
     white-space: nowrap;
     flex-shrink: 0;
@@ -471,7 +503,7 @@ article.message.message-unapproved {
     border: none;
     padding: 0;
     background: transparent;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     color: var(--accent-dark);
 }
 
@@ -479,7 +511,7 @@ article.message.message-unapproved {
     padding: 6px 12px;
     background: var(--white);
     border-top: 1px solid var(--border);
-    font-size: 0.85em;
+    font-size: 0.85rem;
 }
 
 .message-attachments ul,
@@ -503,7 +535,7 @@ article.message.message-unapproved {
 .attachment-remove {
     margin-left: 6px;
     color: #a00;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     cursor: pointer;
 }
 
@@ -511,7 +543,9 @@ article.message.message-unapproved {
     background: var(--accent-light);
     border-top: 1px solid var(--border);
     padding: 4px 10px;
-    font-size: 0.82em;
+    /* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-
+       column size (~0.32px difference). */
+    font-size: 0.8rem;
     display: flex;
     gap: 12px;
     align-items: center;
@@ -535,8 +569,11 @@ article.message.message-unapproved {
 
 /* --- BBCode quote / code blocks ------------------------------------------ */
 
+/* Renders inside .message-body (1.1rem = 17.6px, not the 16px root), so the
+   old 0.9em compounds to 15.84px — rounded here to 1rem to consolidate with
+   the sheet's base text size (~0.16px difference). */
 blockquote.bbcode {
-    font-size: 0.9em;
+    font-size: 1rem;
     margin: 4px 0 4px 10px;
 }
 
@@ -552,20 +589,28 @@ blockquote.bbcode > div {
     overflow: hidden;
 }
 
+/* Nests inside blockquote.bbcode; the compounded 14.256px is rounded here to
+   0.9rem to consolidate with the sheet's common secondary-text size (~0.14px
+   difference). BBCode quotes can nest arbitrarily deep by user content, so
+   unlike em this fixes the quote-header size instead of letting it keep
+   shrinking with each additional nesting level. */
 blockquote.bbcode strong {
     font-style: italic;
     display: block;
     margin-bottom: 3px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     color: #555;
 }
 
+/* Also renders inside .message-body (17.6px): 0.85 * 17.6px = 14.96px,
+   rounded to 0.9rem to consolidate with the sheet's common secondary-text
+   size (~0.56px difference). */
 pre.bbcode {
     border: 1px solid var(--pre-bd);
     background: var(--pre-bg);
     padding: 8px;
     overflow-x: auto;
-    font-size: 0.85em;
+    font-size: 0.9rem;
 }
 
 /* --- Buttons ------------------------------------------------------------- */
@@ -589,7 +634,7 @@ button[type="submit"] {
     border-radius: var(--radius);
     box-shadow: var(--btn-shadow);
     font-family: var(--font);
-    font-size: 0.8em;
+    font-size: 0.8rem;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
@@ -713,7 +758,7 @@ button[type="submit"]:hover {
 
 nav.pagination {
     margin: 8px 0;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -764,7 +809,7 @@ span.page-ellipsis {
 
 .form-row label {
     display: block;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     font-weight: bold;
     margin-bottom: 3px;
 }
@@ -778,7 +823,7 @@ span.page-ellipsis {
     padding: 5px 6px;
     border: 1px solid var(--border-light);
     font-family: var(--font);
-    font-size: 0.9em;
+    font-size: 0.9rem;
     background: var(--white);
     color: var(--text);
 }
@@ -806,7 +851,7 @@ div.warn-box {
 .form-errors {
     margin: 0 0 10px 0;
     padding: 8px 12px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
 }
 
 .form-errors ul,
@@ -826,7 +871,7 @@ ul.form-errors {
 p.error {
     color: #a63232;
     padding: 5px 10px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     margin: 0 0 10px 0;
 }
 
@@ -839,7 +884,7 @@ p.error {
     border-left: 3px solid var(--accent);
     padding: 6px 10px;
     margin-bottom: 10px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
 }
 
 .post-parent-quote .quote-header,
@@ -871,7 +916,7 @@ p.error {
 
 .moderation-confirm h1 {
     margin: 0 0 8px 0;
-    font-size: 1.1em;
+    font-size: 1.1rem;
 }
 
 .moderation-confirm form {
@@ -885,7 +930,7 @@ p.error {
     margin: 10px 0;
     padding: 8px 12px;
     background: var(--white);
-    font-size: 0.85em;
+    font-size: 0.85rem;
 }
 
 /* --- Information / warning boxes ----------------------------------------- */
@@ -895,13 +940,13 @@ div.info-box {
     background: var(--info-bg);
     border: 1px solid var(--info-bd);
     margin-bottom: 8px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
 }
 
 div.warn-box {
     padding: 8px 12px;
     margin-bottom: 8px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
 }
 
 /* --- Error pages --------------------------------------------------------- */
@@ -912,12 +957,12 @@ div.warn-box {
 }
 
 .error-page h1 {
-    font-size: 2em;
+    font-size: 2rem;
     color: var(--accent);
     margin-bottom: 8px;
 }
 
-.error-page p { font-size: 1em; color: #555; }
+.error-page p { font-size: 1rem; color: #555; }
 
 /* --- Accent bar object (OOCSS skin) --------------------------------------- */
 /* Shared "on-brand header bar" skin: accent background, header-contrast     */
@@ -969,11 +1014,11 @@ table.search-results th {
     display: block;
 }
 
-.user-profile h1 { margin: 0 0 10px 0; font-size: 1.2em; }
+.user-profile h1 { margin: 0 0 10px 0; font-size: 1.2rem; }
 
 .user-profile h2 {
     padding: 4px 8px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     margin: 14px 0 0 0;
     border: 1px solid var(--border);
     border-bottom: 0;
@@ -982,7 +1027,7 @@ table.search-results th {
 table.profile-info {
     border: 1px solid var(--border);
     margin-bottom: 4px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
 }
 
 table.profile-info tbody tr:last-child th,
@@ -1025,14 +1070,14 @@ table.profile-posts th {
     background: #f0f0f0;
     color: #333;
     padding: 5px 8px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
 
 table.profile-posts td {
     padding: 6px 8px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     background: var(--white);
     border-bottom: 1px solid var(--border-light);
     vertical-align: middle;
@@ -1046,7 +1091,7 @@ table.profile-posts tr:nth-child(even) td {
     background: var(--white);
     border: 1px solid var(--border);
     padding: 8px 10px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
 }
 
 /* --- Settings form fieldsets --------------------------------------------- */
@@ -1059,7 +1104,7 @@ table.profile-posts tr:nth-child(even) td {
 
 .settings-form legend {
     padding: 3px 10px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     font-weight: bold;
     margin-left: 0;
     width: 100%;
@@ -1073,7 +1118,7 @@ table.profile-posts tr:nth-child(even) td {
 .settings-form fieldset .form-row:last-child { border-bottom: 0; }
 
 .form-hint {
-    font-size: 0.8em;
+    font-size: 0.8rem;
     color: #666;
     margin: 4px 10px;
 }
@@ -1143,13 +1188,18 @@ table.profile-posts tr:nth-child(even) td {
         z-index: 1;
     }
 
+    /* .col-subject is bumped to a full 1rem in this breakpoint (below), so
+       .thread-author's ancestor font-size is 1rem here rather than the
+       0.85rem table cell — 0.9 * 1rem = 0.9rem, unlike the 0.765rem used
+       outside this breakpoint. */
     .thread-list .thread-author {
+        font-size: 0.9rem;
         font-weight: normal;
     }
 
     .thread-list .col-lastpost {
         padding-top: 4px;
-        font-size: 0.8em;
+        font-size: 0.8rem;
         color: #555;
         white-space: nowrap;
     }
@@ -1233,7 +1283,7 @@ table.profile-posts tr:nth-child(even) td {
 
     .forum-list .col-last {
         padding-top: 4px;
-        font-size: 0.8em;
+        font-size: 0.8rem;
         color: #555;
         white-space: nowrap;
     }
@@ -1274,7 +1324,9 @@ table.profile-posts tr:nth-child(even) td {
         color: var(--white);
         border: 1px solid var(--accent-dark);
         padding: 5px 10px;
-        font-size: 0.85em;
+        /* Rounded to 0.7rem to consolidate with #phorum-footer/.forum-desc/
+           .msg-user-stats — a ~0.05px difference, imperceptible. */
+        font-size: 0.7rem;
     }
 
     .nav-toggle:hover {
@@ -1632,8 +1684,10 @@ table.search-results tr:hover td {
 
 .search-subject a { font-weight: bold; }
 
+/* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-column
+   size (~0.32px difference). */
 .search-excerpt {
-    font-size: .82rem;
+    font-size: .8rem;
     color: #555;
     margin-top: .2rem;
     line-height: 1.4;
