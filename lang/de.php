@@ -33,6 +33,7 @@ return [
     'forum.col_subject'      => 'Betreff',
     'forum.col_author'       => 'Autor',
     'forum.col_replies'      => 'Antworten',
+    'forum.col_posts'        => 'Beiträge',
     'forum.col_last_post'    => 'Letzter Beitrag',
     'forum.sticky'           => 'Angeheftet',
     'forum.closed'           => 'Geschlossen',

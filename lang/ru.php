@@ -33,6 +33,7 @@ return [
     'forum.col_subject'      => 'Тема',
     'forum.col_author'       => 'Автор',
     'forum.col_replies'      => 'Ответов',
+    'forum.col_posts'        => 'Сообщений',
     'forum.col_last_post'    => 'Последнее сообщение',
     'forum.sticky'           => 'Закреплено',
     'forum.closed'           => 'Закрыто',

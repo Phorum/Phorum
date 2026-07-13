@@ -34,6 +34,7 @@ return [
     'forum.col_subject'      => 'الموضوع',
     'forum.col_author'       => 'الكاتب',
     'forum.col_replies'      => 'الردود',
+    'forum.col_posts'        => 'المشاركات',
     'forum.col_last_post'    => 'آخر مشاركة',
     'forum.sticky'           => 'مثبّت',
     'forum.closed'           => 'مغلق',

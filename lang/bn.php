@@ -39,6 +39,7 @@ return [
     'forum.col_subject'   => 'বিষয়',
     'forum.col_author'    => 'লেখক',
     'forum.col_replies'   => 'উত্তর',
+    'forum.col_posts'     => 'পোস্ট',
     'forum.col_last_post' => 'সর্বশেষ পোস্ট',
     'forum.sticky'        => 'স্টিকি',
     'forum.closed'        => 'বন্ধ',

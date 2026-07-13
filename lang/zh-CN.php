@@ -41,6 +41,7 @@ return [
     'forum.col_subject'      => '主题',
     'forum.col_author'       => '作者',
     'forum.col_replies'      => '回复',
+    'forum.col_posts'        => '帖子',
     'forum.col_last_post'    => '最新回复',
     'forum.sticky'           => '置顶',
     'forum.closed'           => '已关闭',

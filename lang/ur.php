@@ -34,6 +34,7 @@ return [
     'forum.col_subject'      => 'موضوع',
     'forum.col_author'       => 'مصنف',
     'forum.col_replies'      => 'جوابات',
+    'forum.col_posts'        => 'پوسٹس',
     'forum.col_last_post'    => 'آخری پوسٹ',
     'forum.sticky'           => 'چپکایا ہوا',
     'forum.closed'           => 'بند',

@@ -246,9 +246,13 @@ table.thread-list th a {
     color: var(--header-text);
 }
 
-.forum-list .col-forum > a {
-    font-size: 0.9rem;
+.forum-list td.col-forum > a {
+    font-size: 1rem;
     font-weight: bold;
+}
+
+.forum-list th.col-forum > a {
+    font-size: 0.9rem;
 }
 
 .thread-list .col-subject > a {
@@ -257,7 +261,7 @@ table.thread-list th a {
 
 table.forum-list td,
 table.thread-list td {
-    padding: 6px 8px;
+    padding: 8px 8px;
     font-size: 0.85em;
     background: var(--white);
     border-bottom: 1px solid var(--border);
@@ -286,12 +290,17 @@ table.thread-list tr:hover td {
     width: 140px;
 }
 
-.thread-list .col-author  { width: 120px; }
 .thread-list .col-replies { width: 70px;  text-align: center; }
 
 .thread-list .col-lastpost .lastpost-time,
 .thread-list .col-lastpost .lastpost-by {
     display: block;
+}
+
+.thread-author {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
 }
 
 /* --- Forum page header --------------------------------------------------- */
@@ -1063,7 +1072,6 @@ table.profile-posts tr:nth-child(even) td {
 /* --- Responsive ---------------------------------------------------------- */
 
 @media (max-width: 600px) {
-    .thread-list .col-author,
     .thread-list .col-replies {
         display: none;
     }
@@ -1120,9 +1128,14 @@ table.profile-posts tr:nth-child(even) td {
         left: 0;
     }
 
-    .thread-list .col-lastpost .lastpost-by a {
+    .thread-list .col-lastpost .lastpost-by a,
+    .thread-list .thread-author a {
         position: relative;
         z-index: 1;
+    }
+
+    .thread-list .thread-author {
+        font-weight: normal;
     }
 
     .thread-list .col-lastpost {

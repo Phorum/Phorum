@@ -52,6 +52,7 @@ return [
     'forum.col_subject'      => 'Subject',
     'forum.col_author'       => 'Author',
     'forum.col_replies'      => 'Replies',
+    'forum.col_posts'        => 'Posts',
     'forum.col_last_post'    => 'Last Post',
     'forum.sticky'           => 'Sticky',
     'forum.closed'           => 'Closed',

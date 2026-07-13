@@ -41,6 +41,7 @@ return [
     'forum.col_subject'      => 'Subjek',
     'forum.col_author'       => 'Penulis',
     'forum.col_replies'      => 'Balasan',
+    'forum.col_posts'        => 'Postingan',
     'forum.col_last_post'    => 'Postingan Terakhir',
     'forum.sticky'           => 'Disematkan',
     'forum.closed'           => 'Ditutup',

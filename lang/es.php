@@ -41,6 +41,7 @@ return [
     'forum.col_subject'      => 'Asunto',
     'forum.col_author'       => 'Autor',
     'forum.col_replies'      => 'Respuestas',
+    'forum.col_posts'        => 'Mensajes',
     'forum.col_last_post'    => 'Último mensaje',
     'forum.sticky'           => 'Fijado',
     'forum.closed'           => 'Cerrado',

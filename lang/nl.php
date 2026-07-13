@@ -48,6 +48,7 @@ return [
     'forum.col_subject'      => 'Onderwerp',
     'forum.col_author'       => 'Auteur',
     'forum.col_replies'      => 'Reacties',
+    'forum.col_posts'        => 'Berichten',
     'forum.col_last_post'    => 'Laatste bericht',
     'forum.sticky'           => 'Vastgezet',
     'forum.closed'           => 'Gesloten',

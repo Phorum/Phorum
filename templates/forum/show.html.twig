@@ -52,8 +52,7 @@
         <thead>
             <tr>
                 <th scope="col" class="col-subject">{{ trans('forum.col_subject') }}</th>
-                <th scope="col" class="col-author">{{ trans('forum.col_author') }}</th>
-                <th scope="col" class="col-replies">{{ trans('forum.col_replies') }}</th>
+                <th scope="col" class="col-replies">{{ trans('forum.col_posts') }}</th>
                 <th scope="col" class="col-lastpost">{{ trans('forum.col_last_post') }}</th>
             </tr>
         </thead>
@@ -69,15 +68,15 @@
                     {% if thread_new_counts[thread.message_id] is defined %}
                         <span class="new-badge">{{ thread_new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
                     {% endif %}
+                    <small class="thread-author">{{ trans('forum.by') }}
+                        {% if thread.user_id > 0 %}
+                            <a href="{{ path('/user/' ~ thread.user_id) }}">{{ thread.author }}</a>
+                        {% else %}
+                            {{ thread.author }}
+                        {% endif %}
+                    </small>
                 </td>
-                <td class="col-author">
-                    {% if thread.user_id > 0 %}
-                        <a href="{{ path('/user/' ~ thread.user_id) }}">{{ thread.author }}</a>
-                    {% else %}
-                        {{ thread.author }}
-                    {% endif %}
-                </td>
-                <td class="col-replies">{{ thread.thread_count > 1 ? thread.thread_count - 1 : 0 }}</td>
+                <td class="col-replies">{{ thread.thread_count }}</td>
                 <td class="col-lastpost">
                     {% if thread.recent_author %}
                         <span class="lastpost-time">{{ thread.modifystamp|relative_time }}</span>
