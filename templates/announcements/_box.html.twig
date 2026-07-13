@@ -1,16 +1,24 @@
-<div class="announcements-box" aria-labelledby="announcements-heading">
-    <h2 id="announcements-heading" class="announcements-heading">{{ trans('announcements.heading') }}</h2>
-    <ul class="announcements-list">
+<table class="tbl-boxed announcements-list">
+    <caption class="visually-hidden">{{ trans('announcements.heading') }}</caption>
+    <thead>
+        <tr>
+            <th scope="col" class="col-subject">{{ trans('announcements.heading') }}</th>
+            <th scope="col" class="col-last">{{ trans('forum.col_last_post') }}</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for thread in announcements.threads %}
-            <li class="announcements-item">
-                <a href="{{ path('/forum/' ~ thread.forum_id ~ '/thread/' ~ thread.message_id) }}">
-                    {{- thread.subject -}}
-                </a>
-                {% if announcements.new_counts[thread.message_id] is defined %}
-                    <span class="new-badge">{{ announcements.new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
-                {% endif %}
-                <span class="announcements-date">{{ thread.modifystamp|relative_time }}</span>
-            </li>
+            <tr class="announcements-row">
+                <td class="col-subject">
+                    <a href="{{ path('/forum/' ~ thread.forum_id ~ '/thread/' ~ thread.message_id) }}">
+                        {{- thread.subject -}}
+                    </a>
+                    {% if announcements.new_counts[thread.message_id] is defined %}
+                        <span class="new-badge">{{ announcements.new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
+                    {% endif %}
+                </td>
+                <td class="col-last">{{ thread.modifystamp|relative_time }}</td>
+            </tr>
         {% endfor %}
-    </ul>
-</div>
+    </tbody>
+</table>

@@ -223,18 +223,21 @@ h2.section-header {
 /* --- Tables (forum index, thread list) ----------------------------------- */
 
 table.forum-list,
-table.thread-list {
+table.thread-list,
+table.announcements-list {
     border: 1px solid var(--border);
     margin-bottom: 4px;
 }
 
 table.forum-list tbody tr:last-child td,
-table.thread-list tbody tr:last-child td {
+table.thread-list tbody tr:last-child td,
+table.announcements-list tbody tr:last-child td {
     border-bottom: 0;
 }
 
 table.forum-list th,
-table.thread-list th {
+table.thread-list th,
+table.announcements-list th {
     padding: 5px 8px;
     font-size: 0.85em;
     text-align: left;
@@ -242,7 +245,8 @@ table.thread-list th {
 }
 
 table.forum-list th a,
-table.thread-list th a {
+table.thread-list th a,
+table.announcements-list th a {
     color: var(--header-text);
 }
 
@@ -255,12 +259,14 @@ table.thread-list th a {
     font-size: 0.9rem;
 }
 
-.thread-list .col-subject > a {
+.thread-list .col-subject > a,
+.announcements-list .col-subject > a {
     font-size: 1rem;
 }
 
 table.forum-list td,
-table.thread-list td {
+table.thread-list td,
+table.announcements-list td {
     padding: 8px 8px;
     font-size: 0.85em;
     background: var(--white);
@@ -273,7 +279,8 @@ table.thread-list tr:nth-child(even) td {
 }
 
 table.forum-list tr:hover td,
-table.thread-list tr:hover td {
+table.thread-list tr:hover td,
+table.announcements-list tr:hover td {
     background: var(--accent-highlight);
 }
 
@@ -286,7 +293,8 @@ table.thread-list tr:hover td {
 }
 
 .thread-list .col-lastpost,
-.forum-list .col-last {
+.forum-list .col-last,
+.announcements-list .col-last {
     width: 140px;
 }
 
@@ -924,6 +932,7 @@ div.warn-box {
 h2.section-header,
 table.forum-list th,
 table.thread-list th,
+table.announcements-list th,
 table.pm-list th,
 table.pm-folder-table th,
 table.search-results th {
