@@ -10,5 +10,5 @@ namespace Phorum\Core;
  */
 class Version
 {
-    public const CURRENT = '10.0.0-alpha-1';
+    public const CURRENT = '10.0.0-alpha-2';
 }
