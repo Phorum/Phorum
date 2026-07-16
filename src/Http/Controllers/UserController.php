@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\RedirectGuard;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -189,13 +190,10 @@ class UserController extends Controller
     {
         $currentUser = Auth::user();
         if ($currentUser === null) {
-            return $this->redirect('/login?redirect=/user/change-password');
+            return $this->redirect('/login?redirect=' . urlencode('/user/change-password'));
         }
 
-        $redirect = $request->query['redirect'] ?? $request->post['redirect'] ?? '/';
-        if (!str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
-            $redirect = '/';
-        }
+        $redirect = RedirectGuard::sanitizePath($request->query['redirect'] ?? $request->post['redirect'] ?? '/');
 
         $errors = [];
 

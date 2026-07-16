@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\RedirectGuard;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -62,13 +63,9 @@ class AuthController extends Controller
                 if ($user === null) {
                     $error = 'Invalid username or password.';
                 } else {
-                    $redirect = $request->post['redirect'] ?? '/';
-                    // Only allow relative paths — reject protocol-relative and external URLs
-                    if (!str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
-                        $redirect = '/';
-                    }
+                    $redirect = RedirectGuard::sanitizePath($request->post['redirect'] ?? '/');
                     if ($user->force_password_change) {
-                        return $this->redirect('/user/change-password?redirect=' . urlencode($redirect));
+                        return $this->redirect(RedirectGuard::changePasswordUrl($redirect));
                     }
                     return $this->redirect($redirect);
                 }
