@@ -134,7 +134,14 @@ class App
      * Force a logged-in user with force_password_change set to change their
      * password before doing anything else — mirrors Phorum 6's own
      * every-page-load enforcement. Login/logout, the change-password page
-     * itself, admin, and theme assets are exempt.
+     * itself, and theme assets are exempt.
+     *
+     * Deliberately NOT exempt: Admin\* routes. Unlike blockedBySiteStatus()
+     * (where an admin must always reach /admin to flip site status back),
+     * force_password_change is a requirement on that specific account —
+     * there's no equivalent reason for a flagged admin to bypass it, and an
+     * admin who is also flagged could otherwise use the whole admin panel
+     * indefinitely without ever changing their password.
      *
      * $uri must already have base_path stripped (as run() does before
      * calling this) — Controller::redirect()/the header below both add
@@ -143,8 +150,7 @@ class App
     private function blockedByForcePasswordChange(array $route, string $uri): bool
     {
         $action = (string) ($route['action'] ?? '');
-        if (str_starts_with($action, 'Admin\\')
-            || str_starts_with($action, 'ThemeController@')
+        if (str_starts_with($action, 'ThemeController@')
             || str_starts_with($action, 'AuthController@')
             || $action === 'UserController@forcePasswordChange'
         ) {
