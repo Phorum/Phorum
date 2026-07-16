@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace Phorum\Mapper;
 
 use DealNews\DB\CRUD;
-use Phorum\Model\CustomField;
+use Phorum\Model\UserCustomField;
 
 /**
- * Manages the custom_fields table, which has a composite primary key
- * (relation_id, field_type, type) and does not fit AbstractPhorumMapper.
+ * Manages the user_custom_fields table, which has a composite primary key
+ * (user_id, type) and does not fit AbstractPhorumMapper.
  */
-class CustomFieldMapper
+class UserCustomFieldMapper
 {
     private ?CRUD $crud = null;
 
@@ -26,115 +26,111 @@ class CustomFieldMapper
     protected function table(): string
     {
         $prefix = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
-        return $prefix . '_custom_fields';
+        return $prefix . '_user_custom_fields';
     }
 
     /**
-     * Return all CustomField rows for a given relation and entity type,
-     * keyed by the config id (the `type` column).
+     * Return all UserCustomField rows for a given user, keyed by the config id (the `type` column).
      *
-     * @return CustomField[] keyed by config id
+     * @return UserCustomField[] keyed by config id
      */
-    public function loadForRelation(int $relationId, int $fieldType): array
+    public function loadForUser(int $userId): array
     {
         $rows = $this->crud()->runFetch(
-            'SELECT * FROM ' . $this->table()
-            . ' WHERE relation_id = :rid AND field_type = :ft',
-            [':rid' => $relationId, ':ft' => $fieldType]
+            'SELECT * FROM ' . $this->table() . ' WHERE user_id = :uid',
+            [':uid' => $userId]
         );
 
         $result = [];
         foreach ($rows ?: [] as $row) {
-            $f              = new CustomField();
-            $f->relation_id = (int) $row['relation_id'];
-            $f->field_type  = (int) $row['field_type'];
-            $f->type        = (int) $row['type'];
-            $f->data        = (string) $row['data'];
+            $f          = new UserCustomField();
+            $f->user_id = (int) $row['user_id'];
+            $f->type    = (int) $row['type'];
+            $f->data    = (string) $row['data'];
             $result[$f->type] = $f;
         }
         return $result;
     }
 
     /**
-     * Return all CustomField rows for multiple relations of the same entity type.
-     * Result is nested: [relation_id => [config_id => CustomField]]
+     * Return all UserCustomField rows for multiple users.
+     * Result is nested: [user_id => [config_id => UserCustomField]]
      *
-     * @param  int[] $relationIds
-     * @return array<int, array<int, CustomField>>
+     * @param  int[] $userIds
+     * @return array<int, array<int, UserCustomField>>
      */
-    public function loadForRelations(array $relationIds, int $fieldType): array
+    public function loadForUsers(array $userIds): array
     {
-        if (empty($relationIds)) {
+        if (empty($userIds)) {
             return [];
         }
 
-        $params = [':ft' => $fieldType];
-        foreach ($relationIds as $i => $id) {
+        $params = [];
+        foreach ($userIds as $i => $id) {
             $params[":id{$i}"] = (int) $id;
         }
-        $placeholders = implode(', ', array_filter(
-            array_keys($params),
-            fn($k) => $k !== ':ft'
-        ));
+        $placeholders = implode(', ', array_keys($params));
 
         $rows = $this->crud()->runFetch(
-            'SELECT * FROM ' . $this->table()
-            . ' WHERE field_type = :ft AND relation_id IN (' . $placeholders . ')',
+            'SELECT * FROM ' . $this->table() . ' WHERE user_id IN (' . $placeholders . ')',
             $params
         );
 
         $result = [];
         foreach ($rows ?: [] as $row) {
-            $f              = new CustomField();
-            $f->relation_id = (int) $row['relation_id'];
-            $f->field_type  = (int) $row['field_type'];
-            $f->type        = (int) $row['type'];
-            $f->data        = (string) $row['data'];
-            $result[$f->relation_id][$f->type] = $f;
+            $f          = new UserCustomField();
+            $f->user_id = (int) $row['user_id'];
+            $f->type    = (int) $row['type'];
+            $f->data    = (string) $row['data'];
+            $result[$f->user_id][$f->type] = $f;
         }
         return $result;
     }
 
     /**
      * Upsert a single field value.
-     * Uses INSERT ... ON DUPLICATE KEY UPDATE because the PK is composite.
+     * The PK is composite (user_id, type), so this tries an INSERT first and
+     * falls back to an UPDATE on a constraint violation — portable across
+     * MySQL/SQLite/Postgres, unlike MySQL-only `ON DUPLICATE KEY UPDATE`.
      */
-    public function saveValue(int $relationId, int $fieldType, int $configId, string $value): void
+    public function saveValue(int $userId, int $configId, string $value): void
     {
-        $t   = $this->table();
-        $sql = "INSERT INTO {$t} (relation_id, field_type, `type`, data)"
-             . ' VALUES (:rid, :ft, :cfg, :data)'
-             . ' ON DUPLICATE KEY UPDATE data = VALUES(data)';
-        $this->crud()->run($sql, [
-            ':rid'  => $relationId,
-            ':ft'   => $fieldType,
-            ':cfg'  => $configId,
-            ':data' => $value,
-        ]);
+        $t = $this->table();
+        try {
+            $this->crud()->run(
+                "INSERT INTO {$t} (user_id, `type`, data) VALUES (:uid, :cfg, :data)",
+                [':uid' => $userId, ':cfg' => $configId, ':data' => $value]
+            );
+        } catch (\Exception $e) {
+            if (!str_starts_with((string) $e->getCode(), '23')) {
+                throw $e;
+            }
+            $this->crud()->run(
+                "UPDATE {$t} SET data = :data WHERE user_id = :uid AND `type` = :cfg",
+                [':uid' => $userId, ':cfg' => $configId, ':data' => $value]
+            );
+        }
     }
 
     /**
-     * Delete all field values for a relation + entity type.
-     * Call before hard-deleting a config to clean up orphans.
+     * Delete all field values for a user.
      */
-    public function deleteForRelation(int $relationId, int $fieldType): void
+    public function deleteForUser(int $userId): void
     {
         $this->crud()->run(
-            'DELETE FROM ' . $this->table()
-            . ' WHERE relation_id = :rid AND field_type = :ft',
-            [':rid' => $relationId, ':ft' => $fieldType]
+            'DELETE FROM ' . $this->table() . ' WHERE user_id = :uid',
+            [':uid' => $userId]
         );
     }
 
     /**
      * Delete all values for a specific config entry (used when hard-deleting a field config).
      */
-    public function deleteForConfig(int $configId, int $fieldType): void
+    public function deleteForConfig(int $configId): void
     {
         $this->crud()->run(
-            'DELETE FROM ' . $this->table()
-            . ' WHERE `type` = :cfg AND field_type = :ft',
-            [':cfg' => $configId, ':ft' => $fieldType]
+            'DELETE FROM ' . $this->table() . ' WHERE `type` = :cfg',
+            [':cfg' => $configId]
         );
     }
 }

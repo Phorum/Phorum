@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Phorum\Model;
 
-class CustomField
+class UserCustomField
 {
-    public int    $relation_id = 0;
-    public int    $field_type  = 0;
-    public int    $type        = 0; // FK → custom_fields_config.id
-    public string $data        = '';
+    public int    $user_id = 0;
+    public int    $type    = 0; // FK → the field's id in the PROFILE_FIELDS setting
+    public string $data    = '';
 }
