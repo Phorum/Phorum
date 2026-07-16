@@ -7,6 +7,7 @@ use PageMill\Router\Router;
 use Phorum\Core\AdminAuth;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
+use Phorum\Core\RedirectGuard;
 use Phorum\Core\SchemaInstaller;
 use Phorum\Core\SchemaPatcher;
 use Phorum\Http\Request;
@@ -78,7 +79,7 @@ class App
             return;
         }
 
-        if ($installed && $this->blockedByForcePasswordChange($route)) {
+        if ($installed && $this->blockedByForcePasswordChange($route, (string) $uri)) {
             return;
         }
 
@@ -134,8 +135,12 @@ class App
      * password before doing anything else — mirrors Phorum 6's own
      * every-page-load enforcement. Login/logout, the change-password page
      * itself, admin, and theme assets are exempt.
+     *
+     * $uri must already have base_path stripped (as run() does before
+     * calling this) — Controller::redirect()/the header below both add
+     * base_path back on, so starting from the stripped path avoids doubling it.
      */
-    private function blockedByForcePasswordChange(array $route): bool
+    private function blockedByForcePasswordChange(array $route, string $uri): bool
     {
         $action = (string) ($route['action'] ?? '');
         if (str_starts_with($action, 'Admin\\')
@@ -151,9 +156,10 @@ class App
             return false;
         }
 
+        $query    = (string) ($_SERVER['QUERY_STRING'] ?? '');
+        $current  = $uri . ($query !== '' ? '?' . $query : '');
         $basePath = (string) $this->config->get('base_path', '');
-        $current  = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        header('Location: ' . $basePath . '/user/change-password?redirect=' . urlencode($current));
+        header('Location: ' . $basePath . RedirectGuard::changePasswordUrl($current));
         return true;
     }
 
