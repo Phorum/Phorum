@@ -292,6 +292,20 @@ class ModerationServiceTest extends TestCase
         $this->assertTrue($svc->mergeThread(1, 2));
     }
 
+    public function testMergeThreadSyncsClosedFlagToTargetState(): void
+    {
+        $source          = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target          = $this->makeMessage(2, 0, forumId: 1, thread: 2);
+        $target->closed  = 1;
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+        $msgMapper->expects($this->once())->method('setClosedForThread')->with(2, 1);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $this->assertTrue($svc->mergeThread(1, 2));
+    }
+
     public function testMergeThreadDeletesSourceSubscriptions(): void
     {
         $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);

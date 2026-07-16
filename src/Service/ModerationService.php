@@ -119,6 +119,10 @@ class ModerationService
         $targetForumId = $target->forum_id;
 
         $this->messages->mergeThread($sourceThreadId, $targetThreadId, $targetForumId);
+        // The merged-in messages keep whatever `closed` value they had in the
+        // source thread; reconcile them to the surviving (target) thread's
+        // state so editability/reply-eligibility matches the thread they now live in.
+        $this->messages->setClosedForThread($targetThreadId, $target->closed);
         $this->subscribers?->deleteForThread($sourceForumId, $sourceThreadId);
         $this->messages->recalcThreadStats($targetThreadId);
         $this->forums->recalcStats($sourceForumId);
