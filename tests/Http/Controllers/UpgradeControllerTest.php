@@ -36,6 +36,21 @@ class UpgradeControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testIndexRedirectsWhenAlreadyInstalled(): void
+    {
+        $schema = $this->createMock(SchemaInstaller::class);
+        $schema->expects($this->never())->method('apply');
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->with('installed')->willReturn('1');
+
+        $ctrl     = $this->makeController(['schema' => $schema, 'settings' => $settings]);
+        $response = $ctrl->index($this->makePostRequest());
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/', $response->headers['Location']);
+    }
+
     public function testPostAppliesSchemaAndPatchesAndRedirects(): void
     {
         $schema = $this->createMock(SchemaInstaller::class);

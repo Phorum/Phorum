@@ -45,6 +45,10 @@ class UpgradeController extends Controller
 
     public function index(Request $request): Response
     {
+        if ($this->checkInstalled()) {
+            return $this->redirect('/');
+        }
+
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
 
@@ -64,5 +68,16 @@ class UpgradeController extends Controller
     public function complete(Request $request): Response
     {
         return $this->respond($this->twig->render('upgrade/complete.html.twig', []));
+    }
+
+    /**
+     * True once the site has been through this upgrade (or the fresh
+     * installer). Mirrors InstallController::checkInstalled() — prevents
+     * this otherwise-unauthenticated, schema-mutating endpoint from staying
+     * reachable on an already-installed site.
+     */
+    private function checkInstalled(): bool
+    {
+        return !empty($this->settings->getSetting('installed'));
     }
 }
