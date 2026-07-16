@@ -8,8 +8,7 @@ use Phorum\Core\AdminAuth;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
 use Phorum\Core\RedirectGuard;
-use Phorum\Core\SchemaInstaller;
-use Phorum\Core\SchemaPatcher;
+use Phorum\Core\SchemaMigrator;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\SettingMapper;
@@ -75,12 +74,12 @@ class App
             return;
         }
 
-        if ($installed && $this->blockedBySiteStatus($route)) {
-            return;
-        }
-
-        if ($installed && $this->blockedByForcePasswordChange($route, (string) $uri)) {
-            return;
+        if ($installed) {
+            foreach ($this->routeGates((string) $uri) as $gate) {
+                if ($gate($route)) {
+                    return;
+                }
+            }
         }
 
         phorum_api_hook('common_pre', $route);
@@ -93,6 +92,24 @@ class App
         phorum_api_hook('common', $route);
 
         $this->dispatch($route);
+    }
+
+    /**
+     * Route gates run in order for every installed-site request, right after
+     * routing and before dispatch. Each gate independently decides whether
+     * to exempt a given route (their exemption rules genuinely differ — see
+     * each method's own docblock) and whether to block the request, having
+     * already sent its own response. Adding a new gate is one entry here
+     * instead of a new private method plus a new call site in run().
+     *
+     * @return array<callable(array $route): bool>
+     */
+    private function routeGates(string $uri): array
+    {
+        return [
+            fn(array $route) => $this->blockedBySiteStatus($route),
+            fn(array $route) => $this->blockedByForcePasswordChange($route, $uri),
+        ];
     }
 
     /**
@@ -328,9 +345,7 @@ class App
             if ($settings->getSetting('schema_version') === Version::CURRENT) {
                 return;
             }
-            (new SchemaInstaller())->apply();
-            (new SchemaPatcher())->apply();
-            $settings->saveSetting('schema_version', Version::CURRENT);
+            (new SchemaMigrator(settings: $settings))->bringUpToDate();
         } catch (\Throwable) {
         }
     }

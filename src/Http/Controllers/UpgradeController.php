@@ -5,8 +5,8 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Config;
 use Phorum\Core\SchemaInstaller;
+use Phorum\Core\SchemaMigrator;
 use Phorum\Core\SchemaPatcher;
-use Phorum\Core\Version;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -52,9 +52,7 @@ class UpgradeController extends Controller
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
 
-            $this->schema->apply();
-            $this->patcher->apply();
-            $this->settings->saveSetting('schema_version', Version::CURRENT);
+            (new SchemaMigrator($this->schema, $this->patcher, $this->settings))->bringUpToDate();
             $this->settings->saveSetting('installed', '1');
 
             return $this->redirect('/upgrade/complete');
