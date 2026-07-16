@@ -90,14 +90,4 @@ class CustomFieldService
 
         return $errors;
     }
-
-    /**
-     * Return all active user configs (for building forms).
-     *
-     * @return CustomFieldConfig[]
-     */
-    public function getActiveUserConfigs(): array
-    {
-        return $this->configs->findAll();
-    }
 }

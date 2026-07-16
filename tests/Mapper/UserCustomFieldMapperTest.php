@@ -51,31 +51,6 @@ class UserCustomFieldMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
-    // loadForUsers
-    // -------------------------------------------------------------------------
-
-    public function testLoadForUsersReturnsNestedResult(): void
-    {
-        $this->seedField(5, 1, 'blue');
-        $this->seedField(6, 1, 'red');
-        $this->seedField(5, 2, 'round');
-
-        $mapper = $this->makeMapper();
-        $result = $mapper->loadForUsers([5, 6]);
-        $this->assertArrayHasKey(5, $result);
-        $this->assertArrayHasKey(6, $result);
-        $this->assertSame('blue', $result[5][1]->data);
-        $this->assertSame('round', $result[5][2]->data);
-        $this->assertSame('red',  $result[6][1]->data);
-    }
-
-    public function testLoadForUsersReturnsEmptyForEmptyInput(): void
-    {
-        $mapper = $this->makeMapper();
-        $this->assertSame([], $mapper->loadForUsers([]));
-    }
-
-    // -------------------------------------------------------------------------
     // saveValue
     // -------------------------------------------------------------------------
 

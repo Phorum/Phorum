@@ -161,19 +161,4 @@ class CustomFieldServiceTest extends TestCase
         $this->assertCount(1, $fields);
         $this->assertSame('bio', $fields[0]['config']->name);
     }
-
-    // -------------------------------------------------------------------------
-    // getActiveUserConfigs()
-    // -------------------------------------------------------------------------
-
-    public function testGetActiveUserConfigsReturnsAllConfigs(): void
-    {
-        $config = $this->makeConfig(1, 'bio');
-
-        $cfgMapper = $this->createMock(CustomFieldConfigMapper::class);
-        $cfgMapper->method('findAll')->willReturn([$config]);
-
-        $svc = new CustomFieldService($cfgMapper, $this->createMock(UserCustomFieldMapper::class));
-        $this->assertSame([$config], $svc->getActiveUserConfigs());
-    }
 }

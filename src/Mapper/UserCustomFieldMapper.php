@@ -53,41 +53,6 @@ class UserCustomFieldMapper
     }
 
     /**
-     * Return all UserCustomField rows for multiple users.
-     * Result is nested: [user_id => [config_id => UserCustomField]]
-     *
-     * @param  int[] $userIds
-     * @return array<int, array<int, UserCustomField>>
-     */
-    public function loadForUsers(array $userIds): array
-    {
-        if (empty($userIds)) {
-            return [];
-        }
-
-        $params = [];
-        foreach ($userIds as $i => $id) {
-            $params[":id{$i}"] = (int) $id;
-        }
-        $placeholders = implode(', ', array_keys($params));
-
-        $rows = $this->crud()->runFetch(
-            'SELECT * FROM ' . $this->table() . ' WHERE user_id IN (' . $placeholders . ')',
-            $params
-        );
-
-        $result = [];
-        foreach ($rows ?: [] as $row) {
-            $f          = new UserCustomField();
-            $f->user_id = (int) $row['user_id'];
-            $f->type    = (int) $row['type'];
-            $f->data    = (string) $row['data'];
-            $result[$f->user_id][$f->type] = $f;
-        }
-        return $result;
-    }
-
-    /**
      * Upsert a single field value.
      * The PK is composite (user_id, type), so this tries an INSERT first and
      * falls back to an UPDATE on a constraint violation — portable across
