@@ -134,6 +134,27 @@ class NewflagMapper
     }
 
     /**
+     * Re-key newflag rows for the given message ids from $oldForumId to
+     * $newForumId. Used when a thread-merge moves messages into a different
+     * forum — without this, already-read state stays keyed to the forum the
+     * messages used to live in and those posts reappear as unread.
+     *
+     * @param int[] $messageIds
+     */
+    public function moveForumForMessages(int $oldForumId, int $newForumId, array $messageIds): void
+    {
+        if (empty($messageIds)) {
+            return;
+        }
+        $ids = implode(', ', array_map('intval', $messageIds));
+        $this->crud()->run(
+            'UPDATE ' . $this->table()
+            . " SET forum_id = :new WHERE forum_id = :old AND message_id IN ({$ids})",
+            [':new' => $newForumId, ':old' => $oldForumId]
+        );
+    }
+
+    /**
      * Count unread messages per forum in a single query.
      * Returns [forum_id => count] — only forums with unread messages appear.
      *

@@ -12,6 +12,7 @@ use Phorum\Http\Response;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
+use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\ReportMapper;
 use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\SubscriberMapper;
@@ -55,7 +56,7 @@ class ModerationController extends Controller
         $this->perms             = $perms             ?? new PermissionService(new UserPermissionMapper());
         $this->searchIndex       = $searchIndex       ?? new SearchMapper();
         $this->subscriptions     = $subscriptions     ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
-        $this->moderationService = $moderationService ?? new ModerationService($this->messages, $this->forums, new UserMapper(), new SubscriberMapper());
+        $this->moderationService = $moderationService ?? new ModerationService($this->messages, $this->forums, new UserMapper(), new SubscriberMapper(), new NewflagMapper());
         $this->modLog            = $modLog            ?? new ModLogMapper();
         $this->reports           = $reports           ?? new ReportMapper();
     }

@@ -54,6 +54,40 @@ class NewflagMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // moveForumForMessages
+    // -------------------------------------------------------------------------
+
+    public function testMoveForumForMessagesRekeysOnlyGivenMessagesUnderOldForum(): void
+    {
+        $this->insert('phorum_user_newflags', ['user_id' => 1, 'forum_id' => 4, 'message_id' => 100]);
+        $this->insert('phorum_user_newflags', ['user_id' => 1, 'forum_id' => 4, 'message_id' => 200]);
+        // Unrelated flag under the same old forum, for a message not being moved.
+        $this->insert('phorum_user_newflags', ['user_id' => 1, 'forum_id' => 4, 'message_id' => 300]);
+
+        $mapper = $this->makeMapper();
+        $mapper->moveForumForMessages(4, 9, [100, 200]);
+
+        $movedFlags = $mapper->getFlags(1, 9);
+        $this->assertArrayHasKey(100, $movedFlags);
+        $this->assertArrayHasKey(200, $movedFlags);
+
+        $remainingUnderOldForum = $mapper->getFlags(1, 4);
+        $this->assertArrayHasKey(300, $remainingUnderOldForum);
+        $this->assertArrayNotHasKey(100, $remainingUnderOldForum);
+        $this->assertArrayNotHasKey(200, $remainingUnderOldForum);
+    }
+
+    public function testMoveForumForMessagesIsNoOpForEmptyMessageList(): void
+    {
+        $this->insert('phorum_user_newflags', ['user_id' => 1, 'forum_id' => 4, 'message_id' => 100]);
+
+        $mapper = $this->makeMapper();
+        $mapper->moveForumForMessages(4, 9, []);
+
+        $this->assertArrayHasKey(100, $mapper->getFlags(1, 4));
+    }
+
+    // -------------------------------------------------------------------------
     // getMinFlagId
     // -------------------------------------------------------------------------
 

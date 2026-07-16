@@ -6,6 +6,7 @@ namespace Phorum\Tests\Service;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
+use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Model\Message;
 use Phorum\Service\ModerationService;
@@ -289,6 +290,37 @@ class ModerationServiceTest extends TestCase
             ->with($this->logicalOr(1, 9));
 
         $svc = new ModerationService($msgMapper, $forumMapper);
+        $this->assertTrue($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadRekeysNewflagsToTargetForumWhenForumsDiffer(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 4, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 9, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+        $msgMapper->method('findIdsByThread')->with(1)->willReturn([1, 5, 6]);
+
+        $newflags = $this->createMock(NewflagMapper::class);
+        $newflags->expects($this->once())->method('moveForumForMessages')->with(4, 9, [1, 5, 6]);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class), null, null, $newflags);
+        $this->assertTrue($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadDoesNotRekeyNewflagsWhenSameForum(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 1, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+
+        $newflags = $this->createMock(NewflagMapper::class);
+        $newflags->expects($this->never())->method('moveForumForMessages');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class), null, null, $newflags);
         $this->assertTrue($svc->mergeThread(1, 2));
     }
 

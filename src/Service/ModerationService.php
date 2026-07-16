@@ -5,6 +5,7 @@ namespace Phorum\Service;
 
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
+use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 
@@ -15,6 +16,7 @@ class ModerationService
         private readonly ForumMapper       $forums,
         private readonly ?UserMapper       $users       = null,
         private readonly ?SubscriberMapper $subscribers = null,
+        private readonly ?NewflagMapper    $newflags    = null,
     ) {}
 
     /**
@@ -115,14 +117,21 @@ class ModerationService
         $target = $this->messages->load($targetThreadId);
         if ($target === null || $target->parent_id !== 0) return false;
 
-        $sourceForumId = $source->forum_id;
-        $targetForumId = $target->forum_id;
+        $sourceForumId    = $source->forum_id;
+        $targetForumId    = $target->forum_id;
+        $sourceMessageIds = $this->messages->findIdsByThread($sourceThreadId);
 
         $this->messages->mergeThread($sourceThreadId, $targetThreadId, $targetForumId);
         // The merged-in messages keep whatever `closed` value they had in the
         // source thread; reconcile them to the surviving (target) thread's
         // state so editability/reply-eligibility matches the thread they now live in.
         $this->messages->setClosedForThread($targetThreadId, $target->closed);
+        if ($sourceForumId !== $targetForumId) {
+            // Newflags are keyed by (user, forum, message) — without this,
+            // already-read state stays under the old forum_id and these
+            // posts reappear as unread now that they live in a new forum.
+            $this->newflags?->moveForumForMessages($sourceForumId, $targetForumId, $sourceMessageIds);
+        }
         $this->subscribers?->deleteForThread($sourceForumId, $sourceThreadId);
         $this->messages->recalcThreadStats($targetThreadId);
         $this->forums->recalcStats($sourceForumId);
