@@ -137,6 +137,63 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    /**
+     * canModerate/canEdit/edit_time_limit are the same for every message in
+     * the thread — thread() must resolve each once per request, not once per
+     * message (a regression that turned a thread render into an N+1 query
+     * storm of permission checks).
+     */
+    public function testThreadResolvesEditPermissionsOncePerRequestNotPerMessage(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root  = $this->makeMessage(10, 1, 10);
+        $reply1 = $this->makeMessage(11, 1, 10);
+        $reply2 = $this->makeMessage(12, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByThread')->willReturn([$root, $reply1, $reply2]);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+        $perms->method('canReply')->willReturn(true);
+        $perms->method('canModerate')->willReturn(false);
+        $perms->expects($this->once())->method('canEdit')->willReturn(true);
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->expects($this->once())->method('getSetting')->with('edit_time_limit')->willReturn(null);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $newflags = $this->createMock(NewflagService::class);
+        $newflags->method('getNewMessageIds')->willReturn([]);
+
+        $announcements = $this->createMock(AnnouncementService::class);
+        $announcements->method('getAnnouncementsFor')->willReturn([]);
+
+        // Built directly (not via makeController()) so the perms/settings
+        // mocks above keep their exact once() expectations — makeController()
+        // unconditionally layers its own default stubs on top of any mock it's given.
+        $ctrl = new MessageController(
+            config:        $this->makeConfig(),
+            twig:          $this->makeTwig(),
+            forums:        $forums,
+            messages:      $messages,
+            perms:         $perms,
+            fileService:   $this->createMock(FileService::class),
+            newflags:      $newflags,
+            subscriptions: $subs,
+            users:         $this->createMock(UserMapper::class),
+            announcements: $announcements,
+            settings:      $settings,
+        );
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
     // -------------------------------------------------------------------------
     // post
     // -------------------------------------------------------------------------

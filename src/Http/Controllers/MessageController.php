@@ -94,13 +94,36 @@ class MessageController extends Controller
      * otherwise the post must be their own, the ALLOW_EDIT permission bit
      * set, the thread not closed, and (if configured) within the site-wide
      * edit time limit since the post was made.
+     *
+     * Resolves canModerate/canEdit/edit_time_limit itself — fine for a
+     * single message (editMessage()'s use), but callers checking many
+     * messages at once (thread()'s can_edit_ids) should precompute those
+     * three and call canEditMessageWithContext() per message instead, since
+     * they don't vary per message.
      */
     private function canEditMessage(Message $msg, Forum $forum, ?User $currentUser): bool
     {
         if ($currentUser === null) {
             return false;
         }
-        if ($this->perms->canModerate($forum, $currentUser)) {
+        return $this->canEditMessageWithContext(
+            $msg,
+            $currentUser,
+            isModerator: $this->perms->canModerate($forum, $currentUser),
+            canEditBit:  $this->perms->canEdit($forum, $currentUser),
+            editTimeLimit: (int) ($this->settings->getSetting('edit_time_limit') ?? 0),
+        );
+    }
+
+    /** Per-message part of canEditMessage(), given the already-resolved, message-invariant context. */
+    private function canEditMessageWithContext(
+        Message $msg,
+        User    $currentUser,
+        bool    $isModerator,
+        bool    $canEditBit,
+        int     $editTimeLimit
+    ): bool {
+        if ($isModerator) {
             return true;
         }
         if ($msg->user_id !== $currentUser->user_id) {
@@ -109,12 +132,10 @@ class MessageController extends Controller
         if ($msg->closed) {
             return false;
         }
-        if (!$this->perms->canEdit($forum, $currentUser)) {
+        if (!$canEditBit) {
             return false;
         }
-
-        $limit = (int) ($this->settings->getSetting('edit_time_limit') ?? 0);
-        if ($limit > 0 && (time() - $msg->datestamp) > $limit * 60) {
+        if ($editTimeLimit > 0 && (time() - $msg->datestamp) > $editTimeLimit * 60) {
             return false;
         }
 
@@ -183,10 +204,17 @@ class MessageController extends Controller
             $threadMessages = $hookResult;
         }
 
-        $canEditIds = array_values(array_map(
-            fn($m) => $m->message_id,
-            array_filter($threadMessages, fn($m) => $this->canEditMessage($m, $forum, $currentUser))
-        ));
+        $canEditIds = [];
+        if ($currentUser !== null) {
+            $canEditBit    = $this->perms->canEdit($forum, $currentUser);
+            $editTimeLimit = (int) ($this->settings->getSetting('edit_time_limit') ?? 0);
+            $canEditIds    = array_values(array_map(
+                fn($m) => $m->message_id,
+                array_filter($threadMessages, fn($m) => $this->canEditMessageWithContext(
+                    $m, $currentUser, $canModerate, $canEditBit, $editTimeLimit
+                ))
+            ));
+        }
 
         $userIds  = array_values(array_unique(array_filter(
             array_map(fn($m) => $m->user_id, $threadMessages),
