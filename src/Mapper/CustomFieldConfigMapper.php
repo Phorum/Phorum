@@ -19,6 +19,9 @@ class CustomFieldConfigMapper
     private const SETTING_KEY      = 'PROFILE_FIELDS';
     private const MAX_CAS_ATTEMPTS = 5;
 
+    /** Per-instance cache of the decoded PROFILE_FIELDS blob; kept in sync by mutate(). */
+    private ?array $cache = null;
+
     public function __construct(
         private readonly SettingMapper $settings = new SettingMapper(),
     ) {}
@@ -101,7 +104,10 @@ class CustomFieldConfigMapper
 
     private function loadAll(): array
     {
-        return $this->settings->getSetting(self::SETTING_KEY) ?? [];
+        if ($this->cache === null) {
+            $this->cache = $this->settings->getSetting(self::SETTING_KEY) ?? [];
+        }
+        return $this->cache;
     }
 
     /**
@@ -120,6 +126,7 @@ class CustomFieldConfigMapper
             $updated = $mutate($fields);
 
             if ($this->settings->compareAndSwap(self::SETTING_KEY, $row?->data, $updated)) {
+                $this->cache = $updated;
                 return;
             }
         }

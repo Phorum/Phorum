@@ -47,18 +47,37 @@ class SchemaInstaller
         $sql = (string) file_get_contents($this->schemaFile);
         preg_match_all('/CREATE TABLE IF NOT EXISTS \{PREFIX\}_(\w+)/', $sql, $matches);
 
-        $prefix  = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
-        $crud    = $this->crud();
-        $pending = [];
+        $prefix   = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
+        $existing = $this->existingTableNames($prefix);
 
+        $pending = [];
         foreach ($matches[1] as $baseName) {
-            try {
-                $crud->runFetch("SELECT 1 FROM {$prefix}_{$baseName} LIMIT 1", []);
-            } catch (\Throwable) {
+            if (!in_array($prefix . '_' . $baseName, $existing, true)) {
                 $pending[] = $baseName;
             }
         }
 
         return $pending;
+    }
+
+    /**
+     * All currently-existing table names starting with $prefix, in one
+     * query rather than one existence probe per table.
+     *
+     * @return string[]
+     */
+    private function existingTableNames(string $prefix): array
+    {
+        $crud   = $this->crud();
+        $driver = $crud->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        $like   = $prefix . '\_%';
+
+        $sql = $driver === 'sqlite'
+            ? "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE :pattern ESCAPE '\\'"
+            : "SELECT table_name AS name FROM information_schema.tables"
+              . " WHERE table_schema = DATABASE() AND table_name LIKE :pattern ESCAPE '\\'";
+
+        $rows = $crud->runFetch($sql, [':pattern' => $like]);
+        return array_column($rows, 'name');
     }
 }

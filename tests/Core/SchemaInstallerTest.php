@@ -74,6 +74,39 @@ class SchemaInstallerTest extends TestCase
         $this->assertSame(['new_table'], $installer->pendingTables());
     }
 
+    /**
+     * pendingTables() must check existence with one query for all tables,
+     * not one existence probe per table (an N+1 that grows with every
+     * table the schema adds).
+     */
+    public function testPendingTablesQueriesExistenceOnce(): void
+    {
+        $counting = new class($this->pdo) extends CRUD {
+            public int $queryCount = 0;
+            public function runFetch(string $query, array $params = []): array
+            {
+                $this->queryCount++;
+                return parent::runFetch($query, $params);
+            }
+        };
+
+        $installer = new class($this->fixture, $counting) extends SchemaInstaller {
+            private readonly CRUD $testCrud;
+            public function __construct(?string $schemaFile, CRUD $testCrud)
+            {
+                parent::__construct($schemaFile);
+                $this->testCrud = $testCrud;
+            }
+            protected function crud(): CRUD
+            {
+                return $this->testCrud;
+            }
+        };
+
+        $installer->pendingTables();
+        $this->assertSame(1, $counting->queryCount);
+    }
+
     public function testApplyCreatesMissingTable(): void
     {
         $installer = $this->makeInstaller();

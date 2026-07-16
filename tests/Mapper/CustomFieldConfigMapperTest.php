@@ -169,6 +169,40 @@ class CustomFieldConfigMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // Per-instance caching
+    // -------------------------------------------------------------------------
+
+    public function testLoadAllOnlyFetchesTheSettingOnceWithinAnInstance(): void
+    {
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->expects($this->once())->method('getSetting')->willReturn([
+            1 => ['name' => 'bio', 'length' => 255, 'html_disabled' => false, 'show_in_admin' => false, 'deleted' => false],
+        ]);
+
+        $mapper = new CustomFieldConfigMapper($settings);
+        $mapper->findAll();
+        $mapper->findAll();
+        $mapper->load(1);
+    }
+
+    public function testFindAllUsesUpdatedCacheAfterSaveWithoutExtraQuery(): void
+    {
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->expects($this->once())->method('getSetting')->willReturn([]);
+        $settings->method('getSettingRow')->willReturn(null);
+        $settings->method('compareAndSwap')->willReturn(true);
+
+        $mapper = new CustomFieldConfigMapper($settings);
+        $this->assertCount(0, $mapper->findAll());
+
+        $config       = new CustomFieldConfig();
+        $config->name = 'bio';
+        $mapper->save($config);
+
+        $this->assertCount(1, $mapper->findAll());
+    }
+
+    // -------------------------------------------------------------------------
     // Concurrent-edit safety
     // -------------------------------------------------------------------------
 
