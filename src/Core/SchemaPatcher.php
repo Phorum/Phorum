@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Core;
 
-use DealNews\DB\CRUD;
+use Phorum\Core\Concerns\HasCrud;
 use Phorum\Core\Concerns\SplitsSqlStatements;
 use Phorum\Mapper\SettingMapper;
 
@@ -22,11 +22,10 @@ use Phorum\Mapper\SettingMapper;
  */
 class SchemaPatcher
 {
+    use HasCrud;
     use SplitsSqlStatements;
 
     private const SETTING_KEY = 'schema_patch_level';
-
-    private ?CRUD $crud = null;
 
     private readonly string $patchDir;
     private readonly SettingMapper $settings;
@@ -111,14 +110,5 @@ class SchemaPatcher
     {
         $name = pathinfo($file, PATHINFO_FILENAME);
         return str_replace('_', ' ', preg_replace('/^\d+_/', '', $name));
-    }
-
-    protected function crud(): CRUD
-    {
-        if ($this->crud === null) {
-            $db         = defined('PHORUM_DB') ? PHORUM_DB : 'phorum';
-            $this->crud = CRUD::factory($db);
-        }
-        return $this->crud;
     }
 }

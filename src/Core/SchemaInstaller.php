@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Core;
 
-use DealNews\DB\CRUD;
+use Phorum\Core\Concerns\HasCrud;
 use Phorum\Core\Concerns\SplitsSqlStatements;
 
 /**
@@ -16,9 +16,8 @@ use Phorum\Core\Concerns\SplitsSqlStatements;
  */
 class SchemaInstaller
 {
+    use HasCrud;
     use SplitsSqlStatements;
-
-    private ?CRUD $crud = null;
 
     private readonly string $schemaFile;
 
@@ -61,14 +60,5 @@ class SchemaInstaller
         }
 
         return $pending;
-    }
-
-    protected function crud(): CRUD
-    {
-        if ($this->crud === null) {
-            $db         = defined('PHORUM_DB') ? PHORUM_DB : 'phorum';
-            $this->crud = CRUD::factory($db);
-        }
-        return $this->crud;
     }
 }
