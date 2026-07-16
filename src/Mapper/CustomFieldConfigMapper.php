@@ -16,7 +16,8 @@ use Phorum\Model\CustomFieldConfig;
  */
 class CustomFieldConfigMapper
 {
-    private const SETTING_KEY = 'PROFILE_FIELDS';
+    private const SETTING_KEY      = 'PROFILE_FIELDS';
+    private const MAX_CAS_ATTEMPTS = 5;
 
     public function __construct(
         private readonly SettingMapper $settings = new SettingMapper(),
@@ -66,34 +67,36 @@ class CustomFieldConfigMapper
 
     public function save(CustomFieldConfig $config): CustomFieldConfig
     {
-        $fields = $this->loadAll();
-
-        if ($config->id === 0) {
-            $high = (int) ($fields['num_fields'] ?? 0);
-            foreach ($fields as $id => $row) {
-                if ($id !== 'num_fields' && (int) $id > $high) {
-                    $high = (int) $id;
+        $this->mutate(function (array $fields) use ($config) {
+            if ($config->id === 0) {
+                $high = (int) ($fields['num_fields'] ?? 0);
+                foreach ($fields as $id => $row) {
+                    if ($id !== 'num_fields' && (int) $id > $high) {
+                        $high = (int) $id;
+                    }
                 }
+                $config->id           = $high + 1;
+                $fields['num_fields'] = $config->id;
             }
-            $config->id            = $high + 1;
-            $fields['num_fields']  = $config->id;
-        }
 
-        $fields[$config->id] = $this->dehydrate($config);
-        $this->saveAll($fields);
+            $fields[$config->id] = $this->dehydrate($config);
+            return $fields;
+        });
 
         return $config;
     }
 
     public function delete(int $id): bool
     {
-        $fields = $this->loadAll();
-        if (!isset($fields[$id])) {
-            return false;
-        }
-        unset($fields[$id]);
-        $this->saveAll($fields);
-        return true;
+        $deleted = false;
+        $this->mutate(function (array $fields) use ($id, &$deleted) {
+            if (isset($fields[$id])) {
+                unset($fields[$id]);
+                $deleted = true;
+            }
+            return $fields;
+        });
+        return $deleted;
     }
 
     private function loadAll(): array
@@ -101,9 +104,27 @@ class CustomFieldConfigMapper
         return $this->settings->getSetting(self::SETTING_KEY) ?? [];
     }
 
-    private function saveAll(array $fields): void
+    /**
+     * Apply $mutate to the current field set and write it back with
+     * optimistic concurrency: if another admin saved a different field
+     * in between our read and write, the compare-and-swap fails and we
+     * reload, re-run $mutate against the fresh state, and retry — instead
+     * of silently clobbering their change.
+     */
+    private function mutate(callable $mutate): void
     {
-        $this->settings->saveSetting(self::SETTING_KEY, $fields);
+        for ($attempt = 0; $attempt < self::MAX_CAS_ATTEMPTS; $attempt++) {
+            $row    = $this->settings->getSettingRow(self::SETTING_KEY);
+            $fields = $row?->getValue() ?? [];
+
+            $updated = $mutate($fields);
+
+            if ($this->settings->compareAndSwap(self::SETTING_KEY, $row?->data, $updated)) {
+                return;
+            }
+        }
+
+        throw new \RuntimeException('Could not save custom field config: too many concurrent updates.');
     }
 
     private function hydrate(int $id, array $row): CustomFieldConfig

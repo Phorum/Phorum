@@ -86,4 +86,53 @@ class SettingMapperTest extends MapperTestCase
         $this->assertSame('a', $mapper->getSetting('alpha'));
         $this->assertSame('b', $mapper->getSetting('beta'));
     }
+
+    // -------------------------------------------------------------------------
+    // getSettingRow / compareAndSwap
+    // -------------------------------------------------------------------------
+
+    public function testGetSettingRowReturnsNullForMissing(): void
+    {
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->getSettingRow('nonexistent'));
+    }
+
+    public function testCompareAndSwapInsertsWhenExpectedNull(): void
+    {
+        $mapper = $this->makeMapper();
+        $this->assertTrue($mapper->compareAndSwap('config_array', null, ['a' => 1]));
+        $this->assertSame(['a' => 1], $mapper->getSetting('config_array'));
+    }
+
+    public function testCompareAndSwapFailsToInsertWhenRowAlreadyExists(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->saveSetting('config_array', ['a' => 1]);
+
+        $this->assertFalse($mapper->compareAndSwap('config_array', null, ['a' => 2]));
+        $this->assertSame(['a' => 1], $mapper->getSetting('config_array'));
+    }
+
+    public function testCompareAndSwapUpdatesWhenRawDataUnchanged(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->saveSetting('config_array', ['a' => 1]);
+        $row = $mapper->getSettingRow('config_array');
+
+        $this->assertTrue($mapper->compareAndSwap('config_array', $row->data, ['a' => 2]));
+        $this->assertSame(['a' => 2], $mapper->getSetting('config_array'));
+    }
+
+    public function testCompareAndSwapFailsWhenRawDataChangedConcurrently(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->saveSetting('config_array', ['a' => 1]);
+        $staleRow = $mapper->getSettingRow('config_array');
+
+        // Someone else updates the row after we read $staleRow.
+        $mapper->saveSetting('config_array', ['a' => 999]);
+
+        $this->assertFalse($mapper->compareAndSwap('config_array', $staleRow->data, ['a' => 2]));
+        $this->assertSame(['a' => 999], $mapper->getSetting('config_array'));
+    }
 }

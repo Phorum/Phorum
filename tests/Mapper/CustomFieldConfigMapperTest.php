@@ -167,4 +167,54 @@ class CustomFieldConfigMapperTest extends MapperTestCase
         $result = $mapper->findByName('nonexistent');
         $this->assertNull($result);
     }
+
+    // -------------------------------------------------------------------------
+    // Concurrent-edit safety
+    // -------------------------------------------------------------------------
+
+    /**
+     * If another admin's write lands between our read and our write (their
+     * compareAndSwap() succeeds, ours would otherwise be based on stale
+     * data), save() must reload the now-current state, re-apply our change
+     * against it, and retry — instead of clobbering their change or losing
+     * ours. This is the lost-update race the CAS retry in save() exists to
+     * prevent: without it, our write would silently overwrite theirs.
+     */
+    public function testSaveRetriesAndPreservesConcurrentChangeAfterCasFailure(): void
+    {
+        $this->seedConfig(1, ['name' => 'location', 'length' => 50]);
+
+        $settings = new class extends SettingMapper {
+            public int $casAttempts = 0;
+            protected function crud(): CRUD
+            {
+                return MapperTestCase::$crud;
+            }
+            public function compareAndSwap(string $name, ?string $expectedRawData, mixed $value): bool
+            {
+                $this->casAttempts++;
+                if ($this->casAttempts === 1) {
+                    // A concurrent writer lands a change here first, so our
+                    // upcoming compare-and-swap (built from data read before
+                    // this) must fail.
+                    parent::compareAndSwap($name, $expectedRawData, [
+                        1           => ['name' => 'location', 'length' => 50, 'html_disabled' => false, 'show_in_admin' => false, 'deleted' => false],
+                        999         => ['name' => 'other', 'length' => 1, 'html_disabled' => false, 'show_in_admin' => false, 'deleted' => false],
+                        'num_fields' => 999,
+                    ]);
+                    return false;
+                }
+                return parent::compareAndSwap($name, $expectedRawData, $value);
+            }
+        };
+
+        $mapper = new CustomFieldConfigMapper($settings);
+        $config = $mapper->load(1);
+        $config->length = 777;
+        $mapper->save($config);
+
+        $this->assertSame(2, $settings->casAttempts, 'save() must retry once after the first CAS failure');
+        $this->assertSame(777, $mapper->load(1)->length, 'our edit must land after the retry');
+        $this->assertNotNull($mapper->load(999), "the concurrent writer's change must survive, not be clobbered");
+    }
 }
