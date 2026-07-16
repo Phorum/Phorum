@@ -105,6 +105,11 @@ return [
     'post.submit_thread'     => 'Post Thread',
     'post.submit_reply'      => 'Post Reply',
     'post.cancel'            => 'Cancel',
+    'post.error_subject_required' => 'Subject is required.',
+    'post.error_subject_length'   => 'Subject must be 255 characters or fewer.',
+    'post.error_body_required'    => 'Message body is required.',
+    'post.error_flood_wait'       => 'Please wait {seconds} more second(s) before posting again.',
+    'post.error_posting_blocked'  => 'Posting is not allowed from your account.',
 
     // -------------------------------------------------------------------------
     // Auth
@@ -141,6 +146,16 @@ return [
     'auth.resend_email_label'     => 'Email Address',
     'auth.resend_submit'          => 'Resend',
     'auth.resend_sent'            => 'If that address has a pending confirmation, a new link has been sent. Check your inbox.',
+    'auth.error_missing_credentials'  => 'Please enter your username and password.',
+    'auth.error_invalid_credentials'  => 'Invalid username or password.',
+    'auth.error_registration_blocked' => 'Registration is not allowed from your account.',
+    'auth.error_invalid_email'        => 'Please enter a valid email address.',
+    'auth.error_password_min_length'  => 'Password must be at least 6 characters.',
+    'auth.error_passwords_mismatch'   => 'Passwords do not match.',
+    'auth.error_username_required'    => 'Username is required.',
+    'auth.error_username_length'      => 'Username must be between 2 and 50 characters.',
+    'auth.error_email_required'       => 'A valid email address is required.',
+    'auth.error_username_taken'       => 'That username is already taken.',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -186,6 +201,13 @@ return [
     'settings.avatar_upload'     => 'Upload new avatar',
     'settings.avatar_hint'       => 'JPG, PNG, GIF, or WebP. Maximum 100 KB.',
     'settings.avatar_delete'     => 'Remove current avatar',
+    'settings.error_display_name_required' => 'Display name is required.',
+    'settings.error_display_name_length'   => 'Display name must be 50 characters or fewer.',
+    'settings.error_email_required'        => 'A valid email address is required.',
+    'settings.error_email_taken'           => 'That email address is already in use by another account.',
+    'settings.error_password_min_length'   => 'New password must be at least 6 characters.',
+    'settings.error_passwords_mismatch'    => 'Passwords do not match.',
+    'settings.error_tz_offset'             => 'Timezone offset must be between -12 and +14, or -99 for server time.',
 
     // -------------------------------------------------------------------------
     // Forced password change
@@ -195,6 +217,8 @@ return [
     'force_password_change.new_password'     => 'New Password',
     'force_password_change.confirm_password' => 'Confirm New Password',
     'force_password_change.save'      => 'Set Password',
+    'force_password_change.error_password_min_length' => 'New password must be at least 6 characters.',
+    'force_password_change.error_passwords_mismatch'  => 'Passwords do not match.',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -234,6 +258,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'Recipient is required.',
+    'pm.error_user_not_found'       => 'User "{username}" not found.',
+    'pm.error_subject_required'     => 'Subject is required.',
+    'pm.error_body_required'        => 'Message body is required.',
+    'pm.error_folder_name_required' => 'Folder name is required.',
+    'pm.error_folder_name_length'   => 'Folder name must be 60 characters or fewer.',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -281,6 +311,9 @@ return [
     'mod.merge_target'              => 'Target thread ID',
     'mod.merge_target_hint'         => 'The numeric ID of the thread to merge into (visible in its URL).',
     'mod.merge_submit'              => 'Merge Thread',
+    'mod.merge_error_not_found'      => 'That thread ID was not found.',
+    'mod.merge_error_same_thread'    => 'Choose a different thread to merge into.',
+    'mod.merge_error_failed'         => 'Unable to merge into that thread.',
     'mod.queue'                    => 'Review Queue',
     'mod.queue_title'              => 'Pending Message Queue',
     'mod.queue_empty'              => 'No messages are awaiting approval.',
@@ -326,6 +359,54 @@ return [
     'search.col_author'      => 'Author',
     'search.col_forum'       => 'Forum',
     'search.col_date'        => 'Date',
+
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum Installer',
+    'install.requirements_heading'     => 'Requirements',
+    'install.requirement_failed'       => 'failed',
+    'install.fix_requirements'         => 'Fix the requirements above before continuing.',
+    'install.fix_requirements_hint_1'  => 'Make sure',
+    'install.fix_requirements_hint_and' => 'and',
+    'install.fix_requirements_hint_2'  => 'exist (copied from the .example files) and that the database credentials are correct.',
+    'install.errors_heading'           => 'Please fix the following',
+    'install.setup_heading'            => 'Site & Admin Setup',
+    'install.site_name_label'          => 'Site Name',
+    'install.admin_account_heading'    => 'Admin Account',
+    'install.username_label'           => 'Username',
+    'install.email_label'              => 'Email',
+    'install.password_label'           => 'Password (min 8 chars)',
+    'install.confirm_password_label'   => 'Confirm Password',
+    'install.submit'                   => 'Install Phorum',
+    'install.complete_page_title'      => 'Installation Complete — Phorum',
+    'install.complete_heading'         => 'Installation Complete',
+    'install.complete_message'         => 'The database schema has been created and your admin account is ready.',
+    'install.go_to_forum'              => 'Go to Forum',
+    'install.admin_panel'              => 'Admin Panel',
+    'install.error_site_name_required'  => 'Site name is required.',
+    'install.error_username_required'   => 'Admin username is required.',
+    'install.error_username_format'     => 'Username must be 3–50 characters (letters, numbers, _ . - only).',
+    'install.error_email_required'      => 'A valid admin email address is required.',
+    'install.error_password_min_length' => 'Admin password must be at least 8 characters.',
+    'install.error_passwords_mismatch'  => 'Passwords do not match.',
+    'install.error_failed'              => 'Installation failed: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum Upgrade',
+    'upgrade.detected_heading'    => 'Existing Phorum 6 database detected',
+    'upgrade.detected_message'    => 'This database was created by Phorum 6. Phorum 10 is schema-compatible with Phorum 6 — no existing data will be changed, deleted, or converted.',
+    'upgrade.up_to_date'          => 'No schema changes are needed — this database is already up to date.',
+    'upgrade.new_tables_heading'  => 'The following new tables will be added:',
+    'upgrade.new_patches_heading' => 'The following schema updates will be applied:',
+    'upgrade.submit'              => 'Continue',
+    'upgrade.complete_page_title' => 'Upgrade Complete — Phorum',
+    'upgrade.complete_heading'    => 'Upgrade Complete',
+    'upgrade.complete_message'    => 'Your Phorum 6 database is now ready to run on Phorum 10.',
+    'upgrade.go_to_forum'         => 'Go to Forum',
+    'upgrade.admin_panel'         => 'Admin Panel',
 
     // -------------------------------------------------------------------------
     // Errors

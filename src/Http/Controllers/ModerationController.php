@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -358,10 +359,10 @@ class ModerationController extends Controller
         };
 
         if ($targetRoot === null || $targetRoot->parent_id !== 0) {
-            return $formError('That thread ID was not found.');
+            return $formError(Lang::get('mod.merge_error_not_found'));
         }
         if ($targetThreadId === $root->message_id) {
-            return $formError('Choose a different thread to merge into.');
+            return $formError(Lang::get('mod.merge_error_same_thread'));
         }
         if ($targetForum === null || !$this->perms->canModerate($targetForum, $user)) {
             return $this->forbidden();
@@ -369,7 +370,7 @@ class ModerationController extends Controller
 
         $merged = $this->moderationService->mergeThread($root->message_id, $targetThreadId);
         if (!$merged) {
-            return $formError('Unable to merge into that thread.');
+            return $formError(Lang::get('mod.merge_error_failed'));
         }
 
         $this->modLog->record(

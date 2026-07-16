@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -172,20 +173,20 @@ class PmController extends Controller
             $body       = trim($request->post['body']        ?? '');
 
             if ($toUsername === '') {
-                $errors[] = 'Recipient is required.';
+                $errors[] = Lang::get('pm.error_recipient_required');
             } else {
                 $toUser = $users->findByUsername($toUsername);
                 if ($toUser === null || !$toUser->active) {
-                    $errors[] = "User \"{$toUsername}\" not found.";
+                    $errors[] = Lang::get('pm.error_user_not_found', ['username' => $toUsername]);
                 }
             }
 
             if ($subject === '') {
-                $errors[] = 'Subject is required.';
+                $errors[] = Lang::get('pm.error_subject_required');
             }
 
             if ($body === '') {
-                $errors[] = 'Message body is required.';
+                $errors[] = Lang::get('pm.error_body_required');
             }
 
             if (empty($errors) && $toUser !== null) {
@@ -309,9 +310,9 @@ class PmController extends Controller
             if ($r = $this->checkCsrf($request)) { return $r; }
             $name = trim($request->post['foldername'] ?? '');
             if ($name === '') {
-                $errors[] = 'Folder name is required.';
+                $errors[] = Lang::get('pm.error_folder_name_required');
             } elseif (mb_strlen($name) > 60) {
-                $errors[] = 'Folder name must be 60 characters or fewer.';
+                $errors[] = Lang::get('pm.error_folder_name_length');
             } else {
                 $service->createFolder($user->user_id, $name);
                 return $this->redirect('/pm/folders');

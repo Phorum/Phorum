@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Upgrade Complete — Phorum</title>
+    <title>{{ trans('upgrade.complete_page_title') }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -17,7 +17,7 @@
 <body>
 <nav>
     <div class="nav-wrapper container">
-        <span class="brand-logo">Phorum Upgrade</span>
+        <span class="brand-logo">{{ trans('upgrade.page_title') }}</span>
     </div>
 </nav>
 
@@ -25,16 +25,16 @@
     <div class="card">
         <div class="card-content">
             <i class="material-icons big-icon">check_circle</i>
-            <h4>Upgrade Complete</h4>
+            <h4>{{ trans('upgrade.complete_heading') }}</h4>
             <p class="grey-text">
-                Your Phorum 6 database is now ready to run on Phorum 10.
+                {{ trans('upgrade.complete_message') }}
             </p>
             <div style="margin-top: 24px;">
                 <a href="{{ path('/') }}" class="btn green darken-3 waves-effect waves-light" style="margin-right: 12px;">
-                    <i class="material-icons left">home</i>Go to Forum
+                    <i class="material-icons left">home</i>{{ trans('upgrade.go_to_forum') }}
                 </a>
                 <a href="{{ path('/admin/login') }}" class="btn blue darken-2 waves-effect waves-light">
-                    <i class="material-icons left">admin_panel_settings</i>Admin Panel
+                    <i class="material-icons left">admin_panel_settings</i>{{ trans('upgrade.admin_panel') }}
                 </a>
             </div>
         </div>

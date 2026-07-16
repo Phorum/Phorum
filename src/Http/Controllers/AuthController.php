@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Core\RedirectGuard;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -57,11 +58,11 @@ class AuthController extends Controller
             $remember = !empty($request->post['remember']);
 
             if ($username === '' || $password === '') {
-                $error = 'Please enter your username and password.';
+                $error = Lang::get('auth.error_missing_credentials');
             } else {
                 $user = $this->authService->login($username, $password, $remember);
                 if ($user === null) {
-                    $error = 'Invalid username or password.';
+                    $error = Lang::get('auth.error_invalid_credentials');
                 } else {
                     $redirect = RedirectGuard::sanitizePath($request->post['redirect'] ?? '/');
                     if ($user->force_password_change) {
@@ -118,7 +119,7 @@ class AuthController extends Controller
                     $this->banService->checkEmail($email, forumId: 0) ||
                     $this->banService->checkUsername($username, forumId: 0)
                 ) {
-                    $error = 'Registration is not allowed from your account.';
+                    $error = Lang::get('auth.error_registration_blocked');
                 }
             }
 
@@ -173,7 +174,7 @@ class AuthController extends Controller
             $baseUrl = (string) $this->config->get('base_url', '');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Please enter a valid email address.';
+                $error = Lang::get('auth.error_invalid_email');
             } else {
                 $this->authService->resendConfirmation($email, $baseUrl);
                 $sent = true;
@@ -205,7 +206,7 @@ class AuthController extends Controller
             $email = trim($request->post['email'] ?? '');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Please enter a valid email address.';
+                $error = Lang::get('auth.error_invalid_email');
             } else {
                 $baseUrl = (string) $this->config->get('base_url', '');
                 $this->authService->requestPasswordReset($email, $baseUrl);
@@ -249,9 +250,9 @@ class AuthController extends Controller
             $password2 = $request->post['password2'] ?? '';
 
             if (strlen($password) < 6) {
-                $error = 'Password must be at least 6 characters.';
+                $error = Lang::get('auth.error_password_min_length');
             } elseif ($password !== $password2) {
-                $error = 'Passwords do not match.';
+                $error = Lang::get('auth.error_passwords_mismatch');
             } else {
                 $service->resetPassword($user, $password);
                 return $this->redirect('/');
@@ -276,25 +277,25 @@ class AuthController extends Controller
         string $password2
     ): ?string {
         if ($username === '') {
-            return 'Username is required.';
+            return Lang::get('auth.error_username_required');
         }
         if (strlen($username) < 2 || strlen($username) > 50) {
-            return 'Username must be between 2 and 50 characters.';
+            return Lang::get('auth.error_username_length');
         }
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return 'A valid email address is required.';
+            return Lang::get('auth.error_email_required');
         }
         if (strlen($password) < 6) {
-            return 'Password must be at least 6 characters.';
+            return Lang::get('auth.error_password_min_length');
         }
         if ($password !== $password2) {
-            return 'Passwords do not match.';
+            return Lang::get('auth.error_passwords_mismatch');
         }
 
         // Check username not already taken
         $existing = $this->users->findByUsername($username);
         if ($existing !== null) {
-            return 'That username is already taken.';
+            return Lang::get('auth.error_username_taken');
         }
 
         return null;

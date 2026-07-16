@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Phorum Installer</title>
+    <title>{{ trans('install.page_title') }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -19,7 +19,7 @@
 <body>
 <nav>
     <div class="nav-wrapper container">
-        <span class="brand-logo">Phorum Installer</span>
+        <span class="brand-logo">{{ trans('install.page_title') }}</span>
     </div>
 </nav>
 
@@ -28,13 +28,13 @@
     {# Requirements #}
     <div class="card">
         <div class="card-content">
-            <span class="card-title">Requirements</span>
+            <span class="card-title">{{ trans('install.requirements_heading') }}</span>
             <table class="req-row">
                 <tbody>
                 {% for req in requirements %}
                 <tr>
                     <td>{{ req.name }}</td>
-                    <td><span class="chip {{ req.ok ? 'ok' : 'fail' }}">{{ req.ok ? req.value : (req.ok ? req.value : 'failed') }}</span></td>
+                    <td><span class="chip {{ req.ok ? 'ok' : 'fail' }}">{{ req.ok ? req.value : trans('install.requirement_failed') }}</span></td>
                     <td>
                         {% if req.ok %}
                             <i class="material-icons green-text">check_circle</i>
@@ -59,10 +59,9 @@
     {% if not can_install %}
     <div class="card red lighten-4">
         <div class="card-content red-text text-darken-3">
-            <strong>Fix the requirements above before continuing.</strong>
-            Make sure <code>etc/config.ini</code> and <code>etc/phorum.php</code>
-            exist (copy from the <code>.example</code> files) and that the database
-            credentials are correct.
+            <strong>{{ trans('install.fix_requirements') }}</strong>
+            {{ trans('install.fix_requirements_hint_1') }} <code>etc/config.ini</code> {{ trans('install.fix_requirements_hint_and') }} <code>etc/phorum.php</code>
+            {{ trans('install.fix_requirements_hint_2') }}
         </div>
     </div>
     {% else %}
@@ -71,7 +70,7 @@
     {% if errors %}
     <div class="card red lighten-4">
         <div class="card-content">
-            <span class="card-title red-text text-darken-3">Please fix the following</span>
+            <span class="card-title red-text text-darken-3">{{ trans('install.errors_heading') }}</span>
             <ul class="browser-default">
                 {% for e in errors %}<li>{{ e }}</li>{% endfor %}
             </ul>
@@ -82,7 +81,7 @@
     {# Install form #}
     <div class="card">
         <div class="card-content">
-            <span class="card-title">Site &amp; Admin Setup</span>
+            <span class="card-title">{{ trans('install.setup_heading') }}</span>
             <form method="post" action="{{ path('/install') }}">
                 {{ csrf_field() }}
 
@@ -90,33 +89,33 @@
                     <div class="input-field col s12 m6">
                         <input id="site_name" name="site_name" type="text"
                                value="{{ values.site_name|e }}" required>
-                        <label for="site_name">Site Name</label>
+                        <label for="site_name">{{ trans('install.site_name_label') }}</label>
                     </div>
                 </div>
 
-                <p class="grey-text">Admin Account</p>
+                <p class="grey-text">{{ trans('install.admin_account_heading') }}</p>
 
                 <div class="row">
                     <div class="input-field col s12 m4">
                         <input id="admin_username" name="admin_username" type="text"
                                value="{{ values.admin_username|e }}" required>
-                        <label for="admin_username">Username</label>
+                        <label for="admin_username">{{ trans('install.username_label') }}</label>
                     </div>
                     <div class="input-field col s12 m4">
                         <input id="admin_email" name="admin_email" type="email"
                                value="{{ values.admin_email|e }}" required>
-                        <label for="admin_email">Email</label>
+                        <label for="admin_email">{{ trans('install.email_label') }}</label>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="input-field col s12 m4">
                         <input id="admin_password" name="admin_password" type="password" required>
-                        <label for="admin_password">Password (min 8 chars)</label>
+                        <label for="admin_password">{{ trans('install.password_label') }}</label>
                     </div>
                     <div class="input-field col s12 m4">
                         <input id="admin_password2" name="admin_password2" type="password" required>
-                        <label for="admin_password2">Confirm Password</label>
+                        <label for="admin_password2">{{ trans('install.confirm_password_label') }}</label>
                     </div>
                 </div>
 
@@ -124,7 +123,7 @@
                     <div class="col s12">
                         <button type="submit" class="btn btn-large green darken-3 waves-effect waves-light">
                             <i class="material-icons left">install_desktop</i>
-                            Install Phorum
+                            {{ trans('install.submit') }}
                         </button>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Core\RedirectGuard;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -116,30 +117,30 @@ class UserController extends Controller
             }
 
             if ($displayName === '') {
-                $errors[] = 'Display name is required.';
+                $errors[] = Lang::get('settings.error_display_name_required');
             } elseif (mb_strlen($displayName) > 50) {
-                $errors[] = 'Display name must be 50 characters or fewer.';
+                $errors[] = Lang::get('settings.error_display_name_length');
             }
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'A valid email address is required.';
+                $errors[] = Lang::get('settings.error_email_required');
             } elseif ($email !== $currentUser->email) {
                 $taken = $this->users->findByEmail($email);
                 if ($taken !== null && $taken->user_id !== $currentUser->user_id) {
-                    $errors[] = 'That email address is already in use by another account.';
+                    $errors[] = Lang::get('settings.error_email_taken');
                 }
             }
 
             if ($password !== '') {
                 if (strlen($password) < 6) {
-                    $errors[] = 'New password must be at least 6 characters.';
+                    $errors[] = Lang::get('settings.error_password_min_length');
                 } elseif ($password !== $password2) {
-                    $errors[] = 'Passwords do not match.';
+                    $errors[] = Lang::get('settings.error_passwords_mismatch');
                 }
             }
 
             if ($tzOffset !== -99.0 && ($tzOffset < -12.0 || $tzOffset > 14.0)) {
-                $errors[] = 'Timezone offset must be between -12 and +14, or -99 for server time.';
+                $errors[] = Lang::get('settings.error_tz_offset');
             }
 
             if (empty($errors)) {
@@ -203,9 +204,9 @@ class UserController extends Controller
             $password2 = $request->post['password2'] ?? '';
 
             if (strlen($password) < 6) {
-                $errors[] = 'New password must be at least 6 characters.';
+                $errors[] = Lang::get('force_password_change.error_password_min_length');
             } elseif ($password !== $password2) {
-                $errors[] = 'Passwords do not match.';
+                $errors[] = Lang::get('force_password_change.error_passwords_mismatch');
             }
 
             if (empty($errors)) {

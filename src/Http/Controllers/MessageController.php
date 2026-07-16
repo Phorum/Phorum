@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -289,20 +290,20 @@ class MessageController extends Controller
                 if ($parent !== null) {
                     $subject = 'Re: ' . $parent->subject;
                 } else {
-                    $errors[] = 'Subject is required.';
+                    $errors[] = Lang::get('post.error_subject_required');
                 }
             }
             if (mb_strlen($subject) > 255) {
-                $errors[] = 'Subject must be 255 characters or fewer.';
+                $errors[] = Lang::get('post.error_subject_length');
             }
             if ($body === '') {
-                $errors[] = 'Message body is required.';
+                $errors[] = Lang::get('post.error_body_required');
             }
 
             if (empty($errors) && !$this->perms->canModerate($forum, $user)) {
                 $wait = $this->floodControl->secondsRemaining($user->user_id);
                 if ($wait > 0) {
-                    $errors[] = "Please wait {$wait} more second(s) before posting again.";
+                    $errors[] = Lang::get('post.error_flood_wait', ['seconds' => $wait]);
                 }
             }
 
@@ -314,7 +315,7 @@ class MessageController extends Controller
                     $this->banService->checkUsername($authorName, $forumId) ||
                     $this->banService->checkSpamWords($body, $forumId)
                 ) {
-                    $errors[] = 'Posting is not allowed from your account.';
+                    $errors[] = Lang::get('post.error_posting_blocked');
                 }
             }
 
@@ -383,13 +384,13 @@ class MessageController extends Controller
             $body    = trim($request->post['body']    ?? '');
 
             if ($subject === '') {
-                $errors[] = 'Subject is required.';
+                $errors[] = Lang::get('post.error_subject_required');
             }
             if (mb_strlen($subject) > 255) {
-                $errors[] = 'Subject must be 255 characters or fewer.';
+                $errors[] = Lang::get('post.error_subject_length');
             }
             if ($body === '') {
-                $errors[] = 'Message body is required.';
+                $errors[] = Lang::get('post.error_body_required');
             }
 
             if (empty($errors)) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Phorum Upgrade</title>
+    <title>{{ trans('upgrade.page_title') }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
 <body>
 <nav>
     <div class="nav-wrapper container">
-        <span class="brand-logo">Phorum Upgrade</span>
+        <span class="brand-logo">{{ trans('upgrade.page_title') }}</span>
     </div>
 </nav>
 
@@ -24,19 +24,17 @@
 
     <div class="card">
         <div class="card-content">
-            <span class="card-title">Existing Phorum 6 database detected</span>
+            <span class="card-title">{{ trans('upgrade.detected_heading') }}</span>
             <p>
-                This database was created by Phorum 6. Phorum 10 is schema-compatible
-                with Phorum 6 — no existing data will be changed, deleted, or
-                converted.
+                {{ trans('upgrade.detected_message') }}
             </p>
 
             {% if pending_tables is empty and pending_patches is empty %}
-                <p class="grey-text">No schema changes are needed — this database is already up to date.</p>
+                <p class="grey-text">{{ trans('upgrade.up_to_date') }}</p>
             {% endif %}
 
             {% if pending_tables is not empty %}
-                <p>The following new tables will be added:</p>
+                <p>{{ trans('upgrade.new_tables_heading') }}</p>
                 <ul class="browser-default">
                     {% for table in pending_tables %}
                         <li><code>{{ table }}</code></li>
@@ -45,7 +43,7 @@
             {% endif %}
 
             {% if pending_patches is not empty %}
-                <p>The following schema updates will be applied:</p>
+                <p>{{ trans('upgrade.new_patches_heading') }}</p>
                 <ul class="browser-default">
                     {% for patch in pending_patches %}
                         <li>{{ patch }}</li>
@@ -59,7 +57,7 @@
                     <div class="col s12">
                         <button type="submit" class="btn btn-large green darken-3 waves-effect waves-light">
                             <i class="material-icons left">upgrade</i>
-                            Continue
+                            {{ trans('upgrade.submit') }}
                         </button>
                     </div>
                 </div>

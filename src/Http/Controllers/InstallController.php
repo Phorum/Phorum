@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Http\Controllers;
 
 use DealNews\DB\CRUD;
+use Phorum\Core\Lang;
 use Phorum\Core\SchemaInstaller;
 use Phorum\Core\SchemaPatcher;
 use Phorum\Core\Version;
@@ -42,20 +43,20 @@ class InstallController extends Controller
             $adminPassword2 = $request->post['admin_password2'] ?? '';
 
             if ($values['site_name'] === '') {
-                $errors[] = 'Site name is required.';
+                $errors[] = Lang::get('install.error_site_name_required');
             }
             if ($values['admin_username'] === '') {
-                $errors[] = 'Admin username is required.';
+                $errors[] = Lang::get('install.error_username_required');
             } elseif (!preg_match('/^[a-zA-Z0-9_.-]{3,50}$/', $values['admin_username'])) {
-                $errors[] = 'Username must be 3–50 characters (letters, numbers, _ . - only).';
+                $errors[] = Lang::get('install.error_username_format');
             }
             if (!filter_var($values['admin_email'], FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'A valid admin email address is required.';
+                $errors[] = Lang::get('install.error_email_required');
             }
             if (strlen($adminPassword) < 8) {
-                $errors[] = 'Admin password must be at least 8 characters.';
+                $errors[] = Lang::get('install.error_password_min_length');
             } elseif ($adminPassword !== $adminPassword2) {
-                $errors[] = 'Passwords do not match.';
+                $errors[] = Lang::get('install.error_passwords_mismatch');
             }
 
             if (empty($errors) && $canInstall) {
@@ -63,7 +64,7 @@ class InstallController extends Controller
                     $this->runInstall($values['site_name'], $values['admin_username'], $values['admin_email'], $adminPassword);
                     return $this->redirect('/install/complete');
                 } catch (\Throwable $e) {
-                    $errors[] = 'Installation failed: ' . $e->getMessage();
+                    $errors[] = Lang::get('install.error_failed', ['message' => $e->getMessage()]);
                 }
             }
         }
