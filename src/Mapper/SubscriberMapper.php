@@ -62,6 +62,19 @@ class SubscriberMapper extends AbstractPhorumMapper
     }
 
     /**
+     * Remove every subscription for a thread (e.g. a thread being merged
+     * away — matches Phorum 6's own behavior of dropping rather than
+     * migrating subscriptions on merge).
+     */
+    public function deleteForThread(int $forumId, int $thread): void
+    {
+        $this->crud()->run(
+            'DELETE FROM ' . $this->table() . ' WHERE forum_id = :fid AND thread = :thread',
+            [':fid' => $forumId, ':thread' => $thread]
+        );
+    }
+
+    /**
      * Return the sub_type for a user/forum/thread combination, or null if not subscribed.
      */
     public function getSubscription(int $userId, int $forumId, int $thread): ?int

@@ -7,6 +7,8 @@ use PageMill\Router\Router;
 use Phorum\Core\AdminAuth;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
+use Phorum\Core\SchemaInstaller;
+use Phorum\Core\SchemaPatcher;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\SettingMapper;
@@ -36,15 +38,22 @@ class App
             $uri = substr((string) $uri, strlen($basePath)) ?: '/';
         }
 
-        $installed = $this->isInstalled();
+        $state     = $this->bootState();
+        $installed = $state === 'installed';
 
-        if (!str_starts_with((string) $uri, '/install') && !$installed) {
+        if ($state === 'fresh' && !str_starts_with((string) $uri, '/install')) {
             header('Location: ' . $basePath . '/install');
+            return;
+        }
+
+        if ($state === 'needs_upgrade' && !str_starts_with((string) $uri, '/upgrade')) {
+            header('Location: ' . $basePath . '/upgrade');
             return;
         }
 
         // Auth tables only exist after installation
         if ($installed) {
+            $this->selfHealSchema();
             Auth::initialize(new UserMapper());
             AdminAuth::initialize($this->config);
             Impersonation::initialize($this->config);
@@ -66,6 +75,10 @@ class App
         }
 
         if ($installed && $this->blockedBySiteStatus($route)) {
+            return;
+        }
+
+        if ($installed && $this->blockedByForcePasswordChange($route)) {
             return;
         }
 
@@ -114,6 +127,34 @@ class App
         }
 
         return false;
+    }
+
+    /**
+     * Force a logged-in user with force_password_change set to change their
+     * password before doing anything else — mirrors Phorum 6's own
+     * every-page-load enforcement. Login/logout, the change-password page
+     * itself, admin, and theme assets are exempt.
+     */
+    private function blockedByForcePasswordChange(array $route): bool
+    {
+        $action = (string) ($route['action'] ?? '');
+        if (str_starts_with($action, 'Admin\\')
+            || str_starts_with($action, 'ThemeController@')
+            || str_starts_with($action, 'AuthController@')
+            || $action === 'UserController@forcePasswordChange'
+        ) {
+            return false;
+        }
+
+        $user = Auth::user();
+        if ($user === null || !$user->force_password_change) {
+            return false;
+        }
+
+        $basePath = (string) $this->config->get('base_path', '');
+        $current  = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        header('Location: ' . $basePath . '/user/change-password?redirect=' . urlencode($current));
+        return true;
     }
 
     private function respondSiteStatus(string $titleKey, string $messageKey, int $status): void
@@ -224,18 +265,61 @@ class App
         Lang::load($locale);
     }
 
-    private function isInstalled(): bool
+    /**
+     * Determine what state the database is in:
+     *   - 'installed'      a fully set up Phorum 10 database.
+     *   - 'needs_upgrade'  an existing Phorum 6 database (has its own
+     *                      'internal_version' setting — present in every
+     *                      Phorum 6 database, fresh or upgraded) that has
+     *                      never been through the Phorum 10 upgrade flow.
+     *   - 'fresh'          no settings table, or a settings table with
+     *                      neither marker — a brand new database.
+     */
+    private function bootState(): string
     {
+        $prefix = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
+        $db     = defined('PHORUM_DB')        ? PHORUM_DB        : 'phorum';
+
         try {
-            $prefix = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
-            $db     = defined('PHORUM_DB')        ? PHORUM_DB        : 'phorum';
-            $rows   = \DealNews\DB\CRUD::factory($db)->runFetch(
-                "SELECT data FROM {$prefix}_settings WHERE name = 'installed'",
+            $rows = \DealNews\DB\CRUD::factory($db)->runFetch(
+                "SELECT name, data FROM {$prefix}_settings WHERE name IN ('installed', 'internal_version')",
                 []
             );
-            return !empty($rows) && !empty($rows[0]['data']);
         } catch (\Throwable) {
-            return false;
+            return 'fresh';
+        }
+
+        foreach ($rows ?: [] as $row) {
+            if ($row['name'] === 'installed' && !empty($row['data'])) {
+                return 'installed';
+            }
+        }
+        foreach ($rows ?: [] as $row) {
+            if ($row['name'] === 'internal_version') {
+                return 'needs_upgrade';
+            }
+        }
+        return 'fresh';
+    }
+
+    /**
+     * For already-installed Phorum 10 sites: if a newer release added tables
+     * or columns since this database last caught up, apply both — safe and
+     * idempotent (see SchemaInstaller/SchemaPatcher) — and record the new
+     * version. Wrapped so a failure here never breaks the request; it just
+     * retries on the next hit.
+     */
+    private function selfHealSchema(): void
+    {
+        try {
+            $settings = new SettingMapper();
+            if ($settings->getSetting('schema_version') === Version::CURRENT) {
+                return;
+            }
+            (new SchemaInstaller())->apply();
+            (new SchemaPatcher())->apply();
+            $settings->saveSetting('schema_version', Version::CURRENT);
+        } catch (\Throwable) {
         }
     }
 

@@ -43,6 +43,8 @@ class ForumMapper extends AbstractPhorumMapper
         'display_order'            => [],
         'read_length'              => [],
         'vroot'                    => [],
+        'edit_post'                => [],
+        'template_settings'        => [],
         'forum_path'               => [],
         'count_views'              => [],
         'count_views_per_thread'   => [],

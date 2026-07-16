@@ -155,6 +155,7 @@ class UserController extends Controller
 
                 if ($password !== '') {
                     $currentUser->password = password_hash($password, PASSWORD_BCRYPT);
+                    $currentUser->force_password_change = 0;
                 }
 
                 $this->users->save($currentUser);
@@ -177,6 +178,51 @@ class UserController extends Controller
             'avatar'     => $avatarFile,
             'errors'     => $errors,
             'success'    => $success,
+        ]));
+    }
+
+    // -------------------------------------------------------------------------
+    // Forced password change (admin-flagged accounts)
+    // -------------------------------------------------------------------------
+
+    public function forcePasswordChange(Request $request): Response
+    {
+        $currentUser = Auth::user();
+        if ($currentUser === null) {
+            return $this->redirect('/login?redirect=/user/change-password');
+        }
+
+        $redirect = $request->query['redirect'] ?? $request->post['redirect'] ?? '/';
+        if (!str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
+            $redirect = '/';
+        }
+
+        $errors = [];
+
+        if ($request->isPost()) {
+            if ($r = $this->checkCsrf($request)) { return $r; }
+            $password  = $request->post['password']  ?? '';
+            $password2 = $request->post['password2'] ?? '';
+
+            if (strlen($password) < 6) {
+                $errors[] = 'New password must be at least 6 characters.';
+            } elseif ($password !== $password2) {
+                $errors[] = 'Passwords do not match.';
+            }
+
+            if (empty($errors)) {
+                $currentUser->password               = password_hash($password, PASSWORD_BCRYPT);
+                $currentUser->force_password_change   = 0;
+                $this->users->save($currentUser);
+                Auth::setUser($currentUser);
+
+                return $this->redirect($redirect);
+            }
+        }
+
+        return $this->respond($this->render('user/change_password.html.twig', [
+            'errors'   => $errors,
+            'redirect' => $redirect,
         ]));
     }
 }

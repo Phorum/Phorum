@@ -69,6 +69,7 @@ return [
     'thread.reopen'          => 'Reopen',
     'thread.close'           => 'Close',
     'thread.move'            => 'Move',
+    'thread.merge'           => 'Merge',
     'thread.delete'          => 'Delete Thread',
 
     // -------------------------------------------------------------------------
@@ -187,6 +188,15 @@ return [
     'settings.avatar_delete'     => 'Remove current avatar',
 
     // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'Change Your Password',
+    'force_password_change.message'   => 'An administrator requires you to set a new password before continuing.',
+    'force_password_change.new_password'     => 'New Password',
+    'force_password_change.confirm_password' => 'Confirm New Password',
+    'force_password_change.save'      => 'Set Password',
+
+    // -------------------------------------------------------------------------
     // Private messages
     // -------------------------------------------------------------------------
     'pm.private_messages'    => 'Private Messages',
@@ -266,6 +276,11 @@ return [
     'mod.destination'              => 'Destination forum',
     'mod.choose_forum'             => '— choose a forum —',
     'mod.move_submit'              => 'Move Thread',
+    'mod.merge_title'               => 'Merge Thread',
+    'mod.merge_prompt'              => 'Merge "{subject}" into another thread. The merged thread\'s posts will be appended to the target thread, and this thread\'s subscriptions will not be preserved.',
+    'mod.merge_target'              => 'Target thread ID',
+    'mod.merge_target_hint'         => 'The numeric ID of the thread to merge into (visible in its URL).',
+    'mod.merge_submit'              => 'Merge Thread',
     'mod.queue'                    => 'Review Queue',
     'mod.queue_title'              => 'Pending Message Queue',
     'mod.queue_empty'              => 'No messages are awaiting approval.',

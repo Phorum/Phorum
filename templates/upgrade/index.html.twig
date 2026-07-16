@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phorum Upgrade</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body  { background: #f5f5f5; }
+        .brand-logo { font-size: 1.4rem !important; }
+        nav   { background-color: #2e7d32; }
+        .card { margin-top: 24px; }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-wrapper container">
+        <span class="brand-logo">Phorum Upgrade</span>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-content">
+            <span class="card-title">Existing Phorum 6 database detected</span>
+            <p>
+                This database was created by Phorum 6. Phorum 10 is schema-compatible
+                with Phorum 6 — no existing data will be changed, deleted, or
+                converted.
+            </p>
+
+            {% if pending_tables is empty and pending_patches is empty %}
+                <p class="grey-text">No schema changes are needed — this database is already up to date.</p>
+            {% endif %}
+
+            {% if pending_tables is not empty %}
+                <p>The following new tables will be added:</p>
+                <ul class="browser-default">
+                    {% for table in pending_tables %}
+                        <li><code>{{ table }}</code></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if pending_patches is not empty %}
+                <p>The following schema updates will be applied:</p>
+                <ul class="browser-default">
+                    {% for patch in pending_patches %}
+                        <li>{{ patch }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post" action="{{ path('/upgrade') }}">
+                {{ csrf_field() }}
+                <div class="row" style="margin-top:16px">
+                    <div class="col s12">
+                        <button type="submit" class="btn btn-large green darken-3 waves-effect waves-light">
+                            <i class="material-icons left">upgrade</i>
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>

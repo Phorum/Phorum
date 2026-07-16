@@ -46,6 +46,12 @@
                         <span>Administrator</span>
                     </label>
                 </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="force_password_change" value="1" {{ profile.force_password_change ? 'checked' : '' }}>
+                        <span>Force password change on next login</span>
+                    </label>
+                </div>
             </div>
 
             {% if admin_fields|default([]) is not empty %}

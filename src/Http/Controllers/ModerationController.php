@@ -16,6 +16,8 @@ use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Mapper\UserPermissionMapper;
+use Phorum\Model\Forum;
+use Phorum\Model\Message;
 use Phorum\Model\User;
 use Phorum\Service\MailService;
 use Phorum\Service\ModerationService;
@@ -52,7 +54,7 @@ class ModerationController extends Controller
         $this->perms             = $perms             ?? new PermissionService(new UserPermissionMapper());
         $this->searchIndex       = $searchIndex       ?? new SearchMapper();
         $this->subscriptions     = $subscriptions     ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
-        $this->moderationService = $moderationService ?? new ModerationService($this->messages, $this->forums, new UserMapper());
+        $this->moderationService = $moderationService ?? new ModerationService($this->messages, $this->forums, new UserMapper(), new SubscriberMapper());
         $this->modLog            = $modLog            ?? new ModLogMapper();
         $this->reports           = $reports           ?? new ReportMapper();
     }
@@ -251,7 +253,7 @@ class ModerationController extends Controller
         $threadId = (int) ($request->tokens['thread_id'] ?? 0);
         $action   = $request->tokens['action'] ?? '';
 
-        if (!in_array($action, ['delete', 'close', 'open', 'move'], strict: true)) {
+        if (!in_array($action, ['delete', 'close', 'open', 'move', 'merge'], strict: true)) {
             return $this->notFound();
         }
 
@@ -272,6 +274,10 @@ class ModerationController extends Controller
 
         if (!$this->perms->canModerate($forum, $user)) {
             return $this->forbidden();
+        }
+
+        if ($action === 'merge' && $request->isPost()) {
+            return $this->mergeThread($request, $user, $root, $forum);
         }
 
         if ($request->isPost()) {
@@ -309,13 +315,74 @@ class ModerationController extends Controller
             ? ($this->forums->find(filter: ['active' => 1, 'folder_flag' => 0], order: 'name ASC') ?? [])
             : [];
 
-        $template = $action === 'move' ? 'moderation/move.html.twig' : 'moderation/confirm.html.twig';
+        $template = match ($action) {
+            'move'  => 'moderation/move.html.twig',
+            'merge' => 'moderation/merge.html.twig',
+            default => 'moderation/confirm.html.twig',
+        };
 
         return $this->respond($this->render($template, [
             'action'     => $action,
             'root'       => $root,
             'forum'      => $forum,
             'forum_list' => $forumList,
+            'errors'     => [],
         ]));
+    }
+
+    /**
+     * Merge $root's thread into another thread the moderator specifies.
+     * Kept separate from the delete/close/open/move match() above since it
+     * needs to load and permission-check a second thread/forum, and can
+     * fail validation in ways that redisplay the form with an error instead
+     * of a flat redirect.
+     */
+    private function mergeThread(Request $request, User $user, Message $root, Forum $forum): Response
+    {
+        if ($r = $this->checkCsrf($request)) { return $r; }
+
+        $targetThreadId = (int) ($request->post['target_thread_id'] ?? 0);
+        $targetRoot     = $targetThreadId > 0 ? $this->messages->load($targetThreadId) : null;
+        $targetForum    = $targetRoot !== null ? $this->forums->load($targetRoot->forum_id) : null;
+
+        $formError = function (string $message) use ($root, $forum): Response {
+            return $this->respond($this->render('moderation/merge.html.twig', [
+                'action'     => 'merge',
+                'root'       => $root,
+                'forum'      => $forum,
+                'forum_list' => [],
+                'errors'     => [$message],
+            ]));
+        };
+
+        if ($targetRoot === null || $targetRoot->parent_id !== 0) {
+            return $formError('That thread ID was not found.');
+        }
+        if ($targetThreadId === $root->message_id) {
+            return $formError('Choose a different thread to merge into.');
+        }
+        if ($targetForum === null || !$this->perms->canModerate($targetForum, $user)) {
+            return $this->forbidden();
+        }
+
+        $merged = $this->moderationService->mergeThread($root->message_id, $targetThreadId);
+        if (!$merged) {
+            return $formError('Unable to merge into that thread.');
+        }
+
+        $this->modLog->record(
+            $user->user_id,
+            'merge',
+            'thread',
+            $root->message_id,
+            $root->forum_id,
+            "{$root->subject} \u{2192} thread #{$targetThreadId}"
+        );
+
+        if ($targetRoot->forum_id !== $root->forum_id) {
+            $this->searchIndex->updateForum($targetThreadId, $targetRoot->forum_id);
+        }
+
+        return $this->redirect("/forum/{$targetRoot->forum_id}/thread/{$targetThreadId}");
     }
 }

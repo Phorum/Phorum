@@ -88,6 +88,24 @@ class AuthControllerTest extends ControllerTestCase
         $this->assertSame('/forum/5', $response->headers['Location']);
     }
 
+    public function testLoginPostRedirectsToChangePasswordWhenForced(): void
+    {
+        $user = $this->makeUser();
+        $user->force_password_change = 1;
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('login')->willReturn($user);
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->login($this->makePostRequest([
+            'username' => 'user1',
+            'password' => 'secret',
+            'redirect' => '/forum/5',
+        ]));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/user/change-password?redirect=%2Fforum%2F5', $response->headers['Location']);
+    }
+
     public function testLoginPostBlocksExternalRedirect(): void
     {
         $authService = $this->createMock(AuthService::class);

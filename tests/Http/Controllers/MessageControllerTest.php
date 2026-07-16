@@ -11,11 +11,11 @@ use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SearchMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\AnnouncementService;
 use Phorum\Service\BanService;
-use Phorum\Service\CustomFieldService;
 use Phorum\Service\FileService;
 use Phorum\Service\FloodControlService;
 use Phorum\Service\MessageService;
@@ -33,6 +33,7 @@ class MessageControllerTest extends ControllerTestCase
         $perms->method('canReply')->willReturn($deps['canReply'] ?? true);
         $perms->method('canNewThread')->willReturn($deps['canNewThread'] ?? true);
         $perms->method('canModerate')->willReturn($deps['canModerate'] ?? false);
+        $perms->method('canEdit')->willReturn($deps['canEdit'] ?? true);
 
         if (isset($deps['floodControl'])) {
             $floodControl = $deps['floodControl'];
@@ -40,6 +41,9 @@ class MessageControllerTest extends ControllerTestCase
             $floodControl = $this->createMock(FloodControlService::class);
             $floodControl->method('secondsRemaining')->willReturn($deps['floodWait'] ?? 0);
         }
+
+        $settings = $deps['settings'] ?? $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturn($deps['edit_time_limit'] ?? null);
 
         return new MessageController(
             config:         $this->makeConfig(),
@@ -51,12 +55,12 @@ class MessageControllerTest extends ControllerTestCase
             newflags:       $deps['newflags']       ?? $this->createMock(NewflagService::class),
             banService:     $deps['banService']     ?? $this->createMock(BanService::class),
             subscriptions:  $deps['subscriptions']  ?? $this->createMock(SubscriptionService::class),
-            cfService:      $deps['cfService']      ?? $this->createMock(CustomFieldService::class),
             searchIndex:    $deps['searchIndex']    ?? $this->createMock(SearchMapper::class),
             messageService: $deps['messageService'] ?? $this->createMock(MessageService::class),
             users:          $deps['users']          ?? $this->createMock(UserMapper::class),
             announcements:  $deps['announcements']  ?? $this->createMock(AnnouncementService::class),
             floodControl:   $floodControl,
+            settings:       $settings,
         );
     }
 
@@ -335,6 +339,125 @@ class MessageControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums, 'canModerate' => false]);
         $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
         $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageReturns403WhenThreadClosed(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 1;
+        $msg->closed  = 1;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums]);
+        $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageModeratorCanEditClosedThread(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 99; // not the owner
+        $msg->closed  = 1;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+
+        $ctrl     = $this->makeController([
+            'messages'    => $messages,
+            'forums'      => $forums,
+            'fileService' => $fileService,
+            'canModerate' => true,
+        ]);
+        $response = $ctrl->editMessage($this->makeGetRequest(tokens: ['message_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testEditMessageReturns403WhenEditBitNotGranted(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 1;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums, 'canEdit' => false]);
+        $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageReturns403WhenPastTimeLimit(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg              = $this->makeMessage(1, 1, 1);
+        $msg->user_id     = 1;
+        $msg->datestamp   = time() - 3600; // posted an hour ago
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $ctrl     = $this->makeController([
+            'messages'        => $messages,
+            'forums'          => $forums,
+            'edit_time_limit' => 30, // 30-minute limit
+        ]);
+        $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageReturns200WithinTimeLimit(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg            = $this->makeMessage(1, 1, 1);
+        $msg->user_id   = 1;
+        $msg->datestamp = time() - 60; // posted a minute ago
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+
+        $ctrl     = $this->makeController([
+            'messages'        => $messages,
+            'forums'          => $forums,
+            'fileService'     => $fileService,
+            'edit_time_limit' => 30,
+        ]);
+        $response = $ctrl->editMessage($this->makeGetRequest(tokens: ['message_id' => '1']));
+        $this->assertSame(200, $response->status);
     }
 
     public function testEditMessageGetFormReturns200ForOwner(): void

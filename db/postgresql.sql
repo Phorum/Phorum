@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_forums (
     display_order            INTEGER         NOT NULL DEFAULT 0,
     read_length              INTEGER         NOT NULL DEFAULT 0,
     vroot                    INTEGER         NOT NULL DEFAULT 0,
+    edit_post                SMALLINT        NOT NULL DEFAULT 1,
+    template_settings        TEXT            NOT NULL DEFAULT '',
     forum_path               TEXT            NOT NULL DEFAULT '',
     count_views              SMALLINT        NOT NULL DEFAULT 0,
     count_views_per_thread   SMALLINT        NOT NULL DEFAULT 0,
@@ -186,6 +188,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     user_template            VARCHAR(100)    NOT NULL DEFAULT '',
     moderation_email         SMALLINT        NOT NULL DEFAULT 1,
     settings_data            TEXT            NOT NULL DEFAULT '',
+    moderator_data           TEXT            NOT NULL DEFAULT '',
+    force_password_change    SMALLINT        NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id),
     UNIQUE (username)
@@ -210,17 +214,6 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_user_newflags (
 );
 
 CREATE INDEX IF NOT EXISTS {PREFIX}_user_newflags_move ON {PREFIX}_user_newflags (message_id, forum_id);
-
--- -------------------------------------------------------------------------
--- Minimum unread message id (optimization table for newflags)
--- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_user_min_id (
-    user_id                  INTEGER         NOT NULL DEFAULT 0,
-    forum_id                 INTEGER         NOT NULL DEFAULT 0,
-    min_id                   INTEGER         NOT NULL DEFAULT 0,
-
-    PRIMARY KEY (user_id, forum_id)
-);
 
 -- -------------------------------------------------------------------------
 -- Groups
@@ -359,31 +352,17 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_search (
 CREATE INDEX IF NOT EXISTS {PREFIX}_search_forum_id ON {PREFIX}_search (forum_id);
 
 -- -------------------------------------------------------------------------
--- Custom field definitions (user profile fields, post fields)
+-- User custom (profile) field values — matches Phorum 6's
+-- phorum_user_custom_fields exactly. Field *definitions* are not a table in
+-- Phorum 6; they're a serialized array stored under the 'PROFILE_FIELDS' key
+-- in {PREFIX}_settings, same as the rest of the site configuration.
 -- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_custom_fields_config (
-    id                       SERIAL          NOT NULL,
-    field_type               SMALLINT        NOT NULL DEFAULT 1,
-    name                     VARCHAR(50)     NOT NULL DEFAULT '',
-    length                   INTEGER         NOT NULL DEFAULT 255,
-    html_disabled            SMALLINT        NOT NULL DEFAULT 1,
-    show_in_admin            SMALLINT        NOT NULL DEFAULT 0,
-    deleted                  SMALLINT        NOT NULL DEFAULT 0,
-
-    PRIMARY KEY (id),
-    UNIQUE (field_type, name)
-);
-
--- -------------------------------------------------------------------------
--- Custom field values
--- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_custom_fields (
-    relation_id              INTEGER         NOT NULL DEFAULT 0,
-    field_type               SMALLINT        NOT NULL DEFAULT 1,
+CREATE TABLE IF NOT EXISTS {PREFIX}_user_custom_fields (
+    user_id                  INTEGER         NOT NULL DEFAULT 0,
     type                     INTEGER         NOT NULL DEFAULT 0,
     data                     TEXT            NOT NULL DEFAULT '',
 
-    PRIMARY KEY (relation_id, field_type, type)
+    PRIMARY KEY (user_id, type)
 );
 
 -- -------------------------------------------------------------------------

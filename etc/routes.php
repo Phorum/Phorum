@@ -22,6 +22,18 @@ return [
         'action'  => 'InstallController@complete',
     ],
 
+    // Upgrade from an existing Phorum 6 database (checked before everything else)
+    [
+        'type'    => 'exact',
+        'pattern' => '/upgrade',
+        'action'  => 'UpgradeController@index',
+    ],
+    [
+        'type'    => 'exact',
+        'pattern' => '/upgrade/complete',
+        'action'  => 'UpgradeController@complete',
+    ],
+
     // Legacy Phorum 6 redirects (301 permanent)
     [
         'type'    => 'exact',
@@ -170,6 +182,11 @@ return [
         'type'    => 'exact',
         'pattern' => '/user/settings',
         'action'  => 'UserController@settings',
+    ],
+    [
+        'type'    => 'exact',
+        'pattern' => '/user/change-password',
+        'action'  => 'UserController@forcePasswordChange',
     ],
 
     // User profile

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('mod.merge_title') }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a> &rsaquo;
+    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id) }}">{{ root.subject }}</a> &rsaquo;
+    {{ trans('mod.merge_title') }}
+</nav>
+
+<div class="moderation-confirm">
+    <h1>{{ trans('mod.merge_title') }}</h1>
+    <p>{{ trans('mod.merge_prompt', {subject: root.subject}) }}</p>
+
+    {% include '_form_errors.html.twig' %}
+
+    <form method="post">
+        {{ csrf_field() }}
+        <div class="form-row">
+            <label for="target_thread_id">{{ trans('mod.merge_target') }}</label>
+            <input type="number" name="target_thread_id" id="target_thread_id" min="1" required>
+            <p class="form-hint">{{ trans('mod.merge_target_hint') }}</p>
+        </div>
+        <button type="submit" class="btn-primary">{{ trans('mod.merge_submit') }}</button>
+        <button type="button" class="btn-cancel" onclick="history.back()">{{ trans('mod.cancel') }}</button>
+    </form>
+</div>
+{% endblock %}

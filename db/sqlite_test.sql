@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS phorum_forums (
     display_order            INTEGER NOT NULL DEFAULT 0,
     read_length              INTEGER NOT NULL DEFAULT 0,
     vroot                    INTEGER NOT NULL DEFAULT 0,
+    edit_post                INTEGER NOT NULL DEFAULT 1,
+    template_settings        TEXT    NOT NULL DEFAULT '',
     forum_path               TEXT    NOT NULL DEFAULT '',
     count_views              INTEGER NOT NULL DEFAULT 0,
     count_views_per_thread   INTEGER NOT NULL DEFAULT 0,
@@ -125,7 +127,9 @@ CREATE TABLE IF NOT EXISTS phorum_users (
     user_language     TEXT    NOT NULL DEFAULT '',
     user_template     TEXT    NOT NULL DEFAULT '',
     moderation_email  INTEGER NOT NULL DEFAULT 1,
-    settings_data     TEXT    NOT NULL DEFAULT ''
+    settings_data     TEXT    NOT NULL DEFAULT '',
+    moderator_data    TEXT    NOT NULL DEFAULT '',
+    force_password_change INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS phorum_user_newflags (
@@ -133,13 +137,6 @@ CREATE TABLE IF NOT EXISTS phorum_user_newflags (
     forum_id   INTEGER NOT NULL DEFAULT 0,
     message_id INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, forum_id, message_id)
-);
-
-CREATE TABLE IF NOT EXISTS phorum_user_min_id (
-    user_id  INTEGER NOT NULL DEFAULT 0,
-    forum_id INTEGER NOT NULL DEFAULT 0,
-    min_id   INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, forum_id)
 );
 
 CREATE TABLE IF NOT EXISTS phorum_groups (
@@ -213,23 +210,11 @@ CREATE TABLE IF NOT EXISTS phorum_reports (
     resolved_time    INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS phorum_custom_fields_config (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    field_type   INTEGER NOT NULL DEFAULT 1,
-    name         TEXT    NOT NULL DEFAULT '',
-    length       INTEGER NOT NULL DEFAULT 255,
-    html_disabled INTEGER NOT NULL DEFAULT 1,
-    show_in_admin INTEGER NOT NULL DEFAULT 0,
-    deleted      INTEGER NOT NULL DEFAULT 0,
-    UNIQUE (field_type, name)
-);
-
-CREATE TABLE IF NOT EXISTS phorum_custom_fields (
-    relation_id INTEGER NOT NULL DEFAULT 0,
-    field_type  INTEGER NOT NULL DEFAULT 1,
+CREATE TABLE IF NOT EXISTS phorum_user_custom_fields (
+    user_id     INTEGER NOT NULL DEFAULT 0,
     type        INTEGER NOT NULL DEFAULT 0,
     data        TEXT    NOT NULL DEFAULT '',
-    PRIMARY KEY (relation_id, field_type, type)
+    PRIMARY KEY (user_id, type)
 );
 
 CREATE TABLE IF NOT EXISTS phorum_pm_messages (

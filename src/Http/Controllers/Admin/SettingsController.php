@@ -19,6 +19,7 @@ class SettingsController extends AdminController
         'mail_port'      => ['label' => 'SMTP Port',          'type' => 'number'],
         'mail_from'      => ['label' => 'Mail From Address',  'type' => 'email'],
         'flood_interval' => ['label' => 'Minimum Seconds Between Posts (0 = disabled)', 'type' => 'number'],
+        'edit_time_limit' => ['label' => 'Edit Time Limit (minutes, 0 = unlimited)', 'type' => 'number'],
     ];
 
     private readonly SettingMapper $settings;

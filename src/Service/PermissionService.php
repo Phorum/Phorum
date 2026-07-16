@@ -37,6 +37,12 @@ class PermissionService
         return $this->check($forum, $user, self::ALLOW_REPLY);
     }
 
+    /** True if the user can edit their own posts in this forum. */
+    public function canEdit(Forum $forum, ?User $user): bool
+    {
+        return $this->check($forum, $user, self::ALLOW_EDIT);
+    }
+
     /** True if the user can post anything (new thread OR reply). */
     public function canPost(Forum $forum, ?User $user): bool
     {

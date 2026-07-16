@@ -67,6 +67,9 @@ class AuthController extends Controller
                     if (!str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
                         $redirect = '/';
                     }
+                    if ($user->force_password_change) {
+                        return $this->redirect('/user/change-password?redirect=' . urlencode($redirect));
+                    }
                     return $this->redirect($redirect);
                 }
             }

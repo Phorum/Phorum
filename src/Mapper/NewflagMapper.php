@@ -6,11 +6,17 @@ namespace Phorum\Mapper;
 use DealNews\DB\CRUD;
 
 /**
- * Manages the user_newflags and user_newflags_min_id tables.
+ * Manages the user_newflags table — matches Phorum 6's phorum_user_newflags
+ * exactly.
  *
- * Read/unread semantics:
+ * Read/unread semantics (mirrors phorum_db_newflag_get_flags()):
  *   UNREAD: message_id > min_id  AND  message_id NOT IN user_newflags
  *   READ:   message_id <= min_id  OR  message_id IN user_newflags
+ *
+ * min_id is not stored — like Phorum 6, it's derived on the fly as
+ * MIN(message_id) over the user's current flags for that forum (see
+ * getMinFlagId()). Pruning the oldest flags (deleteOldest()) naturally
+ * raises this derived value; there is nothing else to update.
  */
 class NewflagMapper
 {
@@ -35,54 +41,6 @@ class NewflagMapper
     private function table(): string
     {
         return $this->prefix() . '_user_newflags';
-    }
-
-    private function minTable(): string
-    {
-        return $this->prefix() . '_user_min_id';
-    }
-
-    public function getMinId(int $userId, int $forumId): int
-    {
-        $rows = $this->crud()->runFetch(
-            'SELECT min_id FROM ' . $this->minTable() . ' WHERE user_id = :uid AND forum_id = :fid',
-            [':uid' => $userId, ':fid' => $forumId]
-        );
-        return empty($rows) ? 0 : (int) $rows[0]['min_id'];
-    }
-
-    /**
-     * Get min_ids for multiple forums at once.
-     * Returns [forum_id => min_id]. Forums with no row have an implicit min_id of 0.
-     *
-     * @param  int[] $forumIds
-     * @return array<int,int>
-     */
-    public function getMinIds(int $userId, array $forumIds): array
-    {
-        if (empty($forumIds)) {
-            return [];
-        }
-        $in   = implode(',', array_map('intval', $forumIds));
-        $rows = $this->crud()->runFetch(
-            'SELECT forum_id, min_id FROM ' . $this->minTable()
-            . " WHERE user_id = :uid AND forum_id IN ({$in})",
-            [':uid' => $userId]
-        );
-        $result = [];
-        foreach ($rows ?: [] as $row) {
-            $result[(int) $row['forum_id']] = (int) $row['min_id'];
-        }
-        return $result;
-    }
-
-    public function setMinId(int $userId, int $forumId, int $minId): void
-    {
-        $this->crud()->run(
-            'REPLACE INTO ' . $this->minTable()
-            . ' (user_id, forum_id, min_id) VALUES (:uid, :fid, :mid)',
-            [':uid' => $userId, ':fid' => $forumId, ':mid' => $minId]
-        );
     }
 
     /**
@@ -190,12 +148,18 @@ class NewflagMapper
         $prefix = $this->prefix();
         $mTable = $prefix . '_messages';
         $fTable = $this->table();
-        $nTable = $this->minTable();
         $in     = implode(',', array_map('intval', $forumIds));
 
+        // "n" derives each forum's min_id on the fly (lowest flagged message_id
+        // for this user), same as getMinFlagId() but for many forums at once.
         $sql = "SELECT m.forum_id, COUNT(*) AS new_count"
              . " FROM {$mTable} m"
-             . " LEFT JOIN {$nTable} n ON n.user_id = :uid1 AND n.forum_id = m.forum_id"
+             . " LEFT JOIN ("
+             . "     SELECT forum_id, MIN(message_id) AS min_id"
+             . "     FROM {$fTable}"
+             . "     WHERE user_id = :uid1"
+             . "     GROUP BY forum_id"
+             . " ) n ON n.forum_id = m.forum_id"
              . " LEFT JOIN {$fTable} f ON f.user_id = :uid2 AND f.forum_id = m.forum_id"
              . "   AND f.message_id = m.message_id"
              . " WHERE m.forum_id IN ({$in})"

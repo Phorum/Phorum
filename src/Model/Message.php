@@ -35,9 +35,6 @@ class Message
     /** Populated at runtime for threaded display — not persisted. */
     public array  $children        = [];
 
-    /** Populated at runtime from custom_fields — not persisted. */
-    public array  $custom_fields   = [];
-
     /** Populated at runtime from the files table — not persisted. */
     public array  $attachments     = [];
 }

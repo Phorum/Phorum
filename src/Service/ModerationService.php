@@ -5,14 +5,16 @@ namespace Phorum\Service;
 
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
+use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 
 class ModerationService
 {
     public function __construct(
-        private readonly MessageMapper $messages,
-        private readonly ForumMapper   $forums,
-        private readonly ?UserMapper   $users = null,
+        private readonly MessageMapper     $messages,
+        private readonly ForumMapper       $forums,
+        private readonly ?UserMapper       $users       = null,
+        private readonly ?SubscriberMapper $subscribers = null,
     ) {}
 
     /**
@@ -95,6 +97,37 @@ class ModerationService
         $this->forums->recalcStats($fromForumId);
         $this->forums->recalcStats($toForumId);
         phorum_api_hook('move_thread', $threadId, $fromForumId, $toForumId);
+    }
+
+    /**
+     * Fold $sourceThreadId into $targetThreadId (both must be real thread
+     * roots, and they must differ). Source-thread subscriptions are dropped
+     * rather than migrated, matching Phorum 6's own merge behavior. Returns
+     * false (no-op) if either id doesn't identify a valid, distinct thread.
+     */
+    public function mergeThread(int $sourceThreadId, int $targetThreadId): bool
+    {
+        if ($sourceThreadId === $targetThreadId) return false;
+
+        $source = $this->messages->load($sourceThreadId);
+        if ($source === null || $source->parent_id !== 0) return false;
+
+        $target = $this->messages->load($targetThreadId);
+        if ($target === null || $target->parent_id !== 0) return false;
+
+        $sourceForumId = $source->forum_id;
+        $targetForumId = $target->forum_id;
+
+        $this->messages->mergeThread($sourceThreadId, $targetThreadId, $targetForumId);
+        $this->subscribers?->deleteForThread($sourceForumId, $sourceThreadId);
+        $this->messages->recalcThreadStats($targetThreadId);
+        $this->forums->recalcStats($sourceForumId);
+        if ($sourceForumId !== $targetForumId) {
+            $this->forums->recalcStats($targetForumId);
+        }
+        phorum_api_hook('after_merge', [$sourceThreadId, $targetThreadId]);
+
+        return true;
     }
 
     /** Sticky or un-sticky a thread. */

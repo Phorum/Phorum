@@ -5,12 +5,7 @@ namespace Phorum\Model;
 
 class CustomFieldConfig
 {
-    public const FIELD_TYPE_USER    = 1;
-    public const FIELD_TYPE_FORUM   = 2;
-    public const FIELD_TYPE_MESSAGE = 3;
-
     public int    $id            = 0;
-    public int    $field_type    = self::FIELD_TYPE_USER;
     public string $name          = '';
     public int    $length        = 255;
     public int    $html_disabled = 1;

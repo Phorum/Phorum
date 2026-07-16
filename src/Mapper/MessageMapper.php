@@ -226,6 +226,28 @@ class MessageMapper extends AbstractPhorumMapper
     }
 
     /**
+     * Fold every message of $sourceThreadId into $targetThreadId, preserving
+     * message ids (unlike Phorum 6's clone-and-delete merge, this keeps
+     * permalinks, search rows, and newflags valid with no extra bookkeeping).
+     * The old source root becomes a reply under the target's root.
+     */
+    public function mergeThread(int $sourceThreadId, int $targetThreadId, int $targetForumId): void
+    {
+        $this->crud()->run(
+            'UPDATE ' . $this->table()
+            . ' SET thread = :target, forum_id = :forum_id'
+            . ' WHERE thread = :source',
+            [':target' => $targetThreadId, ':forum_id' => $targetForumId, ':source' => $sourceThreadId]
+        );
+        $this->crud()->run(
+            'UPDATE ' . $this->table()
+            . ' SET parent_id = :target'
+            . ' WHERE message_id = :source',
+            [':target' => $targetThreadId, ':source' => $sourceThreadId]
+        );
+    }
+
+    /**
      * Recalculate the thread root's aggregated stats from the current
      * approved-message set. Call after any delete/approve operation.
      */

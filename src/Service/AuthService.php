@@ -233,9 +233,10 @@ class AuthService
      */
     public function resetPassword(User $user, string $newPassword): void
     {
-        $user->password      = password_hash($newPassword, PASSWORD_BCRYPT);
-        $user->password_temp = '';
-        $user->email_temp    = '';
+        $user->password               = password_hash($newPassword, PASSWORD_BCRYPT);
+        $user->password_temp          = '';
+        $user->email_temp             = '';
+        $user->force_password_change  = 0;
         $this->users->save($user);
 
         $this->createSession($user, remember: false);

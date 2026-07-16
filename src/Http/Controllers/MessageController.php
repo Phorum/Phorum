@@ -16,16 +16,15 @@ use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Mapper\UserPermissionMapper;
+use Phorum\Model\Forum;
 use Phorum\Model\Message;
-use Phorum\Mapper\CustomFieldConfigMapper;
-use Phorum\Mapper\CustomFieldMapper;
 use Phorum\Mapper\FileMapper;
 use Phorum\Mapper\MessageTrackingMapper;
 use Phorum\Mapper\SettingMapper;
 use Phorum\Model\MessageMeta;
+use Phorum\Model\User;
 use Phorum\Service\AnnouncementService;
 use Phorum\Service\BanService;
-use Phorum\Service\CustomFieldService;
 use Phorum\Service\DiffRenderer;
 use Phorum\Service\FileService;
 use Phorum\Service\FloodControlService;
@@ -46,13 +45,13 @@ class MessageController extends Controller
     private readonly NewflagService       $newflags;
     private readonly BanService           $banService;
     private readonly SubscriptionService  $subscriptions;
-    private readonly CustomFieldService   $cfService;
     private readonly SearchMapper         $searchIndex;
     private readonly MessageService       $messageService;
     private readonly UserMapper           $users;
     private readonly AnnouncementService  $announcements;
     private readonly FloodControlService  $floodControl;
     private readonly SchemaOrgService     $schemaOrg;
+    private readonly SettingMapper        $settings;
 
     public function __construct(
         Config                $config,
@@ -64,15 +63,16 @@ class MessageController extends Controller
         ?NewflagService       $newflags       = null,
         ?BanService           $banService     = null,
         ?SubscriptionService  $subscriptions  = null,
-        ?CustomFieldService   $cfService      = null,
         ?SearchMapper         $searchIndex    = null,
         ?MessageService       $messageService = null,
         ?UserMapper           $users          = null,
         ?AnnouncementService  $announcements  = null,
         ?FloodControlService  $floodControl   = null,
         ?SchemaOrgService     $schemaOrg      = null,
+        ?SettingMapper        $settings       = null,
     ) {
         parent::__construct($config, $twig);
+        $this->settings       = $settings      ?? new SettingMapper();
         $this->forums         = $forums        ?? new ForumMapper();
         $this->messages       = $messages      ?? new MessageMapper();
         $this->perms          = $perms         ?? new PermissionService(new UserPermissionMapper());
@@ -80,13 +80,44 @@ class MessageController extends Controller
         $this->newflags       = $newflags      ?? new NewflagService(new NewflagMapper());
         $this->banService     = $banService    ?? new BanService(new BanMapper());
         $this->subscriptions  = $subscriptions ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
-        $this->cfService      = $cfService     ?? new CustomFieldService(new CustomFieldConfigMapper(), new CustomFieldMapper());
         $this->searchIndex    = $searchIndex   ?? new SearchMapper();
         $this->users          = $users          ?? new UserMapper();
         $this->messageService = $messageService ?? new MessageService($this->messages, $this->forums, $this->users);
         $this->announcements  = $announcements  ?? new AnnouncementService();
-        $this->floodControl   = $floodControl   ?? new FloodControlService($this->messages, new SettingMapper());
+        $this->floodControl   = $floodControl   ?? new FloodControlService($this->messages, $this->settings);
         $this->schemaOrg      = $schemaOrg      ?? new SchemaOrgService($config);
+    }
+
+    /**
+     * True if $currentUser may edit $msg in $forum. Moderators always may;
+     * otherwise the post must be their own, the ALLOW_EDIT permission bit
+     * set, the thread not closed, and (if configured) within the site-wide
+     * edit time limit since the post was made.
+     */
+    private function canEditMessage(Message $msg, Forum $forum, ?User $currentUser): bool
+    {
+        if ($currentUser === null) {
+            return false;
+        }
+        if ($this->perms->canModerate($forum, $currentUser)) {
+            return true;
+        }
+        if ($msg->user_id !== $currentUser->user_id) {
+            return false;
+        }
+        if ($msg->closed) {
+            return false;
+        }
+        if (!$this->perms->canEdit($forum, $currentUser)) {
+            return false;
+        }
+
+        $limit = (int) ($this->settings->getSetting('edit_time_limit') ?? 0);
+        if ($limit > 0 && (time() - $msg->datestamp) > $limit * 60) {
+            return false;
+        }
+
+        return true;
     }
 
     public function thread(Request $request): Response
@@ -144,14 +175,17 @@ class MessageController extends Controller
 
         $this->messages->incrementViewCounts($threadId);
 
-        $this->cfService->hydrateMessages($threadMessages);
-
         $this->fileService->hydrateMessages($threadMessages);
 
         $hookResult = phorum_api_hook('read', $threadMessages);
         if (is_array($hookResult)) {
             $threadMessages = $hookResult;
         }
+
+        $canEditIds = array_values(array_map(
+            fn($m) => $m->message_id,
+            array_filter($threadMessages, fn($m) => $this->canEditMessage($m, $forum, $currentUser))
+        ));
 
         $userIds  = array_values(array_unique(array_filter(
             array_map(fn($m) => $m->user_id, $threadMessages),
@@ -168,6 +202,7 @@ class MessageController extends Controller
             'threaded'     => $threaded,
             'can_reply'    => $canReply,
             'can_moderate' => $canModerate,
+            'can_edit_ids' => $canEditIds,
             'current_sub'  => $currentSub,
             'SUB_NONE'     => SubscriberMapper::SUB_NONE,
             'new_ids'      => $newIds,
@@ -305,12 +340,7 @@ class MessageController extends Controller
 
         $currentUser = Auth::user();
 
-        $canEdit = $currentUser !== null && (
-            $msg->user_id === $currentUser->user_id ||
-            $this->perms->canModerate($forum, $currentUser)
-        );
-
-        if (!$canEdit) {
+        if (!$this->canEditMessage($msg, $forum, $currentUser)) {
             return $this->forbidden();
         }
 

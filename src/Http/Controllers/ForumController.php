@@ -8,8 +8,6 @@ use Phorum\Core\Config;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
-use Phorum\Mapper\CustomFieldConfigMapper;
-use Phorum\Mapper\CustomFieldMapper;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
@@ -18,7 +16,6 @@ use Phorum\Mapper\UserMapper;
 use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Model\Forum;
 use Phorum\Service\AnnouncementService;
-use Phorum\Service\CustomFieldService;
 use Phorum\Service\ForumService;
 use Phorum\Service\MailService;
 use Phorum\Service\NewflagService;
@@ -33,7 +30,6 @@ class ForumController extends Controller
     private readonly MessageMapper        $messages;
     private readonly PermissionService    $perms;
     private readonly NewflagService       $newflags;
-    private readonly CustomFieldService   $cfService;
     private readonly SubscriptionService  $subscriptions;
     private readonly AnnouncementService  $announcements;
     private readonly SchemaOrgService     $schemaOrg;
@@ -45,7 +41,6 @@ class ForumController extends Controller
         ?MessageMapper        $messages      = null,
         ?PermissionService    $perms         = null,
         ?NewflagService       $newflags      = null,
-        ?CustomFieldService   $cfService     = null,
         ?SubscriptionService  $subscriptions = null,
         ?AnnouncementService  $announcements = null,
         ?SchemaOrgService     $schemaOrg     = null,
@@ -55,7 +50,6 @@ class ForumController extends Controller
         $this->messages      = $messages      ?? new MessageMapper();
         $this->perms         = $perms         ?? new PermissionService(new UserPermissionMapper());
         $this->newflags      = $newflags      ?? new NewflagService(new NewflagMapper());
-        $this->cfService     = $cfService     ?? new CustomFieldService(new CustomFieldConfigMapper(), new CustomFieldMapper());
         $this->subscriptions = $subscriptions ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
         $this->announcements = $announcements ?? new AnnouncementService();
         $this->schemaOrg     = $schemaOrg     ?? new SchemaOrgService($config);
@@ -66,8 +60,6 @@ class ForumController extends Controller
         $service    = new ForumService($this->forums);
         $tree       = $service->getTree();
         $flatForums = $this->flattenTree($tree);
-
-        $this->cfService->hydrateForums($flatForums);
 
         $hookResult = phorum_api_hook('index', $tree);
         if (is_array($hookResult)) {
@@ -106,8 +98,6 @@ class ForumController extends Controller
         $total   = $forum->thread_count;
         $pages   = $total > 0 ? (int) ceil($total / $perPage) : 1;
 
-        $this->cfService->hydrateForums([$forum]);
-
         $currentUser     = Auth::user();
         $threadNewCounts = [];
         if ($currentUser !== null) {
@@ -140,8 +130,6 @@ class ForumController extends Controller
         $service    = new ForumService($this->forums);
         $tree       = $service->getTree($folder->forum_id);
         $flatForums = $this->flattenTree($tree);
-
-        $this->cfService->hydrateForums($flatForums);
 
         $hookResult = phorum_api_hook('index', $tree);
         if (is_array($hookResult)) {

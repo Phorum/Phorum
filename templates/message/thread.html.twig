@@ -41,6 +41,7 @@
                 <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/close') }}" class="btn-mod">{{ trans('thread.close') }}</a>
             {% endif %}
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}" class="btn-mod">{{ trans('thread.move') }}</a>
+            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/merge') }}" class="btn-mod">{{ trans('thread.merge') }}</a>
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="btn-mod btn-danger">{{ trans('thread.delete') }}</a>
         {% endif %}
     </div>
@@ -55,21 +56,21 @@
 {% if threaded %}
     {% import _self as macros %}
     {% for msg in messages %}
-        {{ macros.message_node(msg, forum, can_reply, can_moderate, new_ids|default([]), current_user_id, users_map|default({}), track_edits|default(false)) }}
+        {{ macros.message_node(msg, forum, can_reply, can_moderate, new_ids|default([]), current_user_id, users_map|default({}), track_edits|default(false), can_edit_ids|default([])) }}
     {% endfor %}
 {% else %}
     {% for msg in messages %}
-        {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids|default([]), current_user_id: current_user_id, track_edits: track_edits|default(false), users_map: users_map|default({})} %}
+        {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids|default([]), current_user_id: current_user_id, track_edits: track_edits|default(false), users_map: users_map|default({}), can_edit_ids: can_edit_ids|default([])} %}
     {% endfor %}
 {% endif %}
 
-{% macro message_node(msg, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits) %}
+{% macro message_node(msg, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits, can_edit_ids) %}
     {% import _self as macros %}
-    {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids, current_user_id: current_user_id, users_map: users_map, track_edits: track_edits} %}
+    {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids, current_user_id: current_user_id, users_map: users_map, track_edits: track_edits, can_edit_ids: can_edit_ids} %}
     {% if msg.children %}
         <div class="thread-replies">
             {% for child in msg.children %}
-                {{ macros.message_node(child, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits) }}
+                {{ macros.message_node(child, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits, can_edit_ids) }}
             {% endfor %}
         </div>
     {% endif %}

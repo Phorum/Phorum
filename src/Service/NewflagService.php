@@ -23,7 +23,7 @@ class NewflagService
             return;
         }
 
-        $minId  = $this->mapper->getMinId($userId, $forumId);
+        $minId  = $this->mapper->getMinFlagId($userId, $forumId);
         $toFlag = array_values(array_filter($messageIds, fn($id) => (int) $id > $minId));
 
         if (empty($toFlag)) {
@@ -34,13 +34,10 @@ class NewflagService
         $total   = $current + count($toFlag);
 
         if ($total > NewflagMapper::MAX_FLAGS) {
+            // Pruning the oldest flags raises the derived min_id (getMinFlagId())
+            // on its own — there's nothing else to update.
             $toDelete = $total - NewflagMapper::MAX_FLAGS;
             $this->mapper->deleteOldest($userId, $forumId, $toDelete);
-            // Slide min_id up to cover the deleted flags so they stay "read"
-            $newMin = $this->mapper->getMinFlagId($userId, $forumId);
-            if ($newMin > 0) {
-                $this->mapper->setMinId($userId, $forumId, $newMin);
-            }
         }
 
         $this->mapper->addFlags($userId, $forumId, $toFlag);
@@ -48,7 +45,11 @@ class NewflagService
 
     /**
      * Mark all messages in a forum as read.
-     * Clears per-message flags and sets min_id to the current max message_id.
+     *
+     * Mirrors Phorum 6's phorum_db_newflag_allread(): clear all per-message
+     * flags, then flag just the current max message_id as read. Since min_id
+     * is derived as MIN(message_id) over the remaining flags, this single
+     * flag becomes the new min_id — everything at or below it reads as read.
      */
     public function markForumRead(int $userId, int $forumId): void
     {
@@ -58,7 +59,7 @@ class NewflagService
         $maxId = $this->mapper->getMaxMessageId($forumId);
         $this->mapper->deleteAllFlags($userId, $forumId);
         if ($maxId > 0) {
-            $this->mapper->setMinId($userId, $forumId, $maxId);
+            $this->mapper->addFlags($userId, $forumId, [$maxId]);
         }
     }
 
@@ -74,7 +75,7 @@ class NewflagService
         if ($userId === 0 || empty($messageIds)) {
             return [];
         }
-        $minId = $this->mapper->getMinId($userId, $forumId);
+        $minId = $this->mapper->getMinFlagId($userId, $forumId);
         $flags = $this->mapper->getFlags($userId, $forumId);
 
         return array_values(array_filter(
@@ -109,7 +110,7 @@ class NewflagService
         if ($userId === 0) {
             return [];
         }
-        $minId = $this->mapper->getMinId($userId, $forumId);
+        $minId = $this->mapper->getMinFlagId($userId, $forumId);
         return $this->mapper->countNewInThreads($userId, $forumId, $minId);
     }
 }

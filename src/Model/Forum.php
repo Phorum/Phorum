@@ -36,6 +36,8 @@ class Forum
     public int    $display_order            = 0;
     public int    $read_length              = 0;
     public int    $vroot                    = 0;
+    public int    $edit_post                = 1;
+    public string $template_settings        = '';
     public string $forum_path              = '';
     public int    $count_views              = 0;
     public int    $count_views_per_thread   = 0;
@@ -46,7 +48,4 @@ class Forum
 
     /** Populated at runtime when building the display tree — not persisted. */
     public array  $children                 = [];
-
-    /** Populated at runtime from custom_fields — not persisted. */
-    public array  $custom_fields            = [];
 }

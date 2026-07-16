@@ -712,6 +712,13 @@ input.btn-primary:hover {
     border: 1px solid #666;
 }
 
+/* .btn-mod is an <a>, so the global a:visited rule (0,1,1) otherwise beats
+   this class rule (0,1,0) once the link has been visited, turning the text
+   green instead of white. */
+.btn-mod:visited {
+    color: var(--white);
+}
+
 .btn-mod:hover {
     background: #666;
     color: var(--white);
@@ -733,6 +740,11 @@ input.btn-primary:hover {
     background: #e0e0e0;
     color: #333;
     border: 1px solid #b0b0b0;
+}
+
+/* Same a:visited specificity issue as .btn-mod above. */
+.btn-cancel:visited {
+    color: #333;
 }
 
 .btn-cancel:hover {

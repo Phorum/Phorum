@@ -10,8 +10,8 @@ use Phorum\Core\Impersonation;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\CustomFieldConfigMapper;
-use Phorum\Mapper\CustomFieldMapper;
 use Phorum\Mapper\ModLogMapper;
+use Phorum\Mapper\UserCustomFieldMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\CustomFieldService;
 use Twig\Environment;
@@ -33,7 +33,7 @@ class UserController extends AdminController
     ) {
         parent::__construct($config, $twig);
         $this->users     = $users     ?? new UserMapper();
-        $this->cfService = $cfService ?? new CustomFieldService(new CustomFieldConfigMapper(), new CustomFieldMapper());
+        $this->cfService = $cfService ?? new CustomFieldService(new CustomFieldConfigMapper(), new UserCustomFieldMapper());
         $this->modLog    = $modLog    ?? new ModLogMapper();
     }
 
@@ -101,6 +101,7 @@ class UserController extends AdminController
             $email       = trim($request->post['email']        ?? '');
             $active      = !empty($request->post['active']);
             $admin       = !empty($request->post['admin']);
+            $forcePwChange = !empty($request->post['force_password_change']);
             $password    = $request->post['password'] ?? '';
 
             if ($displayName === '') {
@@ -126,6 +127,7 @@ class UserController extends AdminController
                 $user->email        = $email;
                 $user->active       = $active ? 1 : 0;
                 $user->admin        = $admin  ? 1 : 0;
+                $user->force_password_change = $forcePwChange ? 1 : 0;
                 if ($password !== '') {
                     $user->password = password_hash($password, PASSWORD_BCRYPT);
                 }

@@ -6,6 +6,7 @@ namespace Phorum\Tests\Service;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
+use Phorum\Mapper\SubscriberMapper;
 use Phorum\Model\Message;
 use Phorum\Service\ModerationService;
 use PHPUnit\Framework\TestCase;
@@ -242,5 +243,132 @@ class ModerationServiceTest extends TestCase
 
         $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
         $svc->stickyThread(4, false);
+    }
+
+    // -------------------------------------------------------------------------
+    // mergeThread()
+    // -------------------------------------------------------------------------
+
+    private function makeLoadMap(Message $source, Message $target): \Closure
+    {
+        return fn(int $id) => match ($id) {
+            $source->message_id => $source,
+            $target->message_id => $target,
+            default => null,
+        };
+    }
+
+    public function testMergeThreadUpdatesMessagesAndRecalculatesStatsSameForum(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 1, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+        $msgMapper->expects($this->once())->method('mergeThread')->with(1, 2, 1);
+        $msgMapper->expects($this->once())->method('recalcThreadStats')->with(2);
+
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $forumMapper->expects($this->once())->method('recalcStats')->with(1);
+
+        $svc = new ModerationService($msgMapper, $forumMapper);
+        $this->assertTrue($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadRecalculatesBothForumsWhenDifferent(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 9, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+        $msgMapper->expects($this->once())->method('mergeThread')->with(1, 2, 9);
+
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $forumMapper->expects($this->exactly(2))->method('recalcStats')
+            ->with($this->logicalOr(1, 9));
+
+        $svc = new ModerationService($msgMapper, $forumMapper);
+        $this->assertTrue($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadDeletesSourceSubscriptions(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 1, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+
+        $subscribers = $this->createMock(SubscriberMapper::class);
+        $subscribers->expects($this->once())->method('deleteForThread')->with(1, 1);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class), null, $subscribers);
+        $svc->mergeThread(1, 2);
+    }
+
+    public function testMergeThreadFiresAfterMergeHook(): void
+    {
+        $source = $this->makeMessage(1, 0, forumId: 1, thread: 1);
+        $target = $this->makeMessage(2, 0, forumId: 1, thread: 2);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+
+        $fired = null;
+        HookDispatcher::getInstance()->register('after_merge', function ($ids) use (&$fired) {
+            $fired = $ids;
+            return $ids;
+        });
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->mergeThread(1, 2);
+
+        $this->assertSame([1, 2], $fired);
+    }
+
+    public function testMergeThreadNoOpWhenSameThread(): void
+    {
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->expects($this->never())->method('load');
+        $msgMapper->expects($this->never())->method('mergeThread');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $this->assertFalse($svc->mergeThread(5, 5));
+    }
+
+    public function testMergeThreadNoOpWhenSourceMissing(): void
+    {
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn(null);
+        $msgMapper->expects($this->never())->method('mergeThread');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $this->assertFalse($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadNoOpWhenSourceNotRoot(): void
+    {
+        $source = $this->makeMessage(1, 99, thread: 1); // parent_id != 0
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn($source);
+        $msgMapper->expects($this->never())->method('mergeThread');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $this->assertFalse($svc->mergeThread(1, 2));
+    }
+
+    public function testMergeThreadNoOpWhenTargetNotRoot(): void
+    {
+        $source = $this->makeMessage(1, 0, thread: 1);
+        $target = $this->makeMessage(2, 99, thread: 2); // parent_id != 0
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturnCallback($this->makeLoadMap($source, $target));
+        $msgMapper->expects($this->never())->method('mergeThread');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $this->assertFalse($svc->mergeThread(1, 2));
     }
 }

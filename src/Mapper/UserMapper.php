@@ -44,7 +44,9 @@ class UserMapper extends AbstractPhorumMapper
         'user_language'     => [],
         'user_template'     => [],
         'moderation_email'  => [],
-        'settings_data'     => [],
+        'settings_data'         => [],
+        'moderator_data'        => [],
+        'force_password_change' => [],
     ];
 
     /**

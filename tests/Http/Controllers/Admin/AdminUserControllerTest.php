@@ -124,6 +124,33 @@ class AdminUserControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testEditPostSetsForcePasswordChangeFlag(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $saved  = null;
+        $target = $this->makeUser(2);
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   [
+                'display_name'           => 'User Two',
+                'email'                  => 'user2@example.com',
+                'force_password_change'  => '1',
+            ],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+        $this->assertSame(1, $saved->force_password_change);
+    }
+
     public function testEditPostReturns403WithBadCsrf(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

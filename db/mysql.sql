@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_forums (
     display_order            int unsigned       NOT NULL DEFAULT 0,
     read_length              int unsigned       NOT NULL DEFAULT 0,
     vroot                    int unsigned       NOT NULL DEFAULT 0,
+    edit_post                tinyint(1)         NOT NULL DEFAULT 1,
+    template_settings        text               NOT NULL,
     forum_path               text               NOT NULL,
     count_views              tinyint(1)         NOT NULL DEFAULT 0,
     count_views_per_thread   tinyint(1)         NOT NULL DEFAULT 0,
@@ -178,6 +180,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     user_template            varchar(100)       NOT NULL DEFAULT '',
     moderation_email         tinyint(1)         NOT NULL DEFAULT 1,
     settings_data            mediumtext         NOT NULL,
+    moderator_data           text               NOT NULL,
+    force_password_change    tinyint(1)         NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id),
     UNIQUE KEY username (username),
@@ -199,17 +203,6 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_user_newflags (
 
     PRIMARY KEY (user_id, forum_id, message_id),
     KEY move (message_id, forum_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- -------------------------------------------------------------------------
--- Minimum unread message id (optimization table for newflags)
--- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_user_min_id (
-    user_id                  int unsigned       NOT NULL DEFAULT 0,
-    forum_id                 int unsigned       NOT NULL DEFAULT 0,
-    min_id                   int unsigned       NOT NULL DEFAULT 0,
-
-    PRIMARY KEY (user_id, forum_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------------
@@ -338,31 +331,17 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_search (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------------
--- Custom field definitions (user profile fields, post fields)
+-- User custom (profile) field values — matches Phorum 6's
+-- phorum_user_custom_fields exactly. Field *definitions* are not a table in
+-- Phorum 6; they're a serialized array stored under the 'PROFILE_FIELDS' key
+-- in {PREFIX}_settings, same as the rest of the site configuration.
 -- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_custom_fields_config (
-    id                       int unsigned       NOT NULL AUTO_INCREMENT,
-    field_type               tinyint(1)         NOT NULL DEFAULT 1,
-    name                     varchar(50)        NOT NULL DEFAULT '',
-    length                   mediumint          NOT NULL DEFAULT 255,
-    html_disabled            tinyint(1)         NOT NULL DEFAULT 1,
-    show_in_admin            tinyint(1)         NOT NULL DEFAULT 0,
-    deleted                  tinyint(1)         NOT NULL DEFAULT 0,
-
-    PRIMARY KEY (id),
-    UNIQUE KEY field_type_name (field_type, name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- -------------------------------------------------------------------------
--- Custom field values
--- -------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS {PREFIX}_custom_fields (
-    relation_id              int unsigned       NOT NULL DEFAULT 0,
-    field_type               tinyint(1)         NOT NULL DEFAULT 1,
+CREATE TABLE IF NOT EXISTS {PREFIX}_user_custom_fields (
+    user_id                  int unsigned       NOT NULL DEFAULT 0,
     type                     int unsigned       NOT NULL DEFAULT 0,
     data                     text               NOT NULL,
 
-    PRIMARY KEY (relation_id, field_type, type)
+    PRIMARY KEY (user_id, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------------

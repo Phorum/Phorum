@@ -16,21 +16,21 @@ class NewflagServiceTest extends TestCase
     public function testMarkReadDoesNothingForGuestUser(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->expects($this->never())->method('getMinId');
+        $mapper->expects($this->never())->method('getMinFlagId');
         (new NewflagService($mapper))->markRead(0, 1, [10, 20]);
     }
 
     public function testMarkReadDoesNothingForEmptyIds(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->expects($this->never())->method('getMinId');
+        $mapper->expects($this->never())->method('getMinFlagId');
         (new NewflagService($mapper))->markRead(1, 1, []);
     }
 
     public function testMarkReadFiltersIdsAtOrBelowMinId(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->method('getMinId')->willReturn(100);
+        $mapper->method('getMinFlagId')->willReturn(100);
         $mapper->method('countFlags')->willReturn(0);
         $mapper->expects($this->once())->method('addFlags')
             ->with(1, 1, [101, 200]);
@@ -41,7 +41,7 @@ class NewflagServiceTest extends TestCase
     public function testMarkReadDoesNothingWhenAllIdsAtOrBelowMin(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->method('getMinId')->willReturn(500);
+        $mapper->method('getMinFlagId')->willReturn(500);
         $mapper->expects($this->never())->method('addFlags');
 
         (new NewflagService($mapper))->markRead(1, 1, [100, 200, 500]);
@@ -50,15 +50,12 @@ class NewflagServiceTest extends TestCase
     public function testMarkReadTrimsOldestFlagsWhenLimitExceeded(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->method('getMinId')->willReturn(0);
+        $mapper->method('getMinFlagId')->willReturn(0);
         // Current count is 998, adding 5 exceeds limit of 1000
         $mapper->method('countFlags')->willReturn(998);
-        $mapper->method('getMinFlagId')->willReturn(50);
 
         $mapper->expects($this->once())->method('deleteOldest')
             ->with(1, 1, 3); // 998 + 5 - 1000 = 3
-        $mapper->expects($this->once())->method('setMinId')
-            ->with(1, 1, 50);
         $mapper->expects($this->once())->method('addFlags');
 
         (new NewflagService($mapper))->markRead(1, 1, [10, 20, 30, 40, 50]);
@@ -75,22 +72,22 @@ class NewflagServiceTest extends TestCase
         (new NewflagService($mapper))->markForumRead(0, 1);
     }
 
-    public function testMarkForumReadClearsFlagsAndSetsMinId(): void
+    public function testMarkForumReadClearsFlagsAndFlagsMaxId(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
         $mapper->method('getMaxMessageId')->willReturn(999);
         $mapper->expects($this->once())->method('deleteAllFlags')->with(5, 1);
-        $mapper->expects($this->once())->method('setMinId')->with(5, 1, 999);
+        $mapper->expects($this->once())->method('addFlags')->with(5, 1, [999]);
 
         (new NewflagService($mapper))->markForumRead(5, 1);
     }
 
-    public function testMarkForumReadSkipsSetMinIdWhenNoMessages(): void
+    public function testMarkForumReadSkipsAddFlagsWhenNoMessages(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
         $mapper->method('getMaxMessageId')->willReturn(0);
         $mapper->expects($this->once())->method('deleteAllFlags');
-        $mapper->expects($this->never())->method('setMinId');
+        $mapper->expects($this->never())->method('addFlags');
 
         (new NewflagService($mapper))->markForumRead(5, 1);
     }
@@ -116,7 +113,7 @@ class NewflagServiceTest extends TestCase
     public function testGetNewMessageIdsFiltersReadAndBelowMin(): void
     {
         $mapper = $this->createMock(NewflagMapper::class);
-        $mapper->method('getMinId')->willReturn(10);
+        $mapper->method('getMinFlagId')->willReturn(10);
         $mapper->method('getFlags')->willReturn([20 => true]); // message 20 already flagged read
 
         $result = (new NewflagService($mapper))->getNewMessageIds(1, 1, [5, 10, 15, 20, 25]);

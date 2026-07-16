@@ -290,6 +290,238 @@ class ModerationControllerTest extends ControllerTestCase
     }
 
     // -------------------------------------------------------------------------
+    // thread merge action
+    // -------------------------------------------------------------------------
+
+    public function testThreadMergeGetReturnsForm(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($root);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(4));
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums]);
+        $response = $ctrl->thread($this->makeGetRequest(tokens: ['thread_id' => '30', 'action' => 'merge']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadMergeSuccessRedirectsToTargetThread(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root       = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+        $targetRoot = $this->makeMessage(31, 4, 31);
+        $targetRoot->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            30 => $root,
+            31 => $targetRoot,
+            default => null,
+        });
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(4));
+
+        $modService = $this->createMock(ModerationService::class);
+        $modService->expects($this->once())->method('mergeThread')->with(30, 31)->willReturn(true);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with($this->anything(), 'merge', 'thread', 30, 4, $this->stringContains('thread #31'));
+
+        $search = $this->createMock(SearchMapper::class);
+        $search->expects($this->never())->method('updateForum'); // same forum — no search update needed
+
+        $ctrl     = $this->makeController([
+            'messages'          => $messages,
+            'forums'            => $forums,
+            'moderationService' => $modService,
+            'modLog'            => $modLog,
+            'searchIndex'       => $search,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(
+            post:   ['target_thread_id' => '31'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/4/thread/31', $response->headers['Location']);
+    }
+
+    public function testThreadMergeUpdatesSearchWhenForumDiffers(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root       = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+        $root->forum_id  = 4;
+        $targetRoot = $this->makeMessage(31, 4, 31);
+        $targetRoot->parent_id = 0;
+        $targetRoot->forum_id  = 9;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            30 => $root,
+            31 => $targetRoot,
+            default => null,
+        });
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            4 => $this->makeForum(4),
+            9 => $this->makeForum(9),
+            default => null,
+        });
+
+        $modService = $this->createMock(ModerationService::class);
+        $modService->method('mergeThread')->willReturn(true);
+
+        $search = $this->createMock(SearchMapper::class);
+        $search->expects($this->once())->method('updateForum')->with(31, 9);
+
+        $ctrl     = $this->makeController([
+            'messages'          => $messages,
+            'forums'            => $forums,
+            'moderationService' => $modService,
+            'searchIndex'       => $search,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(
+            post:   ['target_thread_id' => '31'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/9/thread/31', $response->headers['Location']);
+    }
+
+    public function testThreadMergeReturns200WithErrorWhenTargetThreadNotFound(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturnCallback(fn($id) => (int) $id === 30 ? $root : null);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(4));
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums]);
+        $response = $ctrl->thread($this->makePostRequest(
+            post:   ['target_thread_id' => '999'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadMergeReturns403WhenCannotModerateTargetForum(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root       = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+        $root->forum_id  = 4;
+        $targetRoot = $this->makeMessage(31, 4, 31);
+        $targetRoot->parent_id = 0;
+        $targetRoot->forum_id  = 9;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            30 => $root,
+            31 => $targetRoot,
+            default => null,
+        });
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            4 => $this->makeForum(4),
+            9 => $this->makeForum(9),
+            default => null,
+        });
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerate')->willReturnCallback(fn($f) => $f->forum_id === 4);
+
+        $ctrl     = $this->makeController([
+            'messages' => $messages,
+            'forums'   => $forums,
+            'perms'    => $perms,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(
+            post:   ['target_thread_id' => '31'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testThreadMergeReturns200WithErrorWhenServiceRejects(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root       = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+        $targetRoot = $this->makeMessage(31, 4, 31);
+        $targetRoot->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturnCallback(fn($id) => match ((int) $id) {
+            30 => $root,
+            31 => $targetRoot,
+            default => null,
+        });
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(4));
+
+        $modService = $this->createMock(ModerationService::class);
+        $modService->method('mergeThread')->willReturn(false);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->never())->method('record');
+
+        $ctrl     = $this->makeController([
+            'messages'          => $messages,
+            'forums'            => $forums,
+            'moderationService' => $modService,
+            'modLog'            => $modLog,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(
+            post:   ['target_thread_id' => '31'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadMergePostReturns403WithBadCsrf(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root = $this->makeMessage(30, 4, 30);
+        $root->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($root);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(4));
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums]);
+        $response = $ctrl->thread(new Request(
+            post:   ['csrf_token' => 'bad', 'target_thread_id' => '31'],
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: ['thread_id' => '30', 'action' => 'merge'],
+        ));
+        $this->assertSame(403, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
     // queue
     // -------------------------------------------------------------------------
 

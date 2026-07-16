@@ -19,7 +19,6 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Type</th>
                     <th>Max Length</th>
                     <th>Escape HTML</th>
                     <th>Show in Admin</th>
@@ -31,7 +30,6 @@
             {% for f in fields %}
                 <tr class="{{ f.deleted ? 'grey-text' : '' }}">
                     <td>{{ f.name|e }}</td>
-                    <td>{{ type_labels[f.field_type] ?? f.field_type }}</td>
                     <td>{{ f.length }}</td>
                     <td>
                         {% if f.html_disabled %}

@@ -324,6 +324,42 @@ class MessageMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // mergeThread
+    // -------------------------------------------------------------------------
+
+    public function testMergeThreadRethreadsMessagesAndReparentsOldRoot(): void
+    {
+        // Source thread: root + one reply, in forum 1
+        $sourceRoot = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$sourceRoot} WHERE message_id = {$sourceRoot}");
+        $sourceReply = $this->seedMessage(['thread' => $sourceRoot, 'parent_id' => $sourceRoot, 'forum_id' => 1]);
+
+        // Target thread: root only, in forum 2
+        $targetRoot = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 2]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$targetRoot} WHERE message_id = {$targetRoot}");
+
+        $mapper = $this->makeMapper();
+        $mapper->mergeThread($sourceRoot, $targetRoot, 2);
+
+        $rows = self::$pdo->query(
+            "SELECT message_id, thread, forum_id, parent_id FROM phorum_messages WHERE message_id IN ({$sourceRoot}, {$sourceReply}, {$targetRoot})"
+        )->fetchAll(\PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
+
+        // Both source messages now belong to the target thread and forum
+        $this->assertSame($targetRoot, (int) $rows[$sourceRoot]['thread']);
+        $this->assertSame(2, (int) $rows[$sourceRoot]['forum_id']);
+        $this->assertSame($targetRoot, (int) $rows[$sourceReply]['thread']);
+        $this->assertSame(2, (int) $rows[$sourceReply]['forum_id']);
+
+        // The old source root is no longer a root — it's a reply under the target root
+        $this->assertSame($targetRoot, (int) $rows[$sourceRoot]['parent_id']);
+
+        // The reply's own parent (the old root) is untouched
+        $rows2 = self::$pdo->query("SELECT parent_id FROM phorum_messages WHERE message_id = {$sourceReply}")->fetch();
+        $this->assertSame($sourceRoot, (int) $rows2['parent_id']);
+    }
+
+    // -------------------------------------------------------------------------
     // recalcThreadStats
     // -------------------------------------------------------------------------
 

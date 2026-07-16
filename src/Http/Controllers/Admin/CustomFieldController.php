@@ -7,7 +7,7 @@ use Phorum\Core\Config;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\CustomFieldConfigMapper;
-use Phorum\Mapper\CustomFieldMapper;
+use Phorum\Mapper\UserCustomFieldMapper;
 use Phorum\Model\CustomFieldConfig;
 use Twig\Environment;
 
@@ -16,24 +16,18 @@ class CustomFieldController extends AdminController
     private const NAME_PATTERN = '/^[a-z][a-z0-9_]*$/i';
     private const MAX_LENGTH   = 65000;
 
-    private const FIELD_TYPE_LABELS = [
-        CustomFieldConfig::FIELD_TYPE_USER    => 'User',
-        CustomFieldConfig::FIELD_TYPE_FORUM   => 'Forum',
-        CustomFieldConfig::FIELD_TYPE_MESSAGE => 'Message',
-    ];
-
     private readonly CustomFieldConfigMapper $configs;
-    private readonly CustomFieldMapper       $customFields;
+    private readonly UserCustomFieldMapper   $userFields;
 
     public function __construct(
         Config                    $config,
         Environment               $twig,
-        ?CustomFieldConfigMapper  $configs      = null,
-        ?CustomFieldMapper        $customFields = null,
+        ?CustomFieldConfigMapper  $configs    = null,
+        ?UserCustomFieldMapper    $userFields = null,
     ) {
         parent::__construct($config, $twig);
-        $this->configs      = $configs      ?? new CustomFieldConfigMapper();
-        $this->customFields = $customFields ?? new CustomFieldMapper();
+        $this->configs    = $configs    ?? new CustomFieldConfigMapper();
+        $this->userFields = $userFields ?? new UserCustomFieldMapper();
     }
 
     // -------------------------------------------------------------------------
@@ -44,17 +38,10 @@ class CustomFieldController extends AdminController
     {
         if ($r = $this->requireAdmin()) { return $r; }
 
-        $fields = array_merge(
-            $this->configs->findByFieldType(CustomFieldConfig::FIELD_TYPE_USER, includeDeleted: true),
-            $this->configs->findByFieldType(CustomFieldConfig::FIELD_TYPE_FORUM, includeDeleted: true),
-            $this->configs->findByFieldType(CustomFieldConfig::FIELD_TYPE_MESSAGE, includeDeleted: true),
-        );
-
-        usort($fields, fn($a, $b) => $a->field_type <=> $b->field_type ?: strcmp($a->name, $b->name));
+        $fields = $this->configs->findAll(includeDeleted: true);
 
         return $this->respond($this->renderAdmin('admin/custom_fields/index.html.twig', [
-            'fields'      => $fields,
-            'type_labels' => self::FIELD_TYPE_LABELS,
+            'fields' => $fields,
         ]));
     }
 
@@ -80,10 +67,9 @@ class CustomFieldController extends AdminController
         }
 
         return $this->respond($this->renderAdmin('admin/custom_fields/edit.html.twig', [
-            'config'      => $config,
-            'errors'      => $errors,
-            'is_new'      => true,
-            'type_labels' => self::FIELD_TYPE_LABELS,
+            'config' => $config,
+            'errors' => $errors,
+            'is_new' => true,
         ]));
     }
 
@@ -112,10 +98,9 @@ class CustomFieldController extends AdminController
         }
 
         return $this->respond($this->renderAdmin('admin/custom_fields/edit.html.twig', [
-            'config'      => $config,
-            'errors'      => $errors,
-            'is_new'      => false,
-            'type_labels' => self::FIELD_TYPE_LABELS,
+            'config' => $config,
+            'errors' => $errors,
+            'is_new' => false,
         ]));
     }
 
@@ -139,9 +124,8 @@ class CustomFieldController extends AdminController
         }
 
         return $this->respond($this->renderAdmin('admin/custom_fields/delete_confirm.html.twig', [
-            'config'      => $config,
-            'action'      => 'delete',
-            'type_labels' => self::FIELD_TYPE_LABELS,
+            'config' => $config,
+            'action' => 'delete',
         ]));
     }
 
@@ -173,15 +157,14 @@ class CustomFieldController extends AdminController
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
-            $this->customFields->deleteForConfig($config->id, $config->field_type);
+            $this->userFields->deleteForConfig($config->id);
             $this->configs->delete($id);
             return $this->redirect('/admin/custom-fields');
         }
 
         return $this->respond($this->renderAdmin('admin/custom_fields/delete_confirm.html.twig', [
-            'config'      => $config,
-            'action'      => 'purge',
-            'type_labels' => self::FIELD_TYPE_LABELS,
+            'config' => $config,
+            'action' => 'purge',
         ]));
     }
 
@@ -195,14 +178,9 @@ class CustomFieldController extends AdminController
      */
     private function applyPost(CustomFieldConfig $config, bool $isNew, Request $request): array
     {
-        $errors    = [];
-        $name      = trim(strtolower($request->post['name'] ?? ''));
-        $length    = (int) ($request->post['length'] ?? 255);
-        $fieldType = (int) ($request->post['field_type'] ?? CustomFieldConfig::FIELD_TYPE_USER);
-
-        if (!array_key_exists($fieldType, self::FIELD_TYPE_LABELS)) {
-            $fieldType = CustomFieldConfig::FIELD_TYPE_USER;
-        }
+        $errors = [];
+        $name   = trim(strtolower($request->post['name'] ?? ''));
+        $length = (int) ($request->post['length'] ?? 255);
 
         if ($name === '') {
             $errors[] = 'Field name is required.';
@@ -211,9 +189,9 @@ class CustomFieldController extends AdminController
         } elseif (mb_strlen($name) > 50) {
             $errors[] = 'Field name must be 50 characters or fewer.';
         } elseif ($isNew) {
-            $existing = $this->configs->findByName($name, $fieldType);
+            $existing = $this->configs->findByName($name);
             if ($existing !== null) {
-                $errors[] = 'A field with that name already exists for this type.';
+                $errors[] = 'A field with that name already exists.';
             }
         }
 
@@ -223,8 +201,7 @@ class CustomFieldController extends AdminController
 
         if (empty($errors)) {
             if ($isNew) {
-                $config->name       = $name;
-                $config->field_type = $fieldType;
+                $config->name = $name;
             }
             $config->length        = $length;
             $config->html_disabled = !empty($request->post['html_disabled']) ? 1 : 0;

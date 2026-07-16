@@ -159,4 +159,106 @@ class UserControllerTest extends ControllerTestCase
         ));
         $this->assertSame(403, $response->status);
     }
+
+    public function testSettingsPostWithNewPasswordClearsForcePasswordChange(): void
+    {
+        $user = $this->makeUser();
+        $user->force_password_change = 1;
+        Auth::setUser($user);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->settings($this->makePostRequest([
+            'display_name' => 'New Name',
+            'email'        => 'user1@example.com',
+            'password'     => 'newsecret',
+            'password2'    => 'newsecret',
+        ]));
+        $this->assertSame(200, $response->status);
+        $this->assertSame(0, $saved->force_password_change);
+    }
+
+    // -------------------------------------------------------------------------
+    // forcePasswordChange
+    // -------------------------------------------------------------------------
+
+    public function testForcePasswordChangeRedirectsIfNotLoggedIn(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->forcePasswordChange(new Request());
+        $this->assertSame(302, $response->status);
+        $this->assertStringContainsString('/login', $response->headers['Location']);
+    }
+
+    public function testForcePasswordChangeReturnsFormOnGet(): void
+    {
+        Auth::setUser($this->makeUser());
+        $ctrl     = $this->makeController();
+        $response = $ctrl->forcePasswordChange($this->makeGetRequest());
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testForcePasswordChangeValidationErrorForShortPassword(): void
+    {
+        Auth::setUser($this->makeUser());
+        $ctrl     = $this->makeController();
+        $response = $ctrl->forcePasswordChange($this->makePostRequest([
+            'password'  => 'abc',
+            'password2' => 'abc',
+        ]));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testForcePasswordChangeValidationErrorForMismatch(): void
+    {
+        Auth::setUser($this->makeUser());
+        $ctrl     = $this->makeController();
+        $response = $ctrl->forcePasswordChange($this->makePostRequest([
+            'password'  => 'secret1',
+            'password2' => 'secret2',
+        ]));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testForcePasswordChangeSuccessClearsFlagAndRedirects(): void
+    {
+        $user = $this->makeUser();
+        $user->force_password_change = 1;
+        Auth::setUser($user);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->forcePasswordChange($this->makePostRequest([
+            'password'  => 'newsecret',
+            'password2' => 'newsecret',
+            'redirect'  => '/forum/5',
+        ]));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/5', $response->headers['Location']);
+        $this->assertSame(0, $saved->force_password_change);
+    }
+
+    public function testForcePasswordChangeReturns403WithBadCsrf(): void
+    {
+        Auth::setUser($this->makeUser());
+        $ctrl     = $this->makeController();
+        $response = $ctrl->forcePasswordChange(new Request(
+            post:   ['csrf_token' => 'bad'],
+            server: ['REQUEST_METHOD' => 'POST'],
+        ));
+        $this->assertSame(403, $response->status);
+    }
 }

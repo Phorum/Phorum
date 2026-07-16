@@ -6,13 +6,10 @@ namespace Phorum\Tests\Http\Controllers;
 use Phorum\Core\Auth;
 use Phorum\Http\Controllers\ForumController;
 use Phorum\Http\Request;
-use Phorum\Mapper\CustomFieldConfigMapper;
-use Phorum\Mapper\CustomFieldMapper;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
 use Phorum\Service\AnnouncementService;
-use Phorum\Service\CustomFieldService;
 use Phorum\Service\NewflagService;
 use Phorum\Service\PermissionService;
 use Phorum\Tests\Http\ControllerTestCase;
@@ -31,11 +28,6 @@ class ForumControllerTest extends ControllerTestCase
         $newflags      = $deps['newflags']      ?? $this->createMock(NewflagService::class);
         $announcements = $deps['announcements'] ?? $this->createMock(AnnouncementService::class);
 
-        $cfMapper       = $this->createMock(CustomFieldConfigMapper::class);
-        $cfValMapper    = $this->createMock(CustomFieldMapper::class);
-        $cfService      = $deps['cfService']
-            ?? new CustomFieldService($cfMapper, $cfValMapper);
-
         return new ForumController(
             config:        $this->makeConfig(),
             twig:          $this->makeTwig(),
@@ -43,7 +35,6 @@ class ForumControllerTest extends ControllerTestCase
             messages:      $messages,
             perms:         $perms,
             newflags:      $newflags,
-            cfService:     $cfService,
             announcements: $announcements,
         );
     }
@@ -87,10 +78,6 @@ class ForumControllerTest extends ControllerTestCase
             config:        $this->makeConfig(),
             twig:          $twig,
             forums:        $forums,
-            cfService:     new CustomFieldService(
-                $this->createMock(CustomFieldConfigMapper::class),
-                $this->createMock(CustomFieldMapper::class),
-            ),
             announcements: $this->createMock(AnnouncementService::class),
         );
 

@@ -59,6 +59,34 @@ class SubscriberMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // deleteForThread
+    // -------------------------------------------------------------------------
+
+    public function testDeleteForThreadRemovesAllSubscribersForThatThread(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->subscribe(1, 40, 100, SubscriberMapper::SUB_MESSAGE);
+        $mapper->subscribe(2, 40, 100, SubscriberMapper::SUB_BOOKMARK);
+        $mapper->subscribe(3, 40, 200, SubscriberMapper::SUB_MESSAGE); // different thread
+
+        $mapper->deleteForThread(40, 100);
+
+        $this->assertNull($mapper->getSubscription(1, 40, 100));
+        $this->assertNull($mapper->getSubscription(2, 40, 100));
+        $this->assertSame(SubscriberMapper::SUB_MESSAGE, $mapper->getSubscription(3, 40, 200));
+    }
+
+    public function testDeleteForThreadScopesToForum(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->subscribe(1, 41, 100, SubscriberMapper::SUB_MESSAGE);
+
+        $mapper->deleteForThread(999, 100); // wrong forum
+
+        $this->assertSame(SubscriberMapper::SUB_MESSAGE, $mapper->getSubscription(1, 41, 100));
+    }
+
+    // -------------------------------------------------------------------------
     // listEmailSubscribers
     // -------------------------------------------------------------------------
 

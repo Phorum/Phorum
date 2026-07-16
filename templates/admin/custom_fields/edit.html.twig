@@ -40,26 +40,6 @@
                 </div>
             </div>
 
-            {% if is_new %}
-            <div class="row">
-                <div class="input-field col s12 m6">
-                    <select name="field_type" id="field_type">
-                        {% for type_id, type_label in type_labels %}
-                            <option value="{{ type_id }}"{{ config.field_type == type_id ? ' selected' : '' }}>{{ type_label }}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="field_type">Field Type</label>
-                </div>
-            </div>
-            {% else %}
-            <div class="row">
-                <div class="input-field col s12 m6">
-                    <input type="text" value="{{ type_labels[config.field_type] ?? config.field_type }}" disabled class="grey-text">
-                    <label class="active">Field Type (cannot change after creation)</label>
-                </div>
-            </div>
-            {% endif %}
-
             <div class="row">
                 <div class="col s12 m6">
                     <label>
@@ -68,31 +48,14 @@
                         <span>Escape HTML on display (recommended — prevents XSS)</span>
                     </label>
                 </div>
-                {% if is_new or config.field_type == 1 %}
-                <div class="col s12 m6" id="show_in_admin_wrap">
+                <div class="col s12 m6">
                     <label>
                         <input type="checkbox" name="show_in_admin" value="1"
                                {{ config.show_in_admin ? 'checked' : '' }}>
                         <span>Show in admin user editor</span>
                     </label>
                 </div>
-                {% endif %}
             </div>
-
-            {% if is_new %}
-            <script>
-            document.getElementById('field_type').addEventListener('change', function () {
-                var wrap = document.getElementById('show_in_admin_wrap');
-                wrap.style.display = this.value === '1' ? '' : 'none';
-            });
-            // Set initial state in case the page loaded with a non-User type selected
-            (function () {
-                var wrap = document.getElementById('show_in_admin_wrap');
-                var sel  = document.getElementById('field_type');
-                wrap.style.display = sel.value === '1' ? '' : 'none';
-            })();
-            </script>
-            {% endif %}
 
             <div class="row">
                 <div class="col s12 right-align">

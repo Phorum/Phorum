@@ -37,4 +37,6 @@ class User
     public string $user_template     = '';
     public int    $moderation_email  = 1;
     public string $settings_data     = '';
+    public string $moderator_data    = '';
+    public int    $force_password_change = 0;
 }

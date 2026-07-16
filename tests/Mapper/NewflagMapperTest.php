@@ -19,53 +19,6 @@ class NewflagMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
-    // getMinId / setMinId
-    // -------------------------------------------------------------------------
-
-    public function testGetMinIdReturnsZeroWhenMissing(): void
-    {
-        $mapper = $this->makeMapper();
-        $this->assertSame(0, $mapper->getMinId(1, 10));
-    }
-
-    public function testSetMinIdAndGetMinId(): void
-    {
-        $mapper = $this->makeMapper();
-        $mapper->setMinId(1, 10, 500);
-        $this->assertSame(500, $mapper->getMinId(1, 10));
-    }
-
-    public function testSetMinIdReplaces(): void
-    {
-        $mapper = $this->makeMapper();
-        $mapper->setMinId(1, 10, 100);
-        $mapper->setMinId(1, 10, 200);
-        $this->assertSame(200, $mapper->getMinId(1, 10));
-    }
-
-    // -------------------------------------------------------------------------
-    // getMinIds
-    // -------------------------------------------------------------------------
-
-    public function testGetMinIdsReturnsMultipleForums(): void
-    {
-        $mapper = $this->makeMapper();
-        $mapper->setMinId(5, 1, 10);
-        $mapper->setMinId(5, 2, 20);
-
-        $result = $mapper->getMinIds(5, [1, 2, 3]);
-        $this->assertSame(10, $result[1]);
-        $this->assertSame(20, $result[2]);
-        $this->assertArrayNotHasKey(3, $result); // forum 3 has no row
-    }
-
-    public function testGetMinIdsReturnsEmptyForEmptyInput(): void
-    {
-        $mapper = $this->makeMapper();
-        $this->assertSame([], $mapper->getMinIds(1, []));
-    }
-
-    // -------------------------------------------------------------------------
     // getFlags / countFlags / deleteAllFlags
     // -------------------------------------------------------------------------
 
@@ -166,6 +119,30 @@ class NewflagMapperTest extends MapperTestCase
     {
         $mapper = $this->makeMapper();
         $this->assertSame([], $mapper->countNewPerForum(1, []));
+    }
+
+    /**
+     * Mirrors markForumRead(): flagging only the highest message_id as read
+     * should derive a min_id that suppresses every message at or below it —
+     * not just the one exact flagged row — and independently per forum.
+     */
+    public function testCountNewPerForumDerivesMinIdAcrossMultipleForums(): void
+    {
+        $this->insert('phorum_messages', ['forum_id' => 61, 'status' => 2, 'thread' => 0, 'parent_id' => 0]);
+        $this->insert('phorum_messages', ['forum_id' => 61, 'status' => 2, 'thread' => 0, 'parent_id' => 0]);
+        $m3 = $this->insert('phorum_messages', ['forum_id' => 61, 'status' => 2, 'thread' => 0, 'parent_id' => 0]);
+        $this->insert('phorum_user_newflags', ['user_id' => 1, 'forum_id' => 61, 'message_id' => $m3]);
+
+        $this->insert('phorum_messages', ['forum_id' => 62, 'status' => 2, 'thread' => 0, 'parent_id' => 0]);
+        $this->insert('phorum_messages', ['forum_id' => 62, 'status' => 2, 'thread' => 0, 'parent_id' => 0]);
+
+        $mapper = $this->makeMapper();
+        $result = $mapper->countNewPerForum(1, [61, 62]);
+
+        // Forum 61: all 3 messages read via the derived min_id boundary
+        $this->assertArrayNotHasKey(61, $result);
+        // Forum 62: both messages still unread (no flags at all)
+        $this->assertSame(2, $result[62]);
     }
 
     // -------------------------------------------------------------------------

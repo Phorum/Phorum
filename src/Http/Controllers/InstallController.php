@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace Phorum\Http\Controllers;
 
 use DealNews\DB\CRUD;
+use Phorum\Core\SchemaInstaller;
+use Phorum\Core\SchemaPatcher;
+use Phorum\Core\Version;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -149,24 +152,30 @@ class InstallController extends Controller
 
     private function runInstall(string $siteName, string $adminUsername, string $adminEmail, string $adminPassword): void
     {
-        $prefix = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
-        $db     = defined('PHORUM_DB')        ? PHORUM_DB        : 'phorum';
-        $crud   = CRUD::factory($db);
+        $settings = new SettingMapper();
 
-        // Load schema, substitute prefix, execute each statement
-        $sql        = (string) file_get_contents(ROOT_PATH . '/db/mysql.sql');
-        $sql        = str_replace('{PREFIX}', $prefix, $sql);
-        $statements = preg_split('/;\s*\n/', $sql) ?: [];
-
-        foreach ($statements as $stmt) {
-            $stmt = trim($stmt);
-            // Skip blank lines and comment-only blocks
-            $stripped = preg_replace('/^\s*--[^\n]*\n?/m', '', $stmt);
-            if (trim((string) $stripped) === '') {
-                continue;
+        // Defense in depth: App already routes an existing Phorum 6 database
+        // (identified by its own 'internal_version' setting) to /upgrade
+        // instead of here, but refuse anyway in case this is ever reached
+        // directly — this flow creates a new admin user and would otherwise
+        // silently duplicate one on top of real Phorum 6 data.
+        try {
+            if ($settings->getSetting('internal_version') !== null) {
+                throw new \RuntimeException(
+                    'This database was created by Phorum 6. Go to /upgrade instead of /install.'
+                );
             }
-            $crud->run($stmt, []);
+        } catch (\RuntimeException $e) {
+            throw $e;
+        } catch (\Throwable) {
+            // Settings table doesn't exist yet — genuinely fresh database.
         }
+
+        (new SchemaInstaller())->apply();
+        // The base schema above already has every current column, so the
+        // patches that bring older databases up to date would just fail
+        // with "duplicate column" here — mark them applied without running.
+        (new SchemaPatcher())->markAllApplied();
 
         // Create admin user
         $user                  = new User();
@@ -184,8 +193,8 @@ class InstallController extends Controller
         (new UserMapper())->save($user);
 
         // Persist settings
-        $settings = new SettingMapper();
         $settings->saveSetting('installed', '1');
+        $settings->saveSetting('schema_version', Version::CURRENT);
         $settings->saveSetting('site_name', $siteName);
         $settings->saveSetting('mods', ['bbcode' => 1]);
     }

@@ -159,4 +159,36 @@ class PermissionServiceTest extends TestCase
         $forum = $this->makeForum();
         $this->assertFalse($svc->canPost($forum, $this->makeUser()));
     }
+
+    // -------------------------------------------------------------------------
+    // canEdit()
+    // -------------------------------------------------------------------------
+
+    public function testCanEditTrueWhenBitSet(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_EDIT);
+        $forum = $this->makeForum();
+        $this->assertTrue($svc->canEdit($forum, $this->makeUser()));
+    }
+
+    public function testCanEditFalseWhenBitNotSet(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_READ);
+        $forum = $this->makeForum();
+        $this->assertFalse($svc->canEdit($forum, $this->makeUser()));
+    }
+
+    public function testCanEditTrueForAdminRegardlessOfForumPerms(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: 0, regPerms: 0);
+        $this->assertTrue($svc->canEdit($forum, $this->makeUser(admin: true)));
+    }
+
+    public function testCanEditAnonymousUsesPublicPerms(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: 0);
+        $this->assertFalse($svc->canEdit($forum, null));
+    }
 }

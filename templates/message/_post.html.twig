@@ -63,7 +63,7 @@
         {% if can_reply %}
             <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ msg.message_id) }}">{{ trans('message.reply') }}</a>
         {% endif %}
-        {% set can_edit_msg = (current_user_id is defined and current_user_id > 0) and (current_user_id == msg.user_id or can_moderate) %}
+        {% set can_edit_msg = msg.message_id in can_edit_ids|default([]) %}
         {% if can_edit_msg %}
             <a href="{{ path('/message/' ~ msg.message_id ~ '/edit') }}">{{ trans('message.edit') }}</a>
         {% endif %}
