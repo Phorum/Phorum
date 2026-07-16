@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -231,9 +232,9 @@ class ModerationController extends Controller
 
             // deleteMessage on a root post cascades to deleteThread → land on forum
             if ($action === 'delete' && $msg->parent_id === 0) {
-                return $this->redirect("/forum/{$msg->forum_id}");
+                return $this->redirect(Url::forum($msg->forum_id));
             } else {
-                return $this->redirect("/forum/{$msg->forum_id}/thread/{$msg->thread}");
+                return $this->redirect(Url::thread($msg->forum_id, $msg->thread));
             }
         }
 
@@ -303,11 +304,11 @@ class ModerationController extends Controller
             }
 
             if ($action === 'delete') {
-                return $this->redirect("/forum/{$root->forum_id}");
+                return $this->redirect(Url::forum($root->forum_id));
             } elseif ($action === 'move' && $toForumId > 0) {
-                return $this->redirect("/forum/{$toForumId}/thread/{$threadId}");
+                return $this->redirect(Url::thread($toForumId, $threadId));
             } else {
-                return $this->redirect("/forum/{$root->forum_id}/thread/{$threadId}");
+                return $this->redirect(Url::thread($root->forum_id, $threadId));
             }
         }
 
@@ -383,6 +384,6 @@ class ModerationController extends Controller
             $this->searchIndex->updateForum($targetThreadId, $targetRoot->forum_id);
         }
 
-        return $this->redirect("/forum/{$targetRoot->forum_id}/thread/{$targetThreadId}");
+        return $this->redirect(Url::thread($targetRoot->forum_id, $targetThreadId));
     }
 }

@@ -14,6 +14,7 @@ use DealNews\SchemaOrg\Type\Person;
 use DealNews\SchemaOrg\Type\ViewAction;
 use DealNews\SchemaOrg\Type\WebPage;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
@@ -56,7 +57,7 @@ class SchemaOrgService
      */
     public function folderShow(Forum $folder, array $forums, string $siteName): array
     {
-        $folderUrl = $this->absoluteUrl('/forum/' . $folder->forum_id);
+        $folderUrl = $this->absoluteUrl(Url::forum($folder->forum_id));
 
         $page       = new CollectionPage();
         $page->id   = $folderUrl;
@@ -87,7 +88,7 @@ class SchemaOrgService
             $position++;
 
             $entry       = new WebPage();
-            $entry->id   = $this->absoluteUrl('/forum/' . $forum->forum_id);
+            $entry->id   = $this->absoluteUrl(Url::forum($forum->forum_id));
             $entry->url  = $entry->id;
             $entry->name = $forum->name;
             if ($forum->description !== '') {
@@ -112,7 +113,7 @@ class SchemaOrgService
      */
     public function forumShow(Forum $forum, array $threads, string $siteName): array
     {
-        $forumUrl = $this->absoluteUrl('/forum/' . $forum->forum_id);
+        $forumUrl = $this->absoluteUrl(Url::forum($forum->forum_id));
 
         $page       = new CollectionPage();
         $page->id   = $forumUrl;
@@ -131,7 +132,7 @@ class SchemaOrgService
         foreach ($threads as $thread) {
             $position++;
 
-            $threadUrl = $this->absoluteUrl('/forum/' . $forum->forum_id . '/thread/' . $thread->message_id);
+            $threadUrl = $this->absoluteUrl(Url::thread($forum->forum_id, $thread->message_id));
 
             $posting             = new DiscussionForumPosting();
             $posting->id         = $threadUrl;
@@ -167,7 +168,7 @@ class SchemaOrgService
      */
     public function thread(Forum $forum, Message $root, array $threadMessages, string $siteName): array
     {
-        $threadUrl = $this->absoluteUrl('/forum/' . $forum->forum_id . '/thread/' . $root->message_id);
+        $threadUrl = $this->absoluteUrl(Url::thread($forum->forum_id, $root->message_id));
 
         $posting                  = new DiscussionForumPosting();
         $posting->id              = $threadUrl;
@@ -215,7 +216,7 @@ class SchemaOrgService
 
         $breadcrumb = $this->breadcrumb([
             [$siteName, $this->absoluteUrl('/')],
-            [$forum->name, $this->absoluteUrl('/forum/' . $forum->forum_id)],
+            [$forum->name, $this->absoluteUrl(Url::forum($forum->forum_id))],
             [$root->subject, $threadUrl],
         ]);
 

@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -56,7 +57,7 @@ class ReportController extends Controller
             $reason = mb_substr(trim($request->post['reason'] ?? ''), 0, 255);
             $this->reports->create($msg->message_id, $msg->forum_id, $user->user_id, $reason);
 
-            return $this->redirect("/forum/{$msg->forum_id}/thread/{$msg->thread}#msg-{$msg->message_id}");
+            return $this->redirect(Url::thread($msg->forum_id, $msg->thread, $msg->message_id));
         }
 
         return $this->respond($this->render('report/confirm.html.twig', [

@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -74,7 +75,7 @@ class SubscriptionController extends Controller
                 } else {
                     $service->subscribe($user->user_id, $root->forum_id, $threadId, SubscriberMapper::SUB_BOOKMARK);
                 }
-                return $this->redirect("/forum/{$root->forum_id}/thread/{$threadId}");
+                return $this->redirect(Url::thread($root->forum_id, $threadId));
             }
             return $this->respond($this->render('subscription/quick_confirm.html.twig', [
                 'root'        => $root,
@@ -99,7 +100,7 @@ class SubscriptionController extends Controller
                 default       => null,
             };
 
-            return $this->redirect("/forum/{$root->forum_id}/thread/{$threadId}");
+            return $this->redirect(Url::thread($root->forum_id, $threadId));
         }
 
         return $this->respond($this->render('subscription/follow.html.twig', [

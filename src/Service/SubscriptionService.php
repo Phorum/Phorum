@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Service;
 
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
@@ -64,8 +65,7 @@ class SubscriptionService
 
         $siteName  = (string) $this->config->get('site_name', 'Phorum');
         $baseUrl   = rtrim((string) $this->config->get('base_url', ''), '/');
-        $readUrl   = $baseUrl . "/forum/{$message->forum_id}/thread/{$message->thread}"
-                   . "#msg-{$message->message_id}";
+        $readUrl   = $baseUrl . Url::thread($message->forum_id, $message->thread, $message->message_id);
 
         foreach ($recipients as $row) {
             $unsubUrl  = $baseUrl . "/follow/{$message->thread}?action=remove";
@@ -111,8 +111,7 @@ class SubscriptionService
         $isModerated = $message->status !== MessageMapper::STATUS_APPROVED;
         $actionUrl   = $isModerated
             ? $baseUrl . "/moderate/message/{$message->message_id}/approve"
-            : $baseUrl . "/forum/{$message->forum_id}/thread/{$message->thread}"
-              . "#msg-{$message->message_id}";
+            : $baseUrl . Url::thread($message->forum_id, $message->thread, $message->message_id);
 
         foreach ($moderators as $row) {
             $displayName = $row['display_name'] !== '' ? $row['display_name'] : $row['username'];

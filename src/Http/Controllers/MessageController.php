@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -307,7 +308,7 @@ class MessageController extends Controller
                     }
                     $this->subscriptions->notifyModerators($msg, $forum);
 
-                    return $this->redirect("/forum/{$forumId}/thread/{$msg->thread}#msg-{$msg->message_id}");
+                    return $this->redirect(Url::thread($forumId, $msg->thread, $msg->message_id));
                 }
             }
         } elseif ($parent !== null) {
@@ -392,7 +393,7 @@ class MessageController extends Controller
                 $this->storeUploads($forum, $msg->message_id, $currentUser->user_id, $errors, $request);
 
                 if (empty($errors)) {
-                    return $this->redirect("/forum/{$msg->forum_id}/thread/{$msg->thread}#msg-{$msg->message_id}");
+                    return $this->redirect(Url::thread($msg->forum_id, $msg->thread, $msg->message_id));
                 }
             }
         }
@@ -429,12 +430,12 @@ class MessageController extends Controller
         }
 
         if (!($this->config->get('track_edits', false) ?? false)) {
-            return $this->redirect("/forum/{$msg->forum_id}/thread/{$msg->thread}#msg-{$messageId}");
+            return $this->redirect(Url::thread($msg->forum_id, $msg->thread, $messageId));
         }
 
         $tracking = (new MessageTrackingMapper())->findByMessage($messageId);
         if (empty($tracking)) {
-            return $this->redirect("/forum/{$msg->forum_id}/thread/{$msg->thread}#msg-{$messageId}");
+            return $this->redirect(Url::thread($msg->forum_id, $msg->thread, $messageId));
         }
 
         // Build version sequence: each tracking row holds the content BEFORE

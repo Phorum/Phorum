@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -115,7 +116,7 @@ class ForumController extends Controller
             'thread_new_counts' => $threadNewCounts,
             'page'              => $page,
             'pages'             => $pages,
-            'base_url'          => '/forum/' . $forumId,
+            'base_url'          => Url::forum($forumId),
             'can_post'          => $this->perms->canPost($forum, $currentUser),
             'can_moderate'      => $this->perms->canModerate($forum, $currentUser),
             'theme'             => $this->resolveTheme($forum),
@@ -160,12 +161,12 @@ class ForumController extends Controller
         }
 
         if (!$request->isPost()) {
-            return $this->redirect('/forum/' . $forumId);
+            return $this->redirect(Url::forum($forumId));
         }
         if ($r = $this->checkCsrf($request)) { return $r; }
 
         $this->newflags->markForumRead($currentUser->user_id, $forumId);
-        return $this->redirect('/forum/' . $forumId);
+        return $this->redirect(Url::forum($forumId));
     }
 
     // -------------------------------------------------------------------------

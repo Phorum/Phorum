@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Http\Controllers;
 
+use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -30,7 +31,7 @@ class LegacyRedirectController extends Controller
         $forum_id = (int) ($pos[0] ?? 0);
 
         if ($forum_id > 0) {
-            return $this->redirect("/forum/{$forum_id}", 301);
+            return $this->redirect(Url::forum($forum_id), 301);
         } else {
             return $this->redirect('/', 301);
         }
@@ -45,7 +46,7 @@ class LegacyRedirectController extends Controller
         $forum_id = (int) ($pos[0] ?? 0);
 
         if ($forum_id > 0) {
-            $url = "/forum/{$forum_id}";
+            $url = Url::forum($forum_id);
             if (isset($named['page']) && (int) $named['page'] > 1) {
                 $url .= '?page=' . (int) $named['page'];
             }
@@ -67,10 +68,7 @@ class LegacyRedirectController extends Controller
         $msg_id    = (int) ($pos[2] ?? 0);
 
         if ($forum_id > 0 && $thread_id > 0) {
-            $url = "/forum/{$forum_id}/thread/{$thread_id}";
-            if ($msg_id > 0 && $msg_id !== $thread_id) {
-                $url .= "#msg-{$msg_id}";
-            }
+            $url = Url::thread($forum_id, $thread_id, ($msg_id > 0 && $msg_id !== $thread_id) ? $msg_id : null);
             return $this->redirect($url, 301);
         } else {
             return $this->redirect('/', 301);
