@@ -59,14 +59,19 @@ class UpgradeControllerTest extends ControllerTestCase
         $patcher = $this->createMock(SchemaPatcher::class);
         $patcher->expects($this->once())->method('apply');
 
+        $saved    = [];
         $settings = $this->createMock(SettingMapper::class);
-        $settings->expects($this->once())->method('saveSetting')->with('schema_version', $this->isType('string'));
+        $settings->method('saveSetting')->willReturnCallback(function ($name, $value) use (&$saved) {
+            $saved[$name] = $value;
+        });
 
         $ctrl     = $this->makeController(['schema' => $schema, 'patcher' => $patcher, 'settings' => $settings]);
         $response = $ctrl->index($this->makePostRequest());
 
         $this->assertSame(302, $response->status);
         $this->assertSame('/upgrade/complete', $response->headers['Location']);
+        $this->assertArrayHasKey('schema_version', $saved);
+        $this->assertSame('1', $saved['installed']);
     }
 
     public function testPostReturns403WithBadCsrf(): void

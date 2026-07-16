@@ -55,6 +55,7 @@ class UpgradeController extends Controller
             $this->schema->apply();
             $this->patcher->apply();
             $this->settings->saveSetting('schema_version', Version::CURRENT);
+            $this->settings->saveSetting('installed', '1');
 
             return $this->redirect('/upgrade/complete');
         }
