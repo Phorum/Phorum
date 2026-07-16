@@ -40,11 +40,16 @@ class SearchMapper extends AbstractPhorumMapper
             if (!str_starts_with((string) $e->getCode(), '23')) {
                 throw $e;
             }
-            $this->crud()->run(
+            $sth = $this->crud()->run(
                 'UPDATE ' . $this->table()
                 . ' SET forum_id = :fid, search_text = :text WHERE message_id = :mid',
                 [':mid' => $messageId, ':fid' => $forumId, ':text' => $text]
             );
+            if ($sth->rowCount() === 0) {
+                // Not actually a duplicate-key conflict — the row we tried
+                // to update doesn't exist either; surface the real error.
+                throw $e;
+            }
         }
     }
 

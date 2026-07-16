@@ -43,11 +43,16 @@ class SubscriberMapper extends AbstractPhorumMapper
             if (!str_starts_with((string) $e->getCode(), '23')) {
                 throw $e;
             }
-            $this->crud()->run(
+            $sth = $this->crud()->run(
                 'UPDATE ' . $this->table()
                 . ' SET sub_type = :type WHERE user_id = :uid AND forum_id = :fid AND thread = :thread',
                 $params
             );
+            if ($sth->rowCount() === 0) {
+                // Not actually a duplicate-key conflict (e.g. a genuine FK
+                // violation) — the row we tried to update doesn't exist either.
+                throw $e;
+            }
         }
     }
 

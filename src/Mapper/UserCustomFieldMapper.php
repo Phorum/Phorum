@@ -105,10 +105,16 @@ class UserCustomFieldMapper
             if (!str_starts_with((string) $e->getCode(), '23')) {
                 throw $e;
             }
-            $this->crud()->run(
+            $sth = $this->crud()->run(
                 "UPDATE {$t} SET data = :data WHERE user_id = :uid AND `type` = :cfg",
                 [':uid' => $userId, ':cfg' => $configId, ':data' => $value]
             );
+            if ($sth->rowCount() === 0) {
+                // Not actually a duplicate-key conflict (e.g. a genuine FK
+                // violation on a nonexistent user/config) — the row we tried
+                // to update doesn't exist either.
+                throw $e;
+            }
         }
     }
 

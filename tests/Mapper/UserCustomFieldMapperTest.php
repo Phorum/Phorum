@@ -89,6 +89,50 @@ class UserCustomFieldMapperTest extends MapperTestCase
         $this->assertSame('second', $mapper->loadForUser(1)[10]->data);
     }
 
+    /**
+     * If the INSERT fails with a constraint-violation-shaped error that
+     * *isn't* actually a duplicate of this row (e.g. a genuine FK
+     * violation), the fallback UPDATE matches zero rows too — saveValue()
+     * must surface the original error instead of silently doing nothing.
+     */
+    public function testSaveValueRethrowsWhenFallbackUpdateMatchesNoRow(): void
+    {
+        // PDOException::getCode() is final but its underlying $code property
+        // is untyped and normally holds the driver's SQLSTATE string (e.g.
+        // '23000') rather than an int — set it the same way here.
+        $fakeException = new \PDOException('constraint violation');
+        $codeProp       = new \ReflectionProperty($fakeException, 'code');
+        $codeProp->setValue($fakeException, '23000');
+
+        $mapper = new class($fakeException) extends UserCustomFieldMapper {
+            public function __construct(private \Exception $fakeException)
+            {
+            }
+
+            protected function crud(): CRUD
+            {
+                $real      = MapperTestCase::$crud;
+                $exception = $this->fakeException;
+                return new class($real, $exception) extends CRUD {
+                    public function __construct(private CRUD $real, private \Exception $exception)
+                    {
+                    }
+
+                    public function run(string $query, array $params = []): \DealNews\DB\PDOStatement
+                    {
+                        if (str_starts_with(trim($query), 'INSERT')) {
+                            throw $this->exception;
+                        }
+                        return $this->real->run($query, $params);
+                    }
+                };
+            }
+        };
+
+        $this->expectExceptionMessage('constraint violation');
+        $mapper->saveValue(999, 999, 'value');
+    }
+
     // -------------------------------------------------------------------------
     // deleteForUser
     // -------------------------------------------------------------------------

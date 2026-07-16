@@ -55,10 +55,15 @@ class SettingMapper extends AbstractPhorumMapper
             if (!str_starts_with((string) $e->getCode(), '23')) {
                 throw $e;
             }
-            $this->crud()->run(
+            $sth = $this->crud()->run(
                 'UPDATE ' . $this->table() . ' SET type = :type, data = :data WHERE name = :name',
                 [':name' => $name, ':type' => $type, ':data' => $data]
             );
+            if ($sth->rowCount() === 0) {
+                // Not actually a duplicate-key conflict — the row we tried
+                // to update doesn't exist either; surface the real error.
+                throw $e;
+            }
         }
     }
 
