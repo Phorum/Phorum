@@ -8,6 +8,7 @@ use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Model\Message;
 
 class ModerationService
 {
@@ -46,7 +47,7 @@ class ModerationService
     /** Soft-delete an entire thread (all messages where thread = $threadId). */
     public function deleteThread(int $threadId): void
     {
-        $root = $this->messages->load($threadId);
+        $root = $this->loadThreadRoot($threadId);
         if ($root === null) return;
 
         $forumId    = $root->forum_id;
@@ -89,8 +90,8 @@ class ModerationService
     /** Move an entire thread to another forum and recalculate stats for both forums. */
     public function moveThread(int $threadId, int $toForumId): void
     {
-        $root = $this->messages->load($threadId);
-        if ($root === null || $root->parent_id !== 0) return;
+        $root = $this->loadThreadRoot($threadId);
+        if ($root === null) return;
 
         $fromForumId = $root->forum_id;
         if ($fromForumId === $toForumId) return;
@@ -111,11 +112,11 @@ class ModerationService
     {
         if ($sourceThreadId === $targetThreadId) return false;
 
-        $source = $this->messages->load($sourceThreadId);
-        if ($source === null || $source->parent_id !== 0) return false;
+        $source = $this->loadThreadRoot($sourceThreadId);
+        if ($source === null) return false;
 
-        $target = $this->messages->load($targetThreadId);
-        if ($target === null || $target->parent_id !== 0) return false;
+        $target = $this->loadThreadRoot($targetThreadId);
+        if ($target === null) return false;
 
         $sourceForumId    = $source->forum_id;
         $targetForumId    = $target->forum_id;
@@ -149,5 +150,12 @@ class ModerationService
         $sort = $sticky ? MessageMapper::SORT_STICKY : MessageMapper::SORT_DEFAULT;
         $this->messages->setSortForThread($threadId, $sort);
         phorum_api_hook('make_sticky', $threadId);
+    }
+
+    /** Load a message and confirm it's a real thread root (parent_id === 0), or null otherwise. */
+    private function loadThreadRoot(int $id): ?Message
+    {
+        $msg = $this->messages->load($id);
+        return ($msg !== null && $msg->parent_id === 0) ? $msg : null;
     }
 }

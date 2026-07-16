@@ -125,6 +125,18 @@ class ModerationServiceTest extends TestCase
         $svc->deleteThread(999);
     }
 
+    public function testDeleteThreadDoesNothingForNonRootId(): void
+    {
+        $reply = $this->makeMessage(2, 1, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->with(2)->willReturn($reply);
+        $msgMapper->expects($this->never())->method('setStatusForThread');
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->deleteThread(2);
+    }
+
     // -------------------------------------------------------------------------
     // approveMessage()
     // -------------------------------------------------------------------------
