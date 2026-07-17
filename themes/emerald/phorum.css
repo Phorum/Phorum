@@ -363,13 +363,9 @@ table.announcements-list tr:hover td {
     display: block;
 }
 
-/* Rounded to 0.75rem to consolidate with .msg-pm-link/.msg-date-line/
-   .buddy-mutual (~0.24px difference). The .thread-list .thread-author rule
-   in the mobile breakpoint below carries its own value, since col-subject
-   is bumped to a full 1rem there and the compounded size differs. */
 .thread-author {
     display: block;
-    font-size: var(--fs-2xs);
+    font-size: var(--fs-xs);
     color: #555;
 }
 
