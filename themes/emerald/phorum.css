@@ -649,6 +649,7 @@ input.btn-primary,
 .btn-cancel,
 .btn-danger,
 .btn-secondary,
+.btn-feed,
 .nav-toggle,
 input[type="submit"],
 button[type="submit"] {
@@ -689,6 +690,19 @@ button.btn-primary:hover,
 input.btn-post:hover,
 input.btn-primary:hover {
     background: var(--accent-dark);
+    color: var(--white) !important;
+}
+
+/* White text on #F79411 is ~2.3:1 contrast — below WCAG AA's 4.5:1 minimum,
+   an intentional exception rather than an oversight. */
+.btn-feed {
+    background: #F79411;
+    color: var(--white) !important;
+    border: 1px solid #D9840B;
+}
+
+.btn-feed:hover {
+    background: #D9840B;
     color: var(--white) !important;
 }
 

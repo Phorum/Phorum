@@ -16,7 +16,7 @@
 {% block content %}
 <h1 class="forum-index-title">{{ site_name }}</h1>
 {% if feeds_enabled %}
-    <p><a href="{{ path('/feed.rss') }}">{{ trans('forum.feed_link') }}</a></p>
+    <p><a href="{{ path('/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a></p>
 {% endif %}
 
 {% if announcements %}

@@ -59,7 +59,7 @@ return [
     'forum.by'               => 'by',
     'forum.new'              => 'new',
     'forum.mark_read'        => 'Mark All Read',
-    'forum.feed_link'        => 'Subscribe (RSS)',
+    'forum.feed_link'        => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
