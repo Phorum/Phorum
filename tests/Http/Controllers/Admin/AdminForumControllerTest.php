@@ -250,6 +250,37 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame('/admin/forums', $response->headers['Location']);
     }
 
+    /**
+     * folder_flag's checkbox is rendered `disabled` on the edit form (it
+     * can't change after creation), so the browser never includes it in the
+     * POST body. applyPost() must not read that absence as "uncheck it" —
+     * the saved forum should keep whatever folder_flag it loaded with.
+     */
+    public function testEditPostPreservesFolderFlagWhenOmittedFromPost(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['folder_flag' => 1]));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')
+            ->willReturnCallback(function ($forum) use (&$saved) {
+                $saved = $forum;
+                return $forum;
+            });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['name' => 'Updated Name', 'active' => '1'], // no folder_flag key at all
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(1, $saved->folder_flag);
+    }
+
     public function testEditPostSuccessRedirectsToFolderWhenParentSet(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

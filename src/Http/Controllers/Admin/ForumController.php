@@ -59,7 +59,7 @@ class ForumController extends AdminController
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
-            $errors = $this->applyPost($forum, $request, $themes);
+            $errors = $this->applyPost($forum, $request, $themes, isNew: true);
 
             if (empty($errors)) {
                 $this->forums->save($forum);
@@ -254,7 +254,7 @@ class ForumController extends AdminController
             : '/admin/forums';
     }
 
-    private function applyPost(Forum $forum, Request $request, array $themes = []): array
+    private function applyPost(Forum $forum, Request $request, array $themes = [], bool $isNew = false): array
     {
         $errors = [];
 
@@ -269,7 +269,12 @@ class ForumController extends AdminController
             $forum->name              = $name;
             $forum->description       = trim($request->post['description']   ?? '');
             $forum->active            = !empty($request->post['active'])      ? 1 : 0;
-            $forum->folder_flag       = !empty($request->post['folder_flag']) ? 1 : 0;
+            // folder_flag can't change after creation (see edit.html.twig) —
+            // the field is rendered disabled on edit, so it's simply absent
+            // from the POST body then; only read it while creating.
+            if ($isNew) {
+                $forum->folder_flag = !empty($request->post['folder_flag']) ? 1 : 0;
+            }
             $forum->vroot             = (int) ($request->post['vroot']      ?? 0);
             $forum->parent_id         = (int) ($request->post['parent_id'] ?? $forum->vroot);
             $forum->moderation        = (int) ($request->post['moderation']   ?? 0);
