@@ -193,8 +193,16 @@ p { margin: 0.5em 0; }
 
 /* --- Forum index title --------------------------------------------------- */
 
-.forum-index-title {
+.page-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 12px;
     margin: 10px 0 8px;
+}
+
+.forum-index-title {
+    margin: 0;
     font-size: var(--fs-xl);
     color: var(--accent-dark);
 }
@@ -1351,6 +1359,10 @@ table.profile-posts tr:nth-child(even) td {
             "title"
             "desc"
             "actions";
+    }
+
+    .page-header {
+        grid-template-columns: 1fr;
     }
 
     .forum-header-actions {

@@ -14,10 +14,14 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="forum-index-title">{{ site_name }}</h1>
-{% if feeds_enabled %}
-    <p><a href="{{ path('/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a></p>
-{% endif %}
+<div class="page-header">
+    <h1 class="forum-index-title">{{ site_name }}</h1>
+    {% if feeds_enabled %}
+        <div class="forum-header-actions">
+            <a href="{{ path('/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a>
+        </div>
+    {% endif %}
+</div>
 
 {% if announcements %}
     {% include 'announcements/_box.html.twig' %}
