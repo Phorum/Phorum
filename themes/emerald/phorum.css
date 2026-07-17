@@ -32,6 +32,31 @@
     --btn-shadow:       0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+/* --- Type scale -----------------------------------------------------------
+   Shared across every theme (the other themes only override the palette
+   custom properties above) — not per-theme, but centralized here since this
+   is the one stylesheet the rest actually @import.
+
+   Collapsed from 11 raw values down to these named steps by merging
+   near-duplicates that were barely distinguishable in practice: 0.75rem
+   into --fs-2xs (was 0.7rem), 0.9rem into --fs-sm (was 0.85rem), and
+   1.2rem into --fs-lg (was 1.1rem) — a ~0.05rem (~1px) shift for whatever
+   handful of rules used those three values. --fs-display is a deliberate
+   one-off for the single error-page h1 that used 2rem, not part of the
+   step progression.
+   -------------------------------------------------------------------------- */
+
+:root {
+    --fs-3xs:    0.625rem;
+    --fs-2xs:    0.7rem;
+    --fs-xs:     0.8rem;
+    --fs-sm:     0.85rem;
+    --fs-base:   1rem;
+    --fs-lg:     1.1rem;
+    --fs-xl:     1.4rem;
+    --fs-display: 2rem;
+}
+
 /* --- Reset / base -------------------------------------------------------- */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -55,7 +80,7 @@ body {
     padding: 6px 14px;
     background: var(--accent-dark);
     color: var(--white);
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     text-decoration: none;
     border-bottom-right-radius: 3px;
 }
@@ -106,7 +131,7 @@ p { margin: 0.5em 0; }
     padding: 4px 8px 5px;
     /* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-
        column size (~0.32px difference). */
-    font-size: 0.8rem;
+    font-size: var(--fs-xs);
     border-bottom: 1px solid var(--border-light);
     background: var(--accent-light);
     color: #333;
@@ -157,7 +182,7 @@ p { margin: 0.5em 0; }
     /* Rounded from the compounded 0.615rem to consolidate with the
        .sticky-badge/.closed-badge/.new-badge group's 0.625rem (a ~0.16px
        difference, imperceptible). */
-    font-size: 0.625rem;
+    font-size: var(--fs-3xs);
     font-weight: bold;
     line-height: 1;
     padding: 2px 5px;
@@ -170,7 +195,7 @@ p { margin: 0.5em 0; }
 
 .forum-index-title {
     margin: 10px 0 8px;
-    font-size: 1.4rem;
+    font-size: var(--fs-xl);
     color: var(--accent-dark);
 }
 
@@ -185,7 +210,7 @@ p { margin: 0.5em 0; }
 #phorum-footer {
     margin-top: 24px;
     padding: 6px 8px;
-    font-size: 0.7rem;
+    font-size: var(--fs-2xs);
     text-align: center;
     color: #666;
     border-top: 1px solid var(--border-light);
@@ -194,7 +219,7 @@ p { margin: 0.5em 0; }
 /* --- Breadcrumb ---------------------------------------------------------- */
 
 nav.breadcrumb {
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     padding: 5px 0;
     margin-bottom: 8px;
     border-bottom: 1px solid var(--border-light);
@@ -206,7 +231,7 @@ nav.breadcrumb {
 h2.section-header {
     padding: 5px 8px;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     font-weight: bold;
     border: 1px solid var(--border);
     border-bottom: 0;
@@ -244,7 +269,7 @@ table.forum-list th,
 table.thread-list th,
 table.announcements-list th {
     padding: 5px 8px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
@@ -256,30 +281,30 @@ table.announcements-list th a {
 }
 
 .forum-list td.col-forum > a {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     font-weight: bold;
 }
 
 .forum-list th.col-forum > a {
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
 }
 
 /* Rounded to 0.7rem to consolidate with #phorum-footer's size — both are
    small secondary text, and the ~0.36px difference isn't perceptible. */
 .forum-list .col-forum .forum-desc {
-    font-size: 0.7rem;
+    font-size: var(--fs-2xs);
 }
 
 .thread-list .col-subject > a,
 .announcements-list .col-subject > a {
-    font-size: 1rem;
+    font-size: var(--fs-base);
 }
 
 table.forum-list td,
 table.thread-list td,
 table.announcements-list td {
     padding: 8px 8px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     background: var(--white);
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
@@ -322,7 +347,7 @@ table.announcements-list tr:hover td {
    is bumped to a full 1rem there and the compounded size differs. */
 .thread-author {
     display: block;
-    font-size: 0.75rem;
+    font-size: var(--fs-2xs);
     color: #555;
 }
 
@@ -343,7 +368,7 @@ table.announcements-list tr:hover td {
 .forum-title {
     grid-area: title;
     margin: 0;
-    font-size: 1.2rem;
+    font-size: var(--fs-lg);
 }
 
 .forum-header-actions {
@@ -356,7 +381,7 @@ table.announcements-list tr:hover td {
 
 .forum-desc {
     grid-area: desc;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     color: #444;
     margin: 0;
 }
@@ -370,7 +395,7 @@ table.announcements-list tr:hover td {
 .closed-badge,
 .unapproved-badge,
 .new-badge {
-    font-size: 0.625rem;
+    font-size: var(--fs-3xs);
     font-weight: bold;
     padding: 1px 5px;
     border-radius: 2px;
@@ -394,7 +419,7 @@ table.announcements-list tr:hover td {
 
 .thread-header h1 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: var(--fs-lg);
     flex: 1;
 }
 
@@ -423,7 +448,7 @@ article.message.message-unapproved {
     background: linear-gradient(to bottom, #e4eee4 0%, var(--white) 100%);
     color: var(--text);
     padding: 6px 10px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -456,21 +481,21 @@ article.message.message-unapproved {
    values elsewhere in the sheet (each note below says which). */
 /* Consolidates with .thread-header h1 / .moderation-confirm h1's 1.1rem
    (~0.32px difference). */
-.message-author { font-weight: bold; font-size: 1.1rem; }
+.message-author { font-weight: bold; font-size: var(--fs-lg); }
 
 /* Consolidates with .thread-author/.buddy-mutual's 0.75rem (~0.24px
    difference). */
-.msg-pm-link { font-size: 0.75rem; }
+.msg-pm-link { font-size: var(--fs-2xs); }
 
 .msg-subject-line { margin-bottom: 2px; }
 
 /* Rounded to 0.85rem to consolidate with the table/form/profile text size
    used throughout the sheet (~0.08px difference). */
-.msg-subject-line a { font-weight: bold; font-size: 0.85rem; }
+.msg-subject-line a { font-weight: bold; font-size: var(--fs-sm); }
 
 /* Consolidates with .msg-pm-link/.thread-author/.buddy-mutual's 0.75rem
    (~0.19px difference). */
-.msg-date-line { color: #333; font-size: 0.75rem; }
+.msg-date-line { color: #333; font-size: var(--fs-2xs); }
 
 .edit-note { color: #555; font-style: italic; }
 
@@ -478,7 +503,7 @@ article.message.message-unapproved {
     text-align: right;
     /* Rounded to 0.7rem to consolidate with #phorum-footer/.forum-desc's
        size — a ~0.32px difference, imperceptible. */
-    font-size: 0.7rem;
+    font-size: var(--fs-2xs);
     color: #333;
     white-space: nowrap;
     flex-shrink: 0;
@@ -488,7 +513,7 @@ article.message.message-unapproved {
 .message-body {
     padding: 10px 12px;
     background: var(--white);
-    font-size: 1.1rem;
+    font-size: var(--fs-lg);
     line-height: 1.5;
     overflow: hidden;
 }
@@ -503,7 +528,7 @@ article.message.message-unapproved {
     border: none;
     padding: 0;
     background: transparent;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     color: var(--accent-dark);
 }
 
@@ -511,7 +536,7 @@ article.message.message-unapproved {
     padding: 6px 12px;
     background: var(--white);
     border-top: 1px solid var(--border);
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
 }
 
 .message-attachments ul,
@@ -535,7 +560,7 @@ article.message.message-unapproved {
 .attachment-remove {
     margin-left: 6px;
     color: #a00;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     cursor: pointer;
 }
 
@@ -545,7 +570,7 @@ article.message.message-unapproved {
     padding: 4px 10px;
     /* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-
        column size (~0.32px difference). */
-    font-size: 0.8rem;
+    font-size: var(--fs-xs);
     display: flex;
     gap: 12px;
     align-items: center;
@@ -573,7 +598,7 @@ article.message.message-unapproved {
    old 0.9em compounds to 15.84px — rounded here to 1rem to consolidate with
    the sheet's base text size (~0.16px difference). */
 blockquote.bbcode {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     margin: 4px 0 4px 10px;
 }
 
@@ -598,7 +623,7 @@ blockquote.bbcode strong {
     font-style: italic;
     display: block;
     margin-bottom: 3px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     color: #555;
 }
 
@@ -610,7 +635,7 @@ pre.bbcode {
     background: var(--pre-bg);
     padding: 8px;
     overflow-x: auto;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
 }
 
 /* --- Buttons ------------------------------------------------------------- */
@@ -634,7 +659,7 @@ button[type="submit"] {
     border-radius: var(--radius);
     box-shadow: var(--btn-shadow);
     font-family: var(--font);
-    font-size: 0.8rem;
+    font-size: var(--fs-xs);
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
@@ -770,7 +795,7 @@ button[type="submit"]:hover {
 
 nav.pagination {
     margin: 8px 0;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -821,7 +846,7 @@ span.page-ellipsis {
 
 .form-row label {
     display: block;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     font-weight: bold;
     margin-bottom: 3px;
 }
@@ -835,7 +860,7 @@ span.page-ellipsis {
     padding: 5px 6px;
     border: 1px solid var(--border-light);
     font-family: var(--font);
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     background: var(--white);
     color: var(--text);
 }
@@ -863,7 +888,7 @@ div.warn-box {
 .form-errors {
     margin: 0 0 10px 0;
     padding: 8px 12px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
 }
 
 .form-errors ul,
@@ -883,7 +908,7 @@ ul.form-errors {
 p.error {
     color: #a63232;
     padding: 5px 10px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     margin: 0 0 10px 0;
 }
 
@@ -896,7 +921,7 @@ p.error {
     border-left: 3px solid var(--accent);
     padding: 6px 10px;
     margin-bottom: 10px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
 }
 
 .post-parent-quote .quote-header,
@@ -928,7 +953,7 @@ p.error {
 
 .moderation-confirm h1 {
     margin: 0 0 8px 0;
-    font-size: 1.1rem;
+    font-size: var(--fs-lg);
 }
 
 .moderation-confirm form {
@@ -942,7 +967,7 @@ p.error {
     margin: 10px 0;
     padding: 8px 12px;
     background: var(--white);
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
 }
 
 /* --- Information / warning boxes ----------------------------------------- */
@@ -952,13 +977,13 @@ div.info-box {
     background: var(--info-bg);
     border: 1px solid var(--info-bd);
     margin-bottom: 8px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
 }
 
 div.warn-box {
     padding: 8px 12px;
     margin-bottom: 8px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
 }
 
 /* --- Error pages --------------------------------------------------------- */
@@ -969,12 +994,12 @@ div.warn-box {
 }
 
 .error-page h1 {
-    font-size: 2rem;
+    font-size: var(--fs-display);
     color: var(--accent);
     margin-bottom: 8px;
 }
 
-.error-page p { font-size: 1rem; color: #555; }
+.error-page p { font-size: var(--fs-base); color: #555; }
 
 /* --- Accent bar object (OOCSS skin) --------------------------------------- */
 /* Shared "on-brand header bar" skin: accent background, header-contrast     */
@@ -1026,11 +1051,11 @@ table.search-results th {
     display: block;
 }
 
-.user-profile h1 { margin: 0 0 10px 0; font-size: 1.2rem; }
+.user-profile h1 { margin: 0 0 10px 0; font-size: var(--fs-lg); }
 
 .user-profile h2 {
     padding: 4px 8px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     margin: 14px 0 0 0;
     border: 1px solid var(--border);
     border-bottom: 0;
@@ -1039,7 +1064,7 @@ table.search-results th {
 table.profile-info {
     border: 1px solid var(--border);
     margin-bottom: 4px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
 }
 
 table.profile-info tbody tr:last-child th,
@@ -1082,14 +1107,14 @@ table.profile-posts th {
     background: #f0f0f0;
     color: #333;
     padding: 5px 8px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
 
 table.profile-posts td {
     padding: 6px 8px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     background: var(--white);
     border-bottom: 1px solid var(--border-light);
     vertical-align: middle;
@@ -1103,7 +1128,7 @@ table.profile-posts tr:nth-child(even) td {
     background: var(--white);
     border: 1px solid var(--border);
     padding: 8px 10px;
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
 }
 
 /* --- Settings form fieldsets --------------------------------------------- */
@@ -1116,7 +1141,7 @@ table.profile-posts tr:nth-child(even) td {
 
 .settings-form legend {
     padding: 3px 10px;
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     font-weight: bold;
     margin-left: 0;
     width: 100%;
@@ -1130,7 +1155,7 @@ table.profile-posts tr:nth-child(even) td {
 .settings-form fieldset .form-row:last-child { border-bottom: 0; }
 
 .form-hint {
-    font-size: 0.8rem;
+    font-size: var(--fs-xs);
     color: #666;
     margin: 4px 10px;
 }
@@ -1181,7 +1206,7 @@ table.profile-posts tr:nth-child(even) td {
     }
 
     .thread-list .col-subject {
-        font-size: 1rem;
+        font-size: var(--fs-base);
         font-weight: bold;
     }
 
@@ -1205,13 +1230,13 @@ table.profile-posts tr:nth-child(even) td {
        0.85rem table cell — 0.9 * 1rem = 0.9rem, unlike the 0.765rem used
        outside this breakpoint. */
     .thread-list .thread-author {
-        font-size: 0.9rem;
+        font-size: var(--fs-sm);
         font-weight: normal;
     }
 
     .thread-list .col-lastpost {
         padding-top: 4px;
-        font-size: 0.8rem;
+        font-size: var(--fs-xs);
         color: #555;
         white-space: nowrap;
     }
@@ -1280,7 +1305,7 @@ table.profile-posts tr:nth-child(even) td {
     }
 
     .forum-list .col-forum > a {
-        font-size: 1rem;
+        font-size: var(--fs-base);
         font-weight: bold;
     }
 
@@ -1295,7 +1320,7 @@ table.profile-posts tr:nth-child(even) td {
 
     .forum-list .col-last {
         padding-top: 4px;
-        font-size: 0.8rem;
+        font-size: var(--fs-xs);
         color: #555;
         white-space: nowrap;
     }
@@ -1338,7 +1363,7 @@ table.profile-posts tr:nth-child(even) td {
         padding: 5px 10px;
         /* Rounded to 0.7rem to consolidate with #phorum-footer/.forum-desc/
            .msg-user-stats — a ~0.05px difference, imperceptible. */
-        font-size: 0.7rem;
+        font-size: var(--fs-2xs);
     }
 
     .nav-toggle:hover {
@@ -1401,7 +1426,7 @@ table.profile-posts tr:nth-child(even) td {
 }
 
 #pm-sidebar h3 {
-    font-size: .85rem;
+    font-size: var(--fs-sm);
     text-transform: uppercase;
     letter-spacing: .05em;
     color: var(--accent-dark);
@@ -1456,7 +1481,7 @@ table.pm-list tbody tr:last-child td {
 }
 
 table.pm-list th {
-    font-size: .8rem;
+    font-size: var(--fs-xs);
 }
 
 table.pm-list tr.pm-unread td {
@@ -1465,8 +1490,8 @@ table.pm-list tr.pm-unread td {
 }
 
 .pm-status  { width: 1.5rem; text-align: center; color: var(--accent-dark); }
-.pm-date    { white-space: nowrap; font-size: .85rem; }
-.pm-actions { white-space: nowrap; font-size: .85rem; }
+.pm-date    { white-space: nowrap; font-size: var(--fs-sm); }
+.pm-actions { white-space: nowrap; font-size: var(--fs-sm); }
 
 .pm-empty {
     padding: 1rem 0;
@@ -1486,7 +1511,7 @@ table.pm-headers th,
 table.pm-headers td {
     padding: .3rem .6rem;
     border-bottom: 1px solid var(--border-light);
-    font-size: .9rem;
+    font-size: var(--fs-sm);
 }
 
 table.pm-headers tr:last-child th,
@@ -1541,7 +1566,7 @@ table.pm-folder-table td {
 /* Buddy list */
 
 .buddy-mutual {
-    font-size: .75rem;
+    font-size: var(--fs-2xs);
     background: var(--accent);
     color: var(--header-text);
     padding: 1px 6px;
@@ -1583,7 +1608,7 @@ table.pm-folder-table td {
     background: var(--white);
     border: 1px solid var(--accent);
     color: var(--accent-dark);
-    font-size: .9rem;
+    font-size: var(--fs-sm);
 }
 
 .btn-secondary:hover {
@@ -1656,13 +1681,13 @@ table.pm-folder-table td {
     display: flex;
     align-items: center;
     gap: .3rem;
-    font-size: .85rem;
+    font-size: var(--fs-sm);
     white-space: nowrap;
 }
 
 .search-count {
     color: #555;
-    font-size: .9rem;
+    font-size: var(--fs-sm);
     margin: 0 0 .75rem;
 }
 
@@ -1686,7 +1711,7 @@ table.search-results td {
 }
 
 table.search-results th {
-    font-size: .8rem;
+    font-size: var(--fs-xs);
     white-space: nowrap;
 }
 
@@ -1699,10 +1724,10 @@ table.search-results tr:hover td {
 /* Rounded to 0.8rem to consolidate with the button/form-hint/mobile-column
    size (~0.32px difference). */
 .search-excerpt {
-    font-size: .8rem;
+    font-size: var(--fs-xs);
     color: #555;
     margin-top: .2rem;
     line-height: 1.4;
 }
 
-.search-date { white-space: nowrap; font-size: .85rem; }
+.search-date { white-space: nowrap; font-size: var(--fs-sm); }
