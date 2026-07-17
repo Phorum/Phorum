@@ -5,7 +5,9 @@ namespace Phorum\Tests\Service;
 
 use Phorum\Mapper\ForumMapper;
 use Phorum\Model\Forum;
+use Phorum\Model\User;
 use Phorum\Service\ForumService;
+use Phorum\Service\PermissionService;
 use PHPUnit\Framework\TestCase;
 
 class ForumServiceTest extends TestCase
@@ -110,5 +112,47 @@ class ForumServiceTest extends TestCase
         $this->assertCount(2, $tree);
         $this->assertSame(2, $tree[0]->forum_id);
         $this->assertSame(3, $tree[1]->forum_id);
+    }
+
+    // -------------------------------------------------------------------------
+    // getReadableForumIds
+    // -------------------------------------------------------------------------
+
+    public function testGetReadableForumIdsExcludesForumsUserCannotRead(): void
+    {
+        $readable   = $this->makeForum(1, 0);
+        $unreadable = $this->makeForum(2, 0);
+
+        $svc   = $this->makeService([$readable, $unreadable]);
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturnCallback(
+            static fn(Forum $f, ?User $u) => $f->forum_id === 1
+        );
+
+        $ids = $svc->getReadableForumIds(null, $perms);
+        $this->assertSame([1], $ids);
+    }
+
+    public function testGetReadableForumIdsExcludesFolders(): void
+    {
+        $folder = $this->makeForum(1, 0, folder: true);
+        $child  = $this->makeForum(2, 1);
+
+        $svc   = $this->makeService([$folder, $child]);
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+
+        $ids = $svc->getReadableForumIds(null, $perms);
+        $this->assertSame([2], $ids);
+    }
+
+    public function testGetReadableForumIdsWorksForAnonymousUser(): void
+    {
+        $forum = $this->makeForum(1, 0);
+        $svc   = $this->makeService([$forum]);
+        $perms = $this->createMock(PermissionService::class);
+        $perms->expects($this->once())->method('canRead')->with($forum, null)->willReturn(true);
+
+        $this->assertSame([1], $svc->getReadableForumIds(null, $perms));
     }
 }

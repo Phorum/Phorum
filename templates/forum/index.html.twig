@@ -5,11 +5,19 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ site_name }}">
     <meta property="og:url" content="{{ absolute_url(path('/')) }}">
+    {% if feeds_enabled %}
+        <link rel="alternate" type="application/rss+xml" title="{{ site_name }} — RSS" href="{{ absolute_url('/feed.rss') }}">
+        <link rel="alternate" type="application/atom+xml" title="{{ site_name }} — Atom" href="{{ absolute_url('/feed.atom') }}">
+        <link rel="alternate" type="application/feed+json" title="{{ site_name }} — JSON Feed" href="{{ absolute_url('/feed.json') }}">
+    {% endif %}
     {{ json_ld(json_ld) }}
 {% endblock %}
 
 {% block content %}
 <h1 class="forum-index-title">{{ site_name }}</h1>
+{% if feeds_enabled %}
+    <p><a href="{{ path('/feed.rss') }}">{{ trans('forum.feed_link') }}</a></p>
+{% endif %}
 
 {% if announcements %}
     {% include 'announcements/_box.html.twig' %}

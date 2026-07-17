@@ -6,6 +6,7 @@ namespace Phorum\Http;
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\CsrfGuard;
+use Phorum\Core\FeedStatus;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
 use Phorum\Core\SiteStatus;
@@ -61,6 +62,7 @@ abstract class Controller
             'impersonating'  => Impersonation::isActive(),
             'impersonator'   => Impersonation::admin(),
             'site_read_only' => SiteStatus::isReadOnly(),
+            'feeds_enabled'  => FeedStatus::enabled(),
         ];
     }
 

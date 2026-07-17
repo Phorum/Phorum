@@ -58,6 +58,7 @@ class App
             AdminAuth::initialize($this->config);
             Impersonation::initialize($this->config);
             SiteStatus::initialize(new SiteStatusService());
+            FeedStatus::initialize(new SettingMapper());
             $this->initLang();
             phorum_api_hook('common_post_user', Auth::user());
         } else {

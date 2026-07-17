@@ -63,12 +63,28 @@ return [
         'action'  => 'ForumController@index',
     ],
 
+    // Site-wide RSS/Atom/JSON feed (recent posts across all readable forums)
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/feed\.(rss|atom|json)$!',
+        'action'  => 'FeedController@site',
+        'tokens'  => ['format'],
+    ],
+
     // Forum view
     [
         'type'    => 'regex',
         'pattern' => '!^/forum/(\d+)$!',
         'action'  => 'ForumController@show',
         'tokens'  => ['forum_id'],
+    ],
+
+    // Forum RSS/Atom/JSON feed (recent threads in this forum)
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/forum/(\d+)/feed\.(rss|atom|json)$!',
+        'action'  => 'FeedController@forum',
+        'tokens'  => ['forum_id', 'format'],
     ],
 
     // Mark forum as fully read
@@ -85,6 +101,14 @@ return [
         'pattern' => '!^/forum/(\d+)/thread/(\d+)$!',
         'action'  => 'MessageController@thread',
         'tokens'  => ['forum_id', 'thread_id'],
+    ],
+
+    // Thread RSS/Atom/JSON feed (replies in this thread)
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/forum/(\d+)/thread/(\d+)/feed\.(rss|atom|json)$!',
+        'action'  => 'FeedController@thread',
+        'tokens'  => ['forum_id', 'thread_id', 'format'],
     ],
 
     // New thread or reply

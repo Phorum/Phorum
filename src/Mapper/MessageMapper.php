@@ -348,4 +348,36 @@ class MessageMapper extends AbstractPhorumMapper
         $rows   = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
     }
+
+    /**
+     * Return the most recent approved messages, restricted to the given set of
+     * forum IDs — used by the site-wide RSS/Atom feed, where the caller has
+     * already resolved which forums the current viewer can read. Unlike
+     * findRecent(), this never returns unfiltered cross-forum results.
+     *
+     * @param int[] $forumIds
+     */
+    public function findRecentInForums(array $forumIds, int $limit = 30): ?array
+    {
+        if (empty($forumIds)) {
+            return null;
+        }
+
+        $params = [':status' => self::STATUS_APPROVED];
+        $ids    = [];
+        foreach (array_values($forumIds) as $i => $forumId) {
+            $key          = ":fid{$i}";
+            $params[$key] = $forumId;
+            $ids[]        = $key;
+        }
+
+        $sql = 'SELECT * FROM ' . $this->table()
+             . ' WHERE status = :status'
+             . '   AND forum_id IN (' . implode(', ', $ids) . ')'
+             . ' ORDER BY datestamp DESC'
+             . " LIMIT {$limit}";
+
+        $rows = $this->crud()->runFetch($sql, $params);
+        return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
+    }
 }

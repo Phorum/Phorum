@@ -65,6 +65,8 @@ class SettingsController extends AdminController
                 $toSave['language'] = $selectedLocale;
             }
 
+            $toSave['enable_rss'] = !empty($request->post['enable_rss']);
+
             $this->settings->saveAll($toSave);
             $stored  = array_merge($stored, $toSave);
             $success = 'Settings saved.';
@@ -76,6 +78,9 @@ class SettingsController extends AdminController
                 $stored[$key] = $this->config->get($key, '');
             }
         }
+
+        // enable_rss has no phorum.php config counterpart — it's DB-only, default enabled.
+        $stored['enable_rss'] = $stored['enable_rss'] ?? true;
 
         return $this->respond($this->renderAdmin('admin/settings.html.twig', [
             'fields'  => self::FIELDS,

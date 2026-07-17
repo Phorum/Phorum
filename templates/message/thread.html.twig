@@ -9,6 +9,11 @@
         <meta property="og:description" content="{{ json_ld[0].text|slice(0, 200) }}{% if json_ld[0].text|length > 200 %}&hellip;{% endif %}">
     {% endif %}
     <meta property="og:url" content="{{ json_ld[0].url }}">
+    {% if feeds_enabled %}
+        <link rel="alternate" type="application/rss+xml" title="{{ root.subject }} — RSS" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}">
+        <link rel="alternate" type="application/atom+xml" title="{{ root.subject }} — Atom" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.atom') }}">
+        <link rel="alternate" type="application/feed+json" title="{{ root.subject }} — JSON Feed" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.json') }}">
+    {% endif %}
     {{ json_ld(json_ld) }}
 {% endblock %}
 
@@ -43,6 +48,9 @@
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}" class="btn-mod">{{ trans('thread.move') }}</a>
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/merge') }}" class="btn-mod">{{ trans('thread.merge') }}</a>
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="btn-mod btn-danger">{{ trans('thread.delete') }}</a>
+        {% endif %}
+        {% if feeds_enabled %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>

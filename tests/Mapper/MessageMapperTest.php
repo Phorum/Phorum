@@ -421,6 +421,58 @@ class MessageMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // findRecentInForums
+    // -------------------------------------------------------------------------
+
+    public function testFindRecentInForumsReturnsNullForEmptyForumList(): void
+    {
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findRecentInForums([]));
+    }
+
+    public function testFindRecentInForumsExcludesForumsNotInList(): void
+    {
+        $this->seedMessage(['forum_id' => 1, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => 100]);
+        $this->seedMessage(['forum_id' => 2, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => 999]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->findRecentInForums([1]);
+        $this->assertCount(1, $results);
+        $this->assertSame(1, $results[0]->forum_id);
+    }
+
+    public function testFindRecentInForumsUnionsMultipleForumsOrderedByDatestampDesc(): void
+    {
+        $this->seedMessage(['forum_id' => 1, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => 100]);
+        $this->seedMessage(['forum_id' => 2, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => 300]);
+        $this->seedMessage(['forum_id' => 3, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => 200]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->findRecentInForums([1, 2]);
+        $this->assertCount(2, $results);
+        $this->assertSame(300, $results[0]->datestamp);
+        $this->assertSame(100, $results[1]->datestamp);
+    }
+
+    public function testFindRecentInForumsRespectsLimit(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->seedMessage(['forum_id' => 1, 'status' => MessageMapper::STATUS_APPROVED, 'datestamp' => $i]);
+        }
+        $mapper  = $this->makeMapper();
+        $results = $mapper->findRecentInForums([1], 3);
+        $this->assertCount(3, $results);
+    }
+
+    public function testFindRecentInForumsExcludesUnapproved(): void
+    {
+        $this->seedMessage(['forum_id' => 1, 'status' => MessageMapper::STATUS_UNAPPROVED, 'datestamp' => 100]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findRecentInForums([1]));
+    }
+
+    // -------------------------------------------------------------------------
     // findLastByUser
     // -------------------------------------------------------------------------
 

@@ -5,10 +5,39 @@ namespace Phorum\Service;
 
 use Phorum\Mapper\ForumMapper;
 use Phorum\Model\Forum;
+use Phorum\Model\User;
 
 class ForumService
 {
     public function __construct(private readonly ForumMapper $forums) {}
+
+    /**
+     * Flattened, permission-filtered forum IDs (folders excluded) that $user
+     * can read — used by the site-wide RSS/Atom feed to scope its recent-
+     * messages query to only what the current viewer is allowed to see.
+     *
+     * @return int[]
+     */
+    public function getReadableForumIds(?User $user, PermissionService $perms): array
+    {
+        $ids = [];
+        $this->collectReadableIds($this->getTree(), $user, $perms, $ids);
+        return $ids;
+    }
+
+    /** @param Forum[] $forums */
+    private function collectReadableIds(array $forums, ?User $user, PermissionService $perms, array &$ids): void
+    {
+        foreach ($forums as $forum) {
+            if ($forum->folder_flag) {
+                $this->collectReadableIds($forum->children, $user, $perms, $ids);
+                continue;
+            }
+            if ($perms->canRead($forum, $user)) {
+                $ids[] = $forum->forum_id;
+            }
+        }
+    }
 
     /**
      * Return a forum tree as a flat list of Forum objects, each with its

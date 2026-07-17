@@ -8,6 +8,7 @@ use Phorum\Core\AdminAuth;
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\CsrfGuard;
+use Phorum\Core\FeedStatus;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
 use Phorum\Core\SiteStatus;
@@ -32,6 +33,7 @@ abstract class ControllerTestCase extends TestCase
         $this->resetAdminAuth();
         $this->resetImpersonation();
         SiteStatus::clear();
+        FeedStatus::clear();
         $_SESSION = [];
     }
 
@@ -42,6 +44,7 @@ abstract class ControllerTestCase extends TestCase
         $this->resetAdminAuth();
         $this->resetImpersonation();
         SiteStatus::clear();
+        FeedStatus::clear();
         $_SESSION = [];
     }
 

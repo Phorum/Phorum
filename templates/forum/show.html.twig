@@ -11,6 +11,11 @@
     <meta property="og:title" content="{{ forum.name }}">
     {% if forum.description %}<meta property="og:description" content="{{ forum.description|striptags }}">{% endif %}
     <meta property="og:url" content="{{ canonical_url }}">
+    {% if feeds_enabled %}
+        <link rel="alternate" type="application/rss+xml" title="{{ forum.name }} — RSS" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/feed.rss') }}">
+        <link rel="alternate" type="application/atom+xml" title="{{ forum.name }} — Atom" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/feed.atom') }}">
+        <link rel="alternate" type="application/feed+json" title="{{ forum.name }} — JSON Feed" href="{{ absolute_url('/forum/' ~ forum.forum_id ~ '/feed.json') }}">
+    {% endif %}
     {{ json_ld(json_ld) }}
 {% endblock %}
 
@@ -35,6 +40,9 @@
         {% if can_moderate %}
             <a href="{{ path('/moderate/queue') }}" class="btn-mod">{{ trans('mod.queue') }}</a>
             <a href="{{ path('/moderate/reports') }}" class="btn-mod">{{ trans('mod.reports_title') }}</a>
+        {% endif %}
+        {% if feeds_enabled %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>
