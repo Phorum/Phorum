@@ -27,6 +27,21 @@ class SchemaPatcher
 
     private const SETTING_KEY = 'schema_patch_level';
 
+    /**
+     * MySQL driver error codes (PDOException::$errorInfo[1]) meaning a DDL
+     * change already exists — the outcome a patch statement was trying to
+     * reach in the first place. Seen when schema_patch_level lags behind the
+     * database's actual state (e.g. a prior apply() run partway through a
+     * multi-statement patch before failing, or a column was added by hand).
+     * Safe to treat as already-done and move on, rather than blocking every
+     * later patch on one already-satisfied statement.
+     */
+    private const ALREADY_APPLIED_ERROR_CODES = [
+        1050, // ER_TABLE_EXISTS_ERROR — table already exists
+        1060, // ER_DUP_FIELDNAME — column already exists
+        1061, // ER_DUP_KEYNAME — index/key already exists
+    ];
+
     private readonly string $patchDir;
     private readonly SettingMapper $settings;
 
@@ -44,10 +59,27 @@ class SchemaPatcher
 
         foreach ($this->pendingPatches() as $number => $file) {
             foreach ($this->splitStatements($file, $prefix) as $stmt) {
-                $crud->run($stmt, []);
+                try {
+                    $crud->run($stmt, []);
+                } catch (\PDOException $e) {
+                    if (!$this->isAlreadyAppliedError($e)) {
+                        throw $e;
+                    }
+                    error_log(sprintf(
+                        'SchemaPatcher: patch %d statement already applied, skipping (%s)',
+                        $number,
+                        $e->getMessage()
+                    ));
+                }
             }
             $this->settings->saveSetting(self::SETTING_KEY, $number);
         }
+    }
+
+    /** True for MySQL "already exists" DDL errors — see ALREADY_APPLIED_ERROR_CODES. */
+    private function isAlreadyAppliedError(\PDOException $e): bool
+    {
+        return in_array($e->errorInfo[1] ?? null, self::ALREADY_APPLIED_ERROR_CODES, true);
     }
 
     /**

@@ -133,6 +133,99 @@ class SchemaPatcherTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // apply() tolerating a partially-applied patch
+    // -------------------------------------------------------------------------
+
+    /**
+     * Wraps the real CRUD, but throws a caller-supplied \PDOException instead
+     * of running any statement containing $matchSubstring — simulates a
+     * MySQL "already exists" DDL error without needing a real MySQL server
+     * (SQLite's own duplicate-column error doesn't carry the same
+     * errorInfo[1] driver code SchemaPatcher checks for).
+     */
+    private function makeFaultInjectingCrud(CRUD $real, string $matchSubstring, \PDOException $exception): CRUD
+    {
+        return new class($real, $matchSubstring, $exception) extends CRUD {
+            public int $matchedCalls = 0;
+
+            public function __construct(
+                private readonly CRUD $real,
+                private readonly string $matchSubstring,
+                private readonly \PDOException $exception,
+            ) {
+            }
+
+            public function run(string $query, array $params = []): \DealNews\DB\PDOStatement
+            {
+                if (str_contains($query, $this->matchSubstring)) {
+                    $this->matchedCalls++;
+                    throw $this->exception;
+                }
+                return $this->real->run($query, $params);
+            }
+        };
+    }
+
+    private function makeDuplicateColumnException(): \PDOException
+    {
+        $e             = new \PDOException("Duplicate column name 'color'");
+        $e->errorInfo  = ['42S21', 1060, "Duplicate column name 'color'"];
+        return $e;
+    }
+
+    public function testApplySkipsAlreadyAppliedColumnAndStillRecordsLevel(): void
+    {
+        $settings = $this->makeSettings();
+        $crud     = $this->makeFaultInjectingCrud($this->crud, 'ADD COLUMN color', $this->makeDuplicateColumnException());
+
+        $patcher = new class($this->patchDir, $settings, $crud) extends SchemaPatcher {
+            private readonly CRUD $testCrud;
+            public function __construct(string $patchDir, SettingMapper $settings, CRUD $testCrud)
+            {
+                parent::__construct($patchDir, $settings);
+                $this->testCrud = $testCrud;
+            }
+            protected function crud(): CRUD
+            {
+                return $this->testCrud;
+            }
+        };
+
+        $patcher->apply();
+
+        // color's ADD COLUMN was "already applied" (skipped); size's still ran.
+        $this->assertFalse($this->widgetHasColumn('color'));
+        $this->assertTrue($this->widgetHasColumn('size'));
+        $this->assertSame('2', (string) $settings->getSetting('schema_patch_level'));
+        $this->assertSame(1, $crud->matchedCalls);
+    }
+
+    public function testApplyRethrowsErrorsThatArentAlreadyAppliedDdl(): void
+    {
+        $settings  = $this->makeSettings();
+        $otherError = new \PDOException('syntax error near foo');
+        $otherError->errorInfo = ['42000', 1064, 'syntax error near foo'];
+        $crud      = $this->makeFaultInjectingCrud($this->crud, 'ADD COLUMN color', $otherError);
+
+        $patcher = new class($this->patchDir, $settings, $crud) extends SchemaPatcher {
+            private readonly CRUD $testCrud;
+            public function __construct(string $patchDir, SettingMapper $settings, CRUD $testCrud)
+            {
+                parent::__construct($patchDir, $settings);
+                $this->testCrud = $testCrud;
+            }
+            protected function crud(): CRUD
+            {
+                return $this->testCrud;
+            }
+        };
+
+        $this->expectException(\PDOException::class);
+        $this->expectExceptionMessage('syntax error near foo');
+        $patcher->apply();
+    }
+
+    // -------------------------------------------------------------------------
     // markAllApplied()
     // -------------------------------------------------------------------------
 
