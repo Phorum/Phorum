@@ -51,7 +51,7 @@
                 </ul>
             {% endif %}
 
-            <form method="post" action="{{ path('/upgrade') }}">
+            <form method="post" action="{{ force ? path('/upgrade?force=1') : path('/upgrade') }}">
                 {{ csrf_field() }}
                 <div class="row" style="margin-top:16px">
                     <div class="col s12">
