@@ -289,10 +289,8 @@ table.announcements-list th a {
     font-size: var(--fs-sm);
 }
 
-/* Rounded to 0.7rem to consolidate with #phorum-footer's size — both are
-   small secondary text, and the ~0.36px difference isn't perceptible. */
 .forum-list .col-forum .forum-desc {
-    font-size: var(--fs-2xs);
+    font-size: var(--fs-xs);
 }
 
 .thread-list .col-subject > a,
