@@ -11,7 +11,7 @@
             <tr class="announcements-row">
                 <td class="col-subject">
                     <a href="{{ path('/forum/' ~ thread.forum_id ~ '/thread/' ~ thread.message_id) }}">
-                        {{- thread.subject -}}
+                        <i class="fa fa-info-circle"></i>{{- thread.subject -}}
                     </a>
                     {% if announcements.new_counts[thread.message_id] is defined %}
                         <span class="new-badge">{{ announcements.new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>

@@ -28,7 +28,7 @@
     <h1>{{ root.subject }}</h1>
     <div class="thread-actions">
         {% if can_reply %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ root.message_id) }}" class="btn-post">{{ trans('thread.reply') }}</a>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ root.message_id) }}" class="btn-post"><i class="fa fa-reply"></i>{{ trans('thread.reply') }}</a>
         {% endif %}
         {% if user is defined and user %}
             {% if current_sub != SUB_NONE %}

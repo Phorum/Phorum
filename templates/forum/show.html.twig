@@ -29,7 +29,7 @@
     {% if forum.description %}<p class="forum-desc">{{ forum.description|raw }}</p>{% endif %}
     <div class="forum-header-actions">
         {% if can_post %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post') }}" class="btn-post">{{ trans('forum.new_thread') }}</a>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post') }}" class="btn-post"><i class="fa fa-pencil-square-o"></i>{{ trans('forum.new_thread') }}</a>
         {% endif %}
         {% if user is defined and user %}
             <form method="post" action="{{ path('/forum/' ~ forum.forum_id ~ '/mark-read') }}" class="form-inline">
@@ -53,7 +53,7 @@
 
 {% if threads is empty %}
     <p>{{ trans('forum.no_threads') }}
-        {% if can_post %}<a href="{{ path('/forum/' ~ forum.forum_id ~ '/post') }}">{{ trans('forum.start_one') }}</a>{% endif %}
+        {% if can_post %}<a href="{{ path('/forum/' ~ forum.forum_id ~ '/post') }}"><i class="fa fa-pencil-square-o"></i>{{ trans('forum.start_one') }}</a>{% endif %}
     </p>
 {% else %}
     <table class="tbl-boxed thread-list" aria-labelledby="forum-heading">

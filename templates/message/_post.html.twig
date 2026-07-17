@@ -61,7 +61,7 @@
 
     <footer class="message-footer">
         {% if can_reply %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ msg.message_id) }}">{{ trans('message.reply') }}</a>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/post?reply=' ~ msg.message_id) }}"><i class="fa fa-reply"></i>{{ trans('message.reply') }}</a>
         {% endif %}
         {% set can_edit_msg = msg.message_id in can_edit_ids|default([]) %}
         {% if can_edit_msg %}

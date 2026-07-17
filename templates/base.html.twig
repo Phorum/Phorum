@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_name|default('Phorum') }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ path('/theme/' ~ theme ~ '/phorum.css') }}">
+    <link rel="stylesheet" href="{{ path('/assets/vendor/font-awesome/css/font-awesome.min.css') }}">
     {% if impersonating %}
     <style>
         .impersonation-banner {
@@ -67,15 +68,15 @@
                 </button>
                 <ul class="nav-list" id="phorum-nav-list">
                     <li><a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a></li>
-                    <li><a href="{{ path('/search') }}">{{ trans('nav.search') }}</a></li>
+                    <li><a href="{{ path('/search') }}"><i class="fa fa-search"></i>{{ trans('nav.search') }}</a></li>
                     {% if user is defined and user %}
                         <li><a href="{{ path('/pm') }}">{{ trans('nav.messages') }}{% if user.pm_new_count > 0 %} <span class="pm-badge">{{ user.pm_new_count }}</span>{% endif %}</a></li>
                         <li><a href="{{ path('/user/' ~ user.user_id) }}">{{ user.display_name ?: user.username }}</a></li>
                         <li><a href="{{ path('/user/settings') }}">{{ trans('nav.settings') }}</a></li>
                         <li><a href="{{ path('/logout') }}">{{ trans('nav.log_out') }}</a></li>
                     {% else %}
-                        <li><a href="{{ path('/login') }}">{{ trans('nav.log_in') }}</a></li>
-                        <li><a href="{{ path('/register') }}">{{ trans('nav.register') }}</a></li>
+                        <li><a href="{{ path('/login') }}"><i class="fa fa-sign-in"></i>{{ trans('nav.log_in') }}</a></li>
+                        <li><a href="{{ path('/register') }}"><i class="fa fa-user-plus"></i>{{ trans('nav.register') }}</a></li>
                     {% endif %}
                 </ul>
             {% endblock %}

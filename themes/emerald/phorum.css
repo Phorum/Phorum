@@ -118,6 +118,18 @@ img { border: 0; vertical-align: middle; }
 
 p { margin: 0.5em 0; }
 
+/* --- Icons ----------------------------------------------------------------
+   No color/font-size override here — icons inherit currentColor and the
+   surrounding font-size from whatever element they sit in, which already
+   resolves to the correct theme color in every current use (see per-site
+   notes where icons are added). Only the announcements info icon needs its
+   own color rule, defined near .announcements-list below.
+   -------------------------------------------------------------------------- */
+
+.fa {
+    margin-right: 0.35em;
+}
+
 /* --- Site-wide wrapper --------------------------------------------------- */
 
 #phorum-wrap {
@@ -304,6 +316,10 @@ table.announcements-list th a {
 .thread-list .col-subject > a,
 .announcements-list .col-subject > a {
     font-size: var(--fs-base);
+}
+
+.announcements-list .fa-info-circle {
+    color: var(--info-bd);
 }
 
 table.forum-list td,
