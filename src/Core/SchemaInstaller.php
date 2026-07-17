@@ -75,7 +75,7 @@ class SchemaInstaller
         $sql = $driver === 'sqlite'
             ? "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE :pattern ESCAPE '\\'"
             : "SELECT table_name AS name FROM information_schema.tables"
-              . " WHERE table_schema = DATABASE() AND table_name LIKE :pattern ESCAPE '\\'";
+              . " WHERE table_schema = DATABASE() AND table_name LIKE :pattern ESCAPE '\\\\'";
 
         $rows = $crud->runFetch($sql, [':pattern' => $like]);
         return array_column($rows, 'name');
