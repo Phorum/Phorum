@@ -67,13 +67,13 @@
                     {{ trans('nav.menu') }}
                 </button>
                 <ul class="nav-list" id="phorum-nav-list">
-                    <li><a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a></li>
+                    <li><a href="{{ path('/') }}"><i class="fa fa-home"></i>{{ trans('nav.forum_index') }}</a></li>
                     <li><a href="{{ path('/search') }}"><i class="fa fa-search"></i>{{ trans('nav.search') }}</a></li>
                     {% if user is defined and user %}
-                        <li><a href="{{ path('/pm') }}">{{ trans('nav.messages') }}{% if user.pm_new_count > 0 %} <span class="pm-badge">{{ user.pm_new_count }}</span>{% endif %}</a></li>
-                        <li><a href="{{ path('/user/' ~ user.user_id) }}">{{ user.display_name ?: user.username }}</a></li>
-                        <li><a href="{{ path('/user/settings') }}">{{ trans('nav.settings') }}</a></li>
-                        <li><a href="{{ path('/logout') }}">{{ trans('nav.log_out') }}</a></li>
+                        <li><a href="{{ path('/pm') }}"><i class="fa fa-envelope-o"></i>{{ trans('nav.messages') }}{% if user.pm_new_count > 0 %} <span class="pm-badge">{{ user.pm_new_count }}</span>{% endif %}</a></li>
+                        <li><a href="{{ path('/user/' ~ user.user_id) }}"><i class="fa fa-user"></i>{{ user.display_name ?: user.username }}</a></li>
+                        <li><a href="{{ path('/user/settings') }}"><i class="fa fa-cog"></i>{{ trans('nav.settings') }}</a></li>
+                        <li><a href="{{ path('/logout') }}"><i class="fa fa-sign-out"></i>{{ trans('nav.log_out') }}</a></li>
                     {% else %}
                         <li><a href="{{ path('/login') }}"><i class="fa fa-sign-in"></i>{{ trans('nav.log_in') }}</a></li>
                         <li><a href="{{ path('/register') }}"><i class="fa fa-user-plus"></i>{{ trans('nav.register') }}</a></li>
