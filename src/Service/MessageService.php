@@ -45,9 +45,11 @@ class MessageService
         $msg->datestamp   = $now;
         $msg->modifystamp = $now;
         $msg->ip          = $_SERVER['REMOTE_ADDR'] ?? '';
-        $msg->status      = $forum->moderation > 0
-                            ? MessageMapper::STATUS_UNAPPROVED
-                            : MessageMapper::STATUS_APPROVED;
+        $msg->status      = $user->shadow_banned
+                            ? MessageMapper::STATUS_SHADOW
+                            : ($forum->moderation > 0
+                                ? MessageMapper::STATUS_UNAPPROVED
+                                : MessageMapper::STATUS_APPROVED);
         $msg->sort        = MessageMapper::SORT_DEFAULT;
         $msg->msgid       = md5(uniqid((string) $forum->forum_id, more_entropy: true));
         $msg->meta        = MessageMeta::fromArray(['format' => 'markdown'])->encode();

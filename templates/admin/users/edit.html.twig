@@ -54,6 +54,17 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="shadow_banned" value="1" {{ profile.shadow_banned ? 'checked' : '' }}
+                               {{ (profile.admin or profile.user_id == admin_user_id) ? 'disabled' : '' }}>
+                        <span>Shadow Banned</span>
+                    </label>
+                    <small class="grey-text">User can still log in and post normally; their posts are hidden from everyone else.</small>
+                </div>
+            </div>
+
             {% if admin_fields|default([]) is not empty %}
             <div class="row">
                 <div class="col s12">

@@ -39,4 +39,5 @@ class User
     public string $settings_data     = '';
     public string $moderator_data    = '';
     public int    $force_password_change = 0;
+    public int    $shadow_banned     = 0;
 }

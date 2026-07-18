@@ -56,10 +56,10 @@ class UserController extends Controller
             return $this->notFound();
         }
 
-        $recentPosts = $this->messages->findByUser($userId, limit: 15);
+        $viewer      = Auth::user();
+        $recentPosts = $this->messages->findByUser($userId, limit: 15, viewerUserId: $viewer?->user_id);
         $avatar      = $this->fileMapper->findAvatarForUser($userId);
 
-        $viewer   = Auth::user();
         $isBuddy  = ($viewer !== null && $viewer->user_id !== $userId)
             ? $this->buddies->isBuddy($viewer->user_id, $userId)
             : false;

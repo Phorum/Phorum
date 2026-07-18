@@ -45,6 +45,13 @@ class MessageServiceTest extends TestCase
         return $u;
     }
 
+    private function makeShadowBannedUser(): User
+    {
+        $u                 = $this->makeUser();
+        $u->shadow_banned   = 1;
+        return $u;
+    }
+
     /** Build MessageMapper mock that returns the saved object as-is. */
     private function makeSavingMapper(): MessageMapper
     {
@@ -82,6 +89,43 @@ class MessageServiceTest extends TestCase
         $msg = $svc->post($this->makeForum(moderation: 1), $this->makeUser(), 'Subject', 'Body');
 
         $this->assertSame(MessageMapper::STATUS_UNAPPROVED, $msg->status);
+    }
+
+    public function testPostNewThreadCreatesShadowMessageForShadowBannedUser(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $svc         = new MessageService($msgMapper, $forumMapper);
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $this->makeShadowBannedUser(), 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_SHADOW, $msg->status);
+    }
+
+    public function testShadowBanTakesPrecedenceOverForumModeration(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $svc         = new MessageService($msgMapper, $forumMapper);
+
+        $msg = $svc->post($this->makeForum(moderation: 1), $this->makeShadowBannedUser(), 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_SHADOW, $msg->status);
+    }
+
+    public function testShadowBannedPostDoesNotUpdateStatsOrPostCount(): void
+    {
+        $msgMapper = $this->makeSavingMapper();
+        $msgMapper->expects($this->never())->method('updateThreadStats');
+
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $forumMapper->expects($this->never())->method('updateStats');
+
+        $userMapper = $this->createMock(\Phorum\Mapper\UserMapper::class);
+        $userMapper->expects($this->never())->method('incrementPostCount');
+
+        $svc = new MessageService($msgMapper, $forumMapper, $userMapper);
+        $svc->post($this->makeForum(moderation: 0), $this->makeShadowBannedUser(), 'Subject', 'Body');
     }
 
     public function testPostNewThreadHasZeroParentId(): void

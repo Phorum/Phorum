@@ -190,6 +190,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     settings_data            TEXT            NOT NULL DEFAULT '',
     moderator_data           TEXT            NOT NULL DEFAULT '',
     force_password_change    SMALLINT        NOT NULL DEFAULT 0,
+    shadow_banned            SMALLINT        NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id),
     UNIQUE (username)
@@ -201,6 +202,7 @@ CREATE INDEX IF NOT EXISTS {PREFIX}_users_sessid_lt     ON {PREFIX}_users (sessi
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_activity      ON {PREFIX}_users (date_last_active, hide_activity, last_active_forum);
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_date_added    ON {PREFIX}_users (date_added);
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_email_temp    ON {PREFIX}_users (email_temp);
+CREATE INDEX IF NOT EXISTS {PREFIX}_users_shadow_banned ON {PREFIX}_users (shadow_banned);
 
 -- -------------------------------------------------------------------------
 -- Read/unread tracking per user

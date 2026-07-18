@@ -7,7 +7,9 @@ use Phorum\Core\Auth;
 use Phorum\Core\Impersonation;
 use Phorum\Http\Controllers\Admin\UserController;
 use Phorum\Http\Request;
+use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
+use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\CustomFieldService;
 use Phorum\Tests\Http\ControllerTestCase;
@@ -21,11 +23,13 @@ class AdminUserControllerTest extends ControllerTestCase
         $cfService->method('getAdminUserFields')->willReturn([]);
 
         return new UserController(
-            config:    $this->makeConfig(),
-            twig:      $this->makeTwig(),
-            users:     $deps['users']     ?? $this->createMock(UserMapper::class),
-            cfService: $cfService,
-            modLog:    $deps['modLog']    ?? $this->createMock(ModLogMapper::class),
+            config:      $this->makeConfig(),
+            twig:        $this->makeTwig(),
+            users:       $deps['users']       ?? $this->createMock(UserMapper::class),
+            cfService:   $cfService,
+            modLog:      $deps['modLog']      ?? $this->createMock(ModLogMapper::class),
+            messages:    $deps['messages']    ?? $this->createMock(MessageMapper::class),
+            searchIndex: $deps['searchIndex'] ?? $this->createMock(SearchMapper::class),
         );
     }
 
@@ -149,6 +153,120 @@ class AdminUserControllerTest extends ControllerTestCase
         ));
         $this->assertSame(200, $response->status);
         $this->assertSame(1, $saved->force_password_change);
+    }
+
+    public function testEditPostEnablingShadowBanFlipsMessagesAndLogsAction(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $target = $this->makeUser(2);
+        $target->shadow_banned = 0;
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findIdsByUserStatus')->with(2, MessageMapper::STATUS_APPROVED)->willReturn([10, 11]);
+        $messages->expects($this->once())->method('setStatusForUser')
+            ->with(2, MessageMapper::STATUS_APPROVED, MessageMapper::STATUS_SHADOW);
+
+        $searchIndex = $this->createMock(SearchMapper::class);
+        $searchIndex->expects($this->exactly(2))->method('removeMessage');
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with(1, 'shadow_ban_enable', 'user', 2, 0, $target->username);
+
+        $ctrl     = $this->makeController([
+            'users'       => $users,
+            'messages'    => $messages,
+            'searchIndex' => $searchIndex,
+            'modLog'      => $modLog,
+        ]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['display_name' => 'User Two', 'email' => 'user2@example.com', 'shadow_banned' => '1'],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testEditPostDisablingShadowBanRestoresMessagesAndLogsAction(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $target = $this->makeUser(2);
+        $target->shadow_banned = 1;
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+
+        $reindexed = new \Phorum\Model\Message();
+        $reindexed->message_id = 20;
+        $reindexed->forum_id   = 3;
+        $reindexed->author     = 'user2';
+        $reindexed->subject    = 'Subj';
+        $reindexed->body       = 'Body';
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findIdsByUserStatus')->with(2, MessageMapper::STATUS_SHADOW)->willReturn([20]);
+        $messages->method('load')->with(20)->willReturn($reindexed);
+        $messages->expects($this->once())->method('setStatusForUser')
+            ->with(2, MessageMapper::STATUS_SHADOW, MessageMapper::STATUS_APPROVED);
+
+        $searchIndex = $this->createMock(SearchMapper::class);
+        $searchIndex->expects($this->once())->method('indexMessage')->with(20, 3, 'user2', 'Subj', 'Body');
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with(1, 'shadow_ban_disable', 'user', 2, 0, $target->username);
+
+        $ctrl     = $this->makeController([
+            'users'       => $users,
+            'messages'    => $messages,
+            'searchIndex' => $searchIndex,
+            'modLog'      => $modLog,
+        ]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['display_name' => 'User Two', 'email' => 'user2@example.com'],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testEditPostRejectsShadowBanningAnAdmin(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $target = $this->makeUser(2, admin: true);
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+        $users->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['display_name' => 'User Two', 'email' => 'user2@example.com', 'admin' => '1', 'shadow_banned' => '1'],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testEditPostRejectsShadowBanningSelf(): void
+    {
+        $admin = $this->makeUser(1, true);
+        $this->setAdminUser($admin);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($admin);
+        $users->method('findByEmail')->willReturn(null);
+        $users->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['display_name' => 'Admin', 'email' => 'user1@example.com', 'shadow_banned' => '1'],
+            tokens: ['user_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
     }
 
     public function testEditPostReturns403WithBadCsrf(): void

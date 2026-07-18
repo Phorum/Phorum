@@ -157,7 +157,7 @@ class MessageController extends Controller
             return $this->forbidden();
         }
 
-        $threadMessages = $this->messages->findByThread($threadId);
+        $threadMessages = $this->messages->findByThread($threadId, Auth::user()?->user_id);
         if ($threadMessages === null) {
             return $this->notFound();
         }

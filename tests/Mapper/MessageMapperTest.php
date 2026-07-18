@@ -109,6 +109,24 @@ class MessageMapperTest extends MapperTestCase
         $this->assertCount(2, $results);
     }
 
+    public function testFindThreadsInForumIncludesViewersOwnShadowBannedThread(): void
+    {
+        $this->seedMessage(['forum_id' => 4, 'parent_id' => 0, 'user_id' => 7, 'status' => MessageMapper::STATUS_SHADOW]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findThreadsInForum(4));
+        $results = $mapper->findThreadsInForum(4, viewerUserId: 7);
+        $this->assertCount(1, $results);
+    }
+
+    public function testFindThreadsInForumExcludesOthersShadowBannedThread(): void
+    {
+        $this->seedMessage(['forum_id' => 5, 'parent_id' => 0, 'user_id' => 7, 'status' => MessageMapper::STATUS_SHADOW]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findThreadsInForum(5, viewerUserId: 8));
+    }
+
     // -------------------------------------------------------------------------
     // findUnapprovedInForums
     // -------------------------------------------------------------------------
@@ -175,6 +193,18 @@ class MessageMapperTest extends MapperTestCase
         $this->assertCount(2, $results);
     }
 
+    public function testFindByThreadIncludesViewersOwnShadowBannedReply(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 2, 'user_id' => 7, 'status' => MessageMapper::STATUS_SHADOW]);
+
+        $mapper = $this->makeMapper();
+        $this->assertCount(1, $mapper->findByThread($t));
+        $this->assertCount(2, $mapper->findByThread($t, viewerUserId: 7));
+        $this->assertCount(1, $mapper->findByThread($t, viewerUserId: 8));
+    }
+
     // -------------------------------------------------------------------------
     // setThreadId
     // -------------------------------------------------------------------------
@@ -233,7 +263,25 @@ class MessageMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
-    // setStatus / setStatusForThread
+    // findIdsByUserStatus
+    // -------------------------------------------------------------------------
+
+    public function testFindIdsByUserStatus(): void
+    {
+        $uid = 50;
+        $a1  = $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_APPROVED]);
+        $a2  = $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_APPROVED]);
+        $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_SHADOW]);
+        $this->seedMessage(['user_id' => 99, 'status' => MessageMapper::STATUS_APPROVED]);
+
+        $mapper = $this->makeMapper();
+        $ids    = $mapper->findIdsByUserStatus($uid, MessageMapper::STATUS_APPROVED);
+        sort($ids);
+        $this->assertSame([$a1, $a2], $ids);
+    }
+
+    // -------------------------------------------------------------------------
+    // setStatus / setStatusForThread / setStatusForUser
     // -------------------------------------------------------------------------
 
     public function testSetStatus(): void
@@ -259,6 +307,24 @@ class MessageMapperTest extends MapperTestCase
             $row = self::$pdo->query("SELECT status FROM phorum_messages WHERE message_id = {$mid}")->fetch();
             $this->assertSame(MessageMapper::STATUS_DELETED, (int) $row['status']);
         }
+    }
+
+    public function testSetStatusForUser(): void
+    {
+        $uid = 60;
+        $a1  = $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_APPROVED]);
+        $a2  = $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_APPROVED]);
+        $other = $this->seedMessage(['user_id' => 99, 'status' => MessageMapper::STATUS_APPROVED]);
+
+        $mapper = $this->makeMapper();
+        $mapper->setStatusForUser($uid, MessageMapper::STATUS_APPROVED, MessageMapper::STATUS_SHADOW);
+
+        foreach ([$a1, $a2] as $mid) {
+            $row = self::$pdo->query("SELECT status FROM phorum_messages WHERE message_id = {$mid}")->fetch();
+            $this->assertSame(MessageMapper::STATUS_SHADOW, (int) $row['status']);
+        }
+        $row = self::$pdo->query("SELECT status FROM phorum_messages WHERE message_id = {$other}")->fetch();
+        $this->assertSame(MessageMapper::STATUS_APPROVED, (int) $row['status']);
     }
 
     // -------------------------------------------------------------------------
@@ -408,6 +474,17 @@ class MessageMapperTest extends MapperTestCase
         $results = $mapper->findByUser($uid);
         $this->assertCount(2, $results);
         $this->assertSame($uid, $results[0]->user_id);
+    }
+
+    public function testFindByUserIncludesViewersOwnShadowBannedPost(): void
+    {
+        $uid = 43;
+        $this->seedMessage(['user_id' => $uid, 'status' => MessageMapper::STATUS_SHADOW, 'datestamp' => 1000]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findByUser($uid));
+        $this->assertCount(1, $mapper->findByUser($uid, viewerUserId: $uid));
+        $this->assertNull($mapper->findByUser($uid, viewerUserId: 99));
     }
 
     public function testFindRecent(): void

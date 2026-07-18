@@ -16,6 +16,12 @@ class MessageMapper extends AbstractPhorumMapper
     public const STATUS_UNAPPROVED = 0;
     public const STATUS_DELETED    = -1;
 
+    // A Phorum 10 addition: content from a shadow-banned author. Filtered
+    // out of every read query exactly like STATUS_UNAPPROVED, except the
+    // author themselves is still shown their own STATUS_SHADOW messages
+    // (see the $viewerUserId parameter on findThreadsInForum/findByThread/findByUser).
+    public const STATUS_SHADOW = -3;
+
     // Sort constants
     public const SORT_DEFAULT    = 2;
     public const SORT_STICKY     = 1;
@@ -53,18 +59,24 @@ class MessageMapper extends AbstractPhorumMapper
     /**
      * Return all thread starters (parent_id = 0) in a forum, approved,
      * ordered by last activity descending — the thread list page.
+     *
+     * $viewerUserId, when given, also includes the viewer's own
+     * STATUS_SHADOW threads, so a shadow-banned author still sees their own
+     * posts as if nothing happened while every other viewer sees nothing.
      */
-    public function findThreadsInForum(int $forumId, int $limit = 25, int $offset = 0): ?array
+    public function findThreadsInForum(int $forumId, int $limit = 25, int $offset = 0, ?int $viewerUserId = null): ?array
     {
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE forum_id = :forum_id'
-                . '   AND status = :status'
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
                 . '   AND parent_id = 0'
                 . ' ORDER BY sort DESC, modifystamp DESC'
                 . " LIMIT {$limit} OFFSET {$offset}";
         $params = [
-            ':forum_id' => $forumId,
-            ':status'   => self::STATUS_APPROVED,
+            ':forum_id'     => $forumId,
+            ':status'       => self::STATUS_APPROVED,
+            ':shadow_status' => self::STATUS_SHADOW,
+            ':viewer_id'    => $viewerUserId ?? 0,
         ];
         $rows = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
@@ -102,16 +114,21 @@ class MessageMapper extends AbstractPhorumMapper
 
     /**
      * Return all approved messages in a thread (the thread starter plus all replies).
+     *
+     * $viewerUserId, when given, also includes the viewer's own
+     * STATUS_SHADOW replies in this thread (see findThreadsInForum()).
      */
-    public function findByThread(int $threadId): ?array
+    public function findByThread(int $threadId, ?int $viewerUserId = null): ?array
     {
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE thread = :thread'
-                . '   AND status = :status'
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
                 . ' ORDER BY datestamp ASC';
         $params = [
-            ':thread' => $threadId,
-            ':status' => self::STATUS_APPROVED,
+            ':thread'       => $threadId,
+            ':status'       => self::STATUS_APPROVED,
+            ':shadow_status' => self::STATUS_SHADOW,
+            ':viewer_id'    => $viewerUserId ?? 0,
         ];
         $rows = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
@@ -166,6 +183,16 @@ class MessageMapper extends AbstractPhorumMapper
         return empty($rows) ? [] : array_column($rows, 'message_id');
     }
 
+    /** Return all message IDs by a user currently at a given status. */
+    public function findIdsByUserStatus(int $userId, int $status): array
+    {
+        $rows = $this->crud()->runFetch(
+            'SELECT message_id FROM ' . $this->table() . ' WHERE user_id = :user_id AND status = :status',
+            [':user_id' => $userId, ':status' => $status]
+        );
+        return empty($rows) ? [] : array_column($rows, 'message_id');
+    }
+
     /** Set the approval status of a single message. */
     public function setStatus(int $messageId, int $status): void
     {
@@ -181,6 +208,15 @@ class MessageMapper extends AbstractPhorumMapper
         $this->crud()->run(
             'UPDATE ' . $this->table() . ' SET status = :status WHERE thread = :thread',
             [':status' => $status, ':thread' => $threadId]
+        );
+    }
+
+    /** Transition every message by a user currently at $fromStatus to $toStatus. */
+    public function setStatusForUser(int $userId, int $fromStatus, int $toStatus): void
+    {
+        $this->crud()->run(
+            'UPDATE ' . $this->table() . ' SET status = :to WHERE user_id = :user_id AND status = :from',
+            [':to' => $toStatus, ':user_id' => $userId, ':from' => $fromStatus]
         );
     }
 
@@ -325,14 +361,25 @@ class MessageMapper extends AbstractPhorumMapper
         return empty($rows) ? null : $this->setData($rows[0]);
     }
 
-    /** Return the most recent approved posts by a specific user, newest first. */
-    public function findByUser(int $userId, int $limit = 10): ?array
+    /**
+     * Return the most recent approved posts by a specific user, newest first.
+     *
+     * $viewerUserId, when given and equal to $userId (the viewer is looking
+     * at their own profile), also includes their own STATUS_SHADOW posts.
+     */
+    public function findByUser(int $userId, int $limit = 10, ?int $viewerUserId = null): ?array
     {
         $sql    = 'SELECT * FROM ' . $this->table()
-                . ' WHERE user_id = :user_id AND status = :status'
+                . ' WHERE user_id = :user_id'
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
                 . ' ORDER BY datestamp DESC'
                 . " LIMIT {$limit}";
-        $params = [':user_id' => $userId, ':status' => self::STATUS_APPROVED];
+        $params = [
+            ':user_id'      => $userId,
+            ':status'       => self::STATUS_APPROVED,
+            ':shadow_status' => self::STATUS_SHADOW,
+            ':viewer_id'    => $viewerUserId ?? 0,
+        ];
         $rows   = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
     }

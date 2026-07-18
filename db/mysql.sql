@@ -182,6 +182,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     settings_data            mediumtext         NOT NULL,
     moderator_data           text               NOT NULL,
     force_password_change    tinyint(1)         NOT NULL DEFAULT 0,
+    shadow_banned            tinyint(1)         NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id),
     UNIQUE KEY username (username),
@@ -190,7 +191,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     KEY sessid_lt (sessid_lt),
     KEY activity (date_last_active, hide_activity, last_active_forum),
     KEY date_added (date_added),
-    KEY email_temp (email_temp)
+    KEY email_temp (email_temp),
+    KEY shadow_banned (shadow_banned)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------------

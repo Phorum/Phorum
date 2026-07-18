@@ -10,7 +10,9 @@ use Phorum\Core\Impersonation;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\CustomFieldConfigMapper;
+use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
+use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\UserCustomFieldMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\CustomFieldService;
@@ -23,18 +25,24 @@ class UserController extends AdminController
     private readonly UserMapper         $users;
     private readonly CustomFieldService $cfService;
     private readonly ModLogMapper       $modLog;
+    private readonly MessageMapper      $messages;
+    private readonly SearchMapper       $searchIndex;
 
     public function __construct(
         Config              $config,
         Environment         $twig,
-        ?UserMapper         $users     = null,
-        ?CustomFieldService $cfService = null,
-        ?ModLogMapper       $modLog    = null,
+        ?UserMapper         $users       = null,
+        ?CustomFieldService $cfService   = null,
+        ?ModLogMapper       $modLog      = null,
+        ?MessageMapper      $messages    = null,
+        ?SearchMapper       $searchIndex = null,
     ) {
         parent::__construct($config, $twig);
-        $this->users     = $users     ?? new UserMapper();
-        $this->cfService = $cfService ?? new CustomFieldService(new CustomFieldConfigMapper(), new UserCustomFieldMapper());
-        $this->modLog    = $modLog    ?? new ModLogMapper();
+        $this->users       = $users       ?? new UserMapper();
+        $this->cfService   = $cfService   ?? new CustomFieldService(new CustomFieldConfigMapper(), new UserCustomFieldMapper());
+        $this->modLog      = $modLog      ?? new ModLogMapper();
+        $this->messages    = $messages    ?? new MessageMapper();
+        $this->searchIndex = $searchIndex ?? new SearchMapper();
     }
 
     public function index(Request $request): Response
@@ -102,6 +110,7 @@ class UserController extends AdminController
             $active      = !empty($request->post['active']);
             $admin       = !empty($request->post['admin']);
             $forcePwChange = !empty($request->post['force_password_change']);
+            $shadowBanned  = !empty($request->post['shadow_banned']);
             $password    = $request->post['password'] ?? '';
 
             if ($displayName === '') {
@@ -118,21 +127,37 @@ class UserController extends AdminController
             if ($password !== '' && strlen($password) < 6) {
                 $errors[] = 'Password must be at least 6 characters.';
             }
+            $currentAdmin = AdminAuth::user();
+            if ($shadowBanned && ($admin || $userId === $currentAdmin->user_id)) {
+                $errors[] = 'Admins cannot be shadow banned.';
+            }
 
             $cfErrors = $this->cfService->saveUserFields($userId, $request->post['custom_fields'] ?? [], dryRun: true);
             $errors   = array_merge($errors, $cfErrors);
 
             if (empty($errors)) {
+                $wasShadowBanned = (bool) $user->shadow_banned;
+
                 $user->display_name = $displayName;
                 $user->email        = $email;
                 $user->active       = $active ? 1 : 0;
                 $user->admin        = $admin  ? 1 : 0;
                 $user->force_password_change = $forcePwChange ? 1 : 0;
+                $user->shadow_banned = $shadowBanned ? 1 : 0;
                 if ($password !== '') {
                     $user->password = password_hash($password, PASSWORD_BCRYPT);
                 }
                 $this->users->save($user);
                 $this->cfService->saveUserFields($userId, $request->post['custom_fields'] ?? []);
+
+                if ($shadowBanned && !$wasShadowBanned) {
+                    $this->applyShadowBan($userId);
+                    $this->modLog->record($currentAdmin->user_id, 'shadow_ban_enable', 'user', $userId, 0, $user->username);
+                } elseif (!$shadowBanned && $wasShadowBanned) {
+                    $this->liftShadowBan($userId);
+                    $this->modLog->record($currentAdmin->user_id, 'shadow_ban_disable', 'user', $userId, 0, $user->username);
+                }
+
                 phorum_api_hook('admin_users_form_save', $request->post);
                 $success = 'Changes saved.';
             }
@@ -140,11 +165,39 @@ class UserController extends AdminController
 
         phorum_api_hook('admin_users_form', $user);
         return $this->respond($this->renderAdmin('admin/users/edit.html.twig', [
-            'profile'       => $user,
-            'admin_fields'  => $this->cfService->getAdminUserFields($userId),
-            'errors'        => $errors,
-            'success'       => $success,
+            'profile'        => $user,
+            'admin_fields'   => $this->cfService->getAdminUserFields($userId),
+            'errors'         => $errors,
+            'success'        => $success,
+            'admin_user_id'  => AdminAuth::user()->user_id,
         ]));
+    }
+
+    /**
+     * Retroactively hide a newly shadow-banned user's existing approved
+     * posts, and drop them from the search index — mirrors how
+     * ModerationService keeps the index in sync on approve/delete.
+     */
+    private function applyShadowBan(int $userId): void
+    {
+        $ids = $this->messages->findIdsByUserStatus($userId, MessageMapper::STATUS_APPROVED);
+        $this->messages->setStatusForUser($userId, MessageMapper::STATUS_APPROVED, MessageMapper::STATUS_SHADOW);
+        foreach ($ids as $id) {
+            $this->searchIndex->removeMessage($id);
+        }
+    }
+
+    /** Restore a lifted shadow ban's posts to visible and back into the search index. */
+    private function liftShadowBan(int $userId): void
+    {
+        $ids = $this->messages->findIdsByUserStatus($userId, MessageMapper::STATUS_SHADOW);
+        $this->messages->setStatusForUser($userId, MessageMapper::STATUS_SHADOW, MessageMapper::STATUS_APPROVED);
+        foreach ($ids as $id) {
+            $msg = $this->messages->load($id);
+            if ($msg !== null) {
+                $this->searchIndex->indexMessage($msg->message_id, $msg->forum_id, $msg->author, $msg->subject, $msg->body);
+            }
+        }
     }
 
     /** Start impersonating the target user as the current admin. */

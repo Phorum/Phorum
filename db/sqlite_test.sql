@@ -129,7 +129,8 @@ CREATE TABLE IF NOT EXISTS phorum_users (
     moderation_email  INTEGER NOT NULL DEFAULT 1,
     settings_data     TEXT    NOT NULL DEFAULT '',
     moderator_data    TEXT    NOT NULL DEFAULT '',
-    force_password_change INTEGER NOT NULL DEFAULT 0
+    force_password_change INTEGER NOT NULL DEFAULT 0,
+    shadow_banned     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS phorum_user_newflags (

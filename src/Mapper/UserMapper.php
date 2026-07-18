@@ -47,6 +47,7 @@ class UserMapper extends AbstractPhorumMapper
         'settings_data'         => [],
         'moderator_data'        => [],
         'force_password_change' => [],
+        'shadow_banned'     => [],
     ];
 
     /**
