@@ -37,6 +37,9 @@
                 <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow"><i class="fa fa-bell"></i>{{ trans('thread.follow') }}</a>
             {% endif %}
         {% endif %}
+        {% if feeds_enabled %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
+        {% endif %}
         {% if can_moderate %}
             <div class="mod-dropdown">
                 <button type="button" class="btn-mod mod-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
@@ -55,9 +58,6 @@
                     <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="mod-dropdown-danger">{{ trans('thread.delete') }}</a>
                 </div>
             </div>
-        {% endif %}
-        {% if feeds_enabled %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>

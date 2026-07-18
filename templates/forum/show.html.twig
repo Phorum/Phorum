@@ -37,6 +37,9 @@
                 <button type="submit" class="btn-mark-read"><i class="fa fa-check-square-o"></i>{{ trans('forum.mark_read') }}</button>
             </form>
         {% endif %}
+        {% if feeds_enabled %}
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
+        {% endif %}
         {% if can_moderate %}
             <div class="mod-dropdown">
                 <button type="button" class="btn-mod mod-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
@@ -47,9 +50,6 @@
                     <a href="{{ path('/moderate/reports') }}">{{ trans('mod.reports_title') }}</a>
                 </div>
             </div>
-        {% endif %}
-        {% if feeds_enabled %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>
