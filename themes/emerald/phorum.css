@@ -279,6 +279,10 @@ table.announcements-list {
     margin-bottom: 4px;
 }
 
+table.announcements-list {
+    margin-bottom: 1rem;
+}
+
 table.forum-list tbody tr:last-child td,
 table.thread-list tbody tr:last-child td,
 table.announcements-list tbody tr:last-child td {
@@ -313,9 +317,12 @@ table.announcements-list th a {
     font-size: var(--fs-xs);
 }
 
-.thread-list .col-subject > a,
-.announcements-list .col-subject > a {
+.thread-list .col-subject > a {
     font-size: var(--fs-base);
+}
+
+.announcements-list .col-subject > a {
+    font-size: var(--fs-sm);
 }
 
 .announcements-list .fa-info-circle {
