@@ -32,9 +32,9 @@
         {% endif %}
         {% if user is defined and user %}
             {% if current_sub != SUB_NONE %}
-                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow btn-follow-active">{{ trans('thread.following') }}</a>
+                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow btn-follow-active"><i class="fa fa-bell"></i>{{ trans('thread.following') }}</a>
             {% else %}
-                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow">{{ trans('thread.follow') }}</a>
+                <a href="{{ path('/follow/' ~ root.message_id) }}" class="btn-follow"><i class="fa fa-bell"></i>{{ trans('thread.follow') }}</a>
             {% endif %}
         {% endif %}
         {% if can_moderate %}
@@ -50,7 +50,7 @@
             <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="btn-mod btn-danger">{{ trans('thread.delete') }}</a>
         {% endif %}
         {% if feeds_enabled %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>

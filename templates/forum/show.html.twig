@@ -34,7 +34,7 @@
         {% if user is defined and user %}
             <form method="post" action="{{ path('/forum/' ~ forum.forum_id ~ '/mark-read') }}" class="form-inline">
                 {{ csrf_field() }}
-                <button type="submit" class="btn-mark-read">{{ trans('forum.mark_read') }}</button>
+                <button type="submit" class="btn-mark-read"><i class="fa fa-check-square-o"></i>{{ trans('forum.mark_read') }}</button>
             </form>
         {% endif %}
         {% if can_moderate %}
@@ -42,7 +42,7 @@
             <a href="{{ path('/moderate/reports') }}" class="btn-mod">{{ trans('mod.reports_title') }}</a>
         {% endif %}
         {% if feeds_enabled %}
-            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed">{{ trans('forum.feed_link') }}</a>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
         {% endif %}
     </div>
 </div>
@@ -68,21 +68,26 @@
         {% for thread in threads %}
             <tr class="thread-row{{ thread.sort < 2 ? ' thread-sticky' : '' }}">
                 <td class="col-subject">
-                    {% if thread.sort == 1 %}<span class="sticky-badge">{{ trans('forum.sticky') }}</span> {% endif %}
-                    {% if thread.closed %}<span class="closed-badge">{{ trans('forum.closed') }}</span> {% endif %}
-                    <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ thread.message_id) }}">
-                        {{- thread.subject -}}
-                    </a>
-                    {% if thread_new_counts[thread.message_id] is defined %}
-                        <span class="new-badge">{{ thread_new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
-                    {% endif %}
-                    <small class="thread-author">{{ trans('forum.by') }}
-                        {% if thread.user_id > 0 %}
-                            <a href="{{ path('/user/' ~ thread.user_id) }}">{{ thread.author }}</a>
-                        {% else %}
-                            {{ thread.author }}
-                        {% endif %}
-                    </small>
+                    <div class="thread-subject-row">
+                        <i class="fa fa-comment-o thread-icon"></i>
+                        <div class="thread-subject-info">
+                            {% if thread.sort == 1 %}<span class="sticky-badge">{{ trans('forum.sticky') }}</span> {% endif %}
+                            {% if thread.closed %}<span class="closed-badge">{{ trans('forum.closed') }}</span> {% endif %}
+                            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ thread.message_id) }}">
+                                {{- thread.subject -}}
+                            </a>
+                            {% if thread_new_counts[thread.message_id] is defined %}
+                                <span class="new-badge">{{ thread_new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
+                            {% endif %}
+                            <small class="thread-author">{{ trans('forum.by') }}
+                                {% if thread.user_id > 0 %}
+                                    <a href="{{ path('/user/' ~ thread.user_id) }}">{{ thread.author }}</a>
+                                {% else %}
+                                    {{ thread.author }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
                 </td>
                 <td class="col-replies">{{ thread.thread_count }}</td>
                 <td class="col-lastpost">
