@@ -165,7 +165,6 @@ return [
     'settings.signature_text'    => 'دستخط کا متن',
     'settings.show_signature'    => 'میری پوسٹس میں دستخط دکھائیں',
     'settings.preferences'       => 'ترجیحات',
-    'settings.threaded_list'     => 'فورم کی فہرست کے لیے تھریڈڈ ویو استعمال کریں',
     'settings.threaded_read'     => 'دھاگے پڑھتے وقت تھریڈڈ ویو استعمال کریں',
     'settings.email_notify'      => 'جن فورمز کو میں فالو کرتا ہوں ان میں نئی پوسٹس پر مجھے ای میل کریں',
     'settings.pm_email_notify'   => 'نجی پیغام موصول ہونے پر مجھے ای میل کریں',

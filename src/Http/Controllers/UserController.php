@@ -96,7 +96,6 @@ class UserController extends Controller
             $signature    = trim($request->post['signature']      ?? '');
             $showSig      = !empty($request->post['show_signature']);
             $hideEmail    = !empty($request->post['hide_email']);
-            $threadedList = !empty($request->post['threaded_list']);
             $threadedRead = !empty($request->post['threaded_read']);
             $emailNotify  = !empty($request->post['email_notify']);
             $pmNotify     = !empty($request->post['pm_email_notify']);
@@ -149,7 +148,6 @@ class UserController extends Controller
                 $currentUser->signature       = $signature;
                 $currentUser->show_signature  = $showSig ? 1 : 0;
                 $currentUser->hide_email      = $hideEmail ? 1 : 0;
-                $currentUser->threaded_list   = $threadedList ? 1 : 0;
                 $currentUser->threaded_read   = $threadedRead ? 1 : 0;
                 $currentUser->email_notify    = $emailNotify ? 1 : 0;
                 $currentUser->pm_email_notify = $pmNotify ? 1 : 0;

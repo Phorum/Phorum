@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => 'Texto da assinatura',
     'settings.show_signature'    => 'Exibir assinatura nas minhas mensagens',
     'settings.preferences'       => 'Preferências',
-    'settings.threaded_list'     => 'Usar visualização em árvore nas listas do fórum',
     'settings.threaded_read'     => 'Usar visualização em árvore ao ler tópicos',
     'settings.email_notify'      => 'Enviar e-mail quando novas mensagens forem postadas nos fóruns que sigo',
     'settings.pm_email_notify'   => 'Enviar e-mail quando eu receber uma mensagem privada',

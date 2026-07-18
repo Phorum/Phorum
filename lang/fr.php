@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => 'Texte de la signature',
     'settings.show_signature'    => 'Afficher la signature sur mes messages',
     'settings.preferences'       => 'Préférences',
-    'settings.threaded_list'     => 'Utiliser la vue par fils pour les listes de forums',
     'settings.threaded_read'     => 'Utiliser la vue par fils lors de la lecture des fils',
     'settings.email_notify'      => 'M\'envoyer un e-mail lorsque de nouveaux messages sont publiés dans les forums auxquels je suis abonné',
     'settings.pm_email_notify'   => 'M\'envoyer un e-mail lorsque je reçois un message privé',

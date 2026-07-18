@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => 'Teks Tanda Tangan',
     'settings.show_signature'    => 'Tampilkan tanda tangan pada postingan saya',
     'settings.preferences'       => 'Preferensi',
-    'settings.threaded_list'     => 'Gunakan tampilan berulir untuk daftar forum',
     'settings.threaded_read'     => 'Gunakan tampilan berulir saat membaca utas',
     'settings.email_notify'      => 'Kirimkan email ketika ada postingan baru di forum yang saya ikuti',
     'settings.pm_email_notify'   => 'Kirimkan email ketika saya menerima pesan pribadi',

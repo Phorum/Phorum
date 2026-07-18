@@ -182,7 +182,6 @@ return [
     'settings.signature_text'    => 'স্বাক্ষর টেক্সট',
     'settings.show_signature'    => 'আমার পোস্টে স্বাক্ষর দেখান',
     'settings.preferences'       => 'পছন্দসমূহ',
-    'settings.threaded_list'     => 'ফোরাম তালিকার জন্য থ্রেডেড ভিউ ব্যবহার করুন',
     'settings.threaded_read'     => 'থ্রেড পড়ার সময় থ্রেডেড ভিউ ব্যবহার করুন',
     'settings.email_notify'      => 'আমি সদস্যতা নেওয়া ফোরামে নতুন পোস্ট হলে ইমেইল পাঠান',
     'settings.pm_email_notify'   => 'ব্যক্তিগত বার্তা পেলে ইমেইল পাঠান',

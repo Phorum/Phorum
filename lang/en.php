@@ -191,7 +191,6 @@ return [
     'settings.signature_text'    => 'Signature Text',
     'settings.show_signature'    => 'Show signature on my posts',
     'settings.preferences'       => 'Preferences',
-    'settings.threaded_list'     => 'Use threaded view for forum lists',
     'settings.threaded_read'     => 'Use threaded view when reading threads',
     'settings.email_notify'      => 'Email me when new posts are made in forums I subscribe to',
     'settings.pm_email_notify'   => 'Email me when I receive a private message',

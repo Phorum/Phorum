@@ -165,7 +165,6 @@ return [
     'settings.signature_text'    => 'نص التوقيع',
     'settings.show_signature'    => 'عرض التوقيع في مشاركاتي',
     'settings.preferences'       => 'التفضيلات',
-    'settings.threaded_list'     => 'استخدام العرض المتشعّب لقوائم المنتدى',
     'settings.threaded_read'     => 'استخدام العرض المتشعّب عند قراءة الموضوعات',
     'settings.email_notify'      => 'إرسال بريد إلكتروني إليّ عند نشر مشاركات جديدة في المنتديات التي أتابعها',
     'settings.pm_email_notify'   => 'إرسال بريد إلكتروني إليّ عند استلام رسالة خاصة',

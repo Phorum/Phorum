@@ -80,19 +80,13 @@
                 <div class="col s12">
                     <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Display</strong></p>
                 </div>
-                <div class="col s12 m4">
-                    <label>
-                        <input type="checkbox" name="threaded_list" value="1" {{ forum.threaded_list ? 'checked' : '' }}>
-                        <span>Threaded thread list</span>
-                    </label>
-                </div>
-                <div class="col s12 m4">
+                <div class="col s12 m6">
                     <label>
                         <input type="checkbox" name="threaded_read" value="1" {{ forum.threaded_read ? 'checked' : '' }}>
                         <span>Threaded message view</span>
                     </label>
                 </div>
-                <div class="input-field col s12 m4">
+                <div class="input-field col s12 m6">
                     <input id="list_length_flat" type="number" name="list_length_flat"
                            value="{{ forum.list_length_flat ?: 25 }}" min="1">
                     <label for="list_length_flat" class="active">Threads per page</label>

@@ -164,7 +164,6 @@ return [
     'settings.signature_text'    => 'Signaturtext',
     'settings.show_signature'    => 'Signatur in meinen Beiträgen anzeigen',
     'settings.preferences'       => 'Einstellungen',
-    'settings.threaded_list'     => 'Thread-Ansicht für Forenlisten verwenden',
     'settings.threaded_read'     => 'Thread-Ansicht beim Lesen von Threads verwenden',
     'settings.email_notify'      => 'E-Mail-Benachrichtigung bei neuen Beiträgen in abonnierten Foren',
     'settings.pm_email_notify'   => 'E-Mail-Benachrichtigung beim Empfang einer privaten Nachricht',

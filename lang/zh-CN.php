@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => '签名内容',
     'settings.show_signature'    => '在我的帖子中显示签名',
     'settings.preferences'       => '偏好设置',
-    'settings.threaded_list'     => '在版块列表中使用树形视图',
     'settings.threaded_read'     => '阅读主题时使用树形视图',
     'settings.email_notify'      => '当我订阅的版块有新帖子时发送邮件通知',
     'settings.pm_email_notify'   => '收到私信时发送邮件通知',

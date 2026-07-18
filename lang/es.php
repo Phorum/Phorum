@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => 'Texto de firma',
     'settings.show_signature'    => 'Mostrar firma en mis mensajes',
     'settings.preferences'       => 'Preferencias',
-    'settings.threaded_list'     => 'Usar vista en árbol para las listas del foro',
     'settings.threaded_read'     => 'Usar vista en árbol al leer hilos',
     'settings.email_notify'      => 'Enviarme un correo cuando se publiquen mensajes nuevos en los foros a los que estoy suscrito',
     'settings.pm_email_notify'   => 'Enviarme un correo cuando reciba un mensaje privado',

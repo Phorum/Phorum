@@ -182,7 +182,6 @@ return [
     'settings.signature_text'    => 'हस्ताक्षर टेक्स्ट',
     'settings.show_signature'    => 'मेरी पोस्ट पर हस्ताक्षर दिखाएं',
     'settings.preferences'       => 'प्राथमिकताएं',
-    'settings.threaded_list'     => 'फ़ोरम सूचियों के लिए थ्रेडेड व्यू उपयोग करें',
     'settings.threaded_read'     => 'थ्रेड पढ़ते समय थ्रेडेड व्यू उपयोग करें',
     'settings.email_notify'      => 'जब मैं सब्सक्राइब किए फ़ोरम में नई पोस्ट आएं तो मुझे ईमेल करें',
     'settings.pm_email_notify'   => 'जब मुझे निजी संदेश मिले तो ईमेल करें',

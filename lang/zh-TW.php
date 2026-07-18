@@ -184,7 +184,6 @@ return [
     'settings.signature_text'    => '簽名檔內容',
     'settings.show_signature'    => '在我的文章中顯示簽名檔',
     'settings.preferences'       => '偏好設定',
-    'settings.threaded_list'     => '在討論區列表中使用樹狀檢視',
     'settings.threaded_read'     => '閱讀主題時使用樹狀檢視',
     'settings.email_notify'      => '當我訂閱的討論區有新文章時寄送電子郵件通知',
     'settings.pm_email_notify'   => '收到私訊時寄送電子郵件通知',

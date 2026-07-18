@@ -191,7 +191,6 @@ return [
     'settings.signature_text'    => 'Handtekeningtekst',
     'settings.show_signature'    => 'Handtekening weergeven onder mijn berichten',
     'settings.preferences'       => 'Voorkeuren',
-    'settings.threaded_list'     => 'Gebruik de discussieweergave voor forumlijsten',
     'settings.threaded_read'     => 'Gebruik de discussieweergave bij het lezen van threads',
     'settings.email_notify'      => 'Stuur mij een e-mail bij nieuwe berichten in forums waarop ik ben geabonneerd',
     'settings.pm_email_notify'   => 'Stuur mij een e-mail wanneer ik een privébericht ontvang',
