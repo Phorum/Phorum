@@ -85,6 +85,49 @@ class BbcodeModuleTest extends TestCase
         $this->assertStringContainsString('click', $result);
     }
 
+    // -------------------------------------------------------------------------
+    // Bare-URL / bare-email autolinking
+    // -------------------------------------------------------------------------
+
+    public function testBareUrlIsAutolinked(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', 'See https://example.com/page for info.', 'bbcode');
+        $this->assertStringContainsString('<a href="https://example.com/page" rel="nofollow">https://example.com/page</a>', $result);
+    }
+
+    public function testBareWwwUrlIsAutolinkedWithHttpPrefix(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', 'Visit www.example.com today.', 'bbcode');
+        $this->assertStringContainsString('<a href="http://www.example.com" rel="nofollow">www.example.com</a>', $result);
+    }
+
+    public function testBareEmailIsAutolinked(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', 'Contact someone@example.com for help.', 'bbcode');
+        $this->assertStringContainsString('<a href="mailto:someone@example.com">someone@example.com</a>', $result);
+    }
+
+    public function testExplicitUrlTagIsNotDoubleAutolinked(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', '[url=https://example.com/explicit]click here[/url]', 'bbcode');
+        $this->assertSame(1, substr_count($result, '<a '));
+        $this->assertStringContainsString('>click here<', $result);
+    }
+
+    public function testBareUrlInsideCodeBlockIsNotAutolinked(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', '[code]https://example.com/should-not-link[/code]', 'bbcode');
+        $this->assertStringNotContainsString('<a ', $result);
+        $this->assertStringContainsString('https://example.com/should-not-link', $result);
+    }
+
+    public function testImgTagUrlIsNotAlsoAutolinked(): void
+    {
+        $result = HookDispatcher::getInstance()->dispatch('format', '[img]https://example.com/pic.png[/img]', 'bbcode');
+        $this->assertStringContainsString('<img src="https://example.com/pic.png" class="bbcode" alt=""/>', $result);
+        $this->assertStringNotContainsString('<a ', $result);
+    }
+
     public function testCodeBlockRoundTrip(): void
     {
         $result = HookDispatcher::getInstance()->dispatch('format', '[code]echo "hi";[/code]', 'bbcode');

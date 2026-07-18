@@ -5,6 +5,7 @@ namespace Phorum\Twig;
 
 use DealNews\SchemaOrg\JsonLdNode;
 use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\MarkdownConverter;
@@ -13,6 +14,7 @@ use Phorum\Core\CsrfGuard;
 use Phorum\Core\Lang;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Model\MessageMeta;
+use Phorum\Service\Autolinker;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -45,6 +47,7 @@ class PhorumExtension extends AbstractExtension
         ]);
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new ExternalLinkExtension());
+        $environment->addExtension(new AutolinkExtension());
 
         $this->markdown = new MarkdownConverter($environment);
 
@@ -122,7 +125,17 @@ class PhorumExtension extends AbstractExtension
 
         // No hook claimed the format — fall back to HTML-escaped plain text
         if (!$dispatcher->lastDispatchWasClaimed()) {
-            $html = nl2br(htmlspecialchars($body, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+            $escaped   = htmlspecialchars($body, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $autolink  = new Autolinker();
+            $escaped   = $autolink->linkifyEmails(
+                $escaped,
+                static fn(string $email): string => '<a href="mailto:' . $email . '" rel="nofollow">' . $email . '</a>'
+            );
+            $escaped   = $autolink->linkifyUrls(
+                $escaped,
+                static fn(string $href, string $label): string => '<a href="' . $href . '" rel="nofollow">' . $label . '</a>'
+            );
+            $html = nl2br($escaped);
         } else {
             $html = (string) $result;
         }

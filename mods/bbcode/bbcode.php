@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Mod\Bbcode;
 
 use Phorum\Hook\HookDispatcher;
+use Phorum\Service\Autolinker;
 
 /**
  * BBCode formatter for Phorum.
@@ -13,6 +14,9 @@ use Phorum\Hook\HookDispatcher;
  *
  * Tags supported: b, i, u, s, sub, sup, center, left, right, hr,
  *                 color, size, url, img, email, quote, code, list/[*]
+ *
+ * Bare URLs and email addresses (not wrapped in [url]/[email]) are
+ * autolinked automatically via Autolinker.
  */
 class BbcodeFormatter
 {
@@ -37,6 +41,37 @@ class BbcodeFormatter
             },
             $text
         );
+
+        // Convert bare URLs and email addresses into [url]/[email] tags so
+        // they render identically to explicit ones below. Existing explicit
+        // [url]/[img]/[email] tags are protected first so their raw href
+        // text isn't re-wrapped.
+        $protected = [];
+        $p         = 0;
+        $text = preg_replace_callback(
+            '/\[(url|img|email)(?:=[^\]]*)?\].*?\[\/\1\]/si',
+            function (array $m) use (&$protected, &$p): string {
+                $key = "\x04{$p}\x05";
+                $protected[$key] = $m[0];
+                $p++;
+                return $key;
+            },
+            $text
+        );
+
+        $autolink = new Autolinker();
+        $text     = $autolink->linkifyEmails(
+            $text,
+            static fn(string $email): string => '[email]' . $email . '[/email]'
+        );
+        $text     = $autolink->linkifyUrls(
+            $text,
+            static fn(string $href, string $label): string => $href === $label
+                ? '[url]' . $href . '[/url]'
+                : '[url=' . $href . ']' . $label . '[/url]'
+        );
+
+        $text = strtr($text, $protected);
 
         // [quote] — iterate to resolve nesting (inner-most first each pass)
         $prev = null;

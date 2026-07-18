@@ -283,6 +283,59 @@ class PhorumExtensionTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // formatBody — bare-URL autolinking
+    // -------------------------------------------------------------------------
+
+    public function testFormatBodyAutolinksBareUrlInMarkdown(): void
+    {
+        $ext    = $this->makeExt();
+        $meta   = json_encode(['format' => 'markdown']);
+        $result = $ext->formatBody('See https://example.com/page for info.', $meta);
+        $this->assertStringContainsString('href="https://example.com/page"', $result);
+        $this->assertStringContainsString('>https://example.com/page<', $result);
+    }
+
+    public function testFormatBodyAutolinksWwwPrefixedUrlInMarkdown(): void
+    {
+        $ext    = $this->makeExt();
+        $meta   = json_encode(['format' => 'markdown']);
+        $result = $ext->formatBody('Visit www.example.com today.', $meta);
+        $this->assertStringContainsString('href="http://www.example.com"', $result);
+        $this->assertStringContainsString('>www.example.com<', $result);
+    }
+
+    public function testFormatBodyDoesNotDoubleWrapExplicitMarkdownLink(): void
+    {
+        $ext    = $this->makeExt();
+        $meta   = json_encode(['format' => 'markdown']);
+        $result = $ext->formatBody('[click here](https://example.com/explicit)', $meta);
+        $this->assertSame(1, substr_count($result, '<a '));
+    }
+
+    public function testFormatBodyAutolinksBareEmailInMarkdown(): void
+    {
+        $ext    = $this->makeExt();
+        $meta   = json_encode(['format' => 'markdown']);
+        $result = $ext->formatBody('Contact someone@example.com for help.', $meta);
+        $this->assertStringContainsString('href="mailto:someone@example.com"', $result);
+    }
+
+    public function testFormatBodyAutolinksBareUrlInPlainTextFallback(): void
+    {
+        $ext    = $this->makeExt();
+        $result = $ext->formatBody('See https://example.com/page for info.', null);
+        $this->assertStringContainsString('<a href="https://example.com/page" rel="nofollow">https://example.com/page</a>', $result);
+    }
+
+    public function testFormatBodyPlainTextFallbackStillEscapesSurroundingHtml(): void
+    {
+        $ext    = $this->makeExt();
+        $result = $ext->formatBody('<b>Hi</b> see https://example.com', null);
+        $this->assertStringContainsString('&lt;b&gt;', $result);
+        $this->assertStringContainsString('<a href="https://example.com" rel="nofollow">', $result);
+    }
+
+    // -------------------------------------------------------------------------
     // getFilters / getFunctions — return arrays
     // -------------------------------------------------------------------------
 
