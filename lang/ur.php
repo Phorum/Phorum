@@ -18,7 +18,11 @@ return [
     'nav.log_in'        => 'لاگ ان',
     'nav.register'      => 'رجسٹر کریں',
     'nav.powered_by'    => 'Phorum سے چلایا گیا',
+    'nav.skip_to_content' => 'مرکزی مواد پر جائیں',
+    'nav.breadcrumb'      => 'بریڈ کرمب',
+    'nav.primary'         => 'بنیادی',
     'nav.menu'          => 'مینو',
+    'pagination.nav_label' => 'صفحہ بندی',
 
     // Forum list
     'forum_list.no_forums'   => 'ابھی تک کوئی فورم نہیں بنایا گیا۔',
@@ -41,6 +45,7 @@ return [
     'forum.by'               => 'از',
     'forum.new'              => 'نیا',
     'forum.mark_read'        => 'سب کو پڑھا ہوا نشان زد کریں',
+    'forum.feed_link'        => 'RSS',
 
     // Thread actions
     'thread.reply'           => 'جواب دیں',
@@ -49,6 +54,7 @@ return [
     'thread.reopen'          => 'دوبارہ کھولیں',
     'thread.close'           => 'بند کریں',
     'thread.move'            => 'منتقل کریں',
+    'thread.merge'           => 'ضم کریں',
     'thread.delete'          => 'دھاگہ حذف کریں',
 
     // Message actions
@@ -67,6 +73,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'منظور کریں',
     'message.delete'            => 'حذف کریں',
+    'message.report'            => 'رپورٹ کریں',
+    'message.registered'        => 'رجسٹرڈ',
+    'message.posts'             => 'پوسٹس',
 
     // Post form
     'post.new_thread'        => 'نیا دھاگہ',
@@ -77,6 +86,11 @@ return [
     'post.submit_thread'     => 'دھاگہ پوسٹ کریں',
     'post.submit_reply'      => 'جواب پوسٹ کریں',
     'post.cancel'            => 'منسوخ کریں',
+    'post.error_subject_required' => 'موضوع درکار ہے۔',
+    'post.error_subject_length'   => 'موضوع 255 حروف یا اس سے کم پر مشتمل ہونا چاہیے۔',
+    'post.error_body_required'    => 'پیغام کا متن درکار ہے۔',
+    'post.error_flood_wait'       => 'دوبارہ پوسٹ کرنے سے پہلے براہ کرم مزید {seconds} سیکنڈ انتظار کریں۔',
+    'post.error_posting_blocked'  => 'آپ کے اکاؤنٹ سے پوسٹ کرنے کی اجازت نہیں ہے۔',
 
     // Authentication
     'auth.login_title'       => 'لاگ ان',
@@ -111,6 +125,16 @@ return [
     'auth.resend_email_label'     => 'ای میل پتہ',
     'auth.resend_submit'          => 'دوبارہ بھیجیں',
     'auth.resend_sent'            => 'اگر اس پتے پر کوئی تصدیق زیر التواء ہے تو ایک نیا لنک بھیج دیا گیا ہے۔ اپنا ان باکس چیک کریں۔',
+    'auth.error_missing_credentials'  => 'براہ کرم اپنا صارف نام اور پاس ورڈ درج کریں۔',
+    'auth.error_invalid_credentials'  => 'غلط صارف نام یا پاس ورڈ۔',
+    'auth.error_registration_blocked' => 'آپ کے اکاؤنٹ سے رجسٹریشن کی اجازت نہیں ہے۔',
+    'auth.error_invalid_email'        => 'براہ کرم ایک درست ای میل پتہ درج کریں۔',
+    'auth.error_password_min_length'  => 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
+    'auth.error_passwords_mismatch'   => 'پاس ورڈز مماثل نہیں ہیں۔',
+    'auth.error_username_required'    => 'صارف نام درکار ہے۔',
+    'auth.error_username_length'      => 'صارف نام 2 سے 50 حروف کے درمیان ہونا چاہیے۔',
+    'auth.error_email_required'       => 'ایک درست ای میل پتہ درکار ہے۔',
+    'auth.error_username_taken'       => 'یہ صارف نام پہلے سے استعمال میں ہے۔',
 
     // Profile
     'profile.username'       => 'صارف نام',
@@ -147,6 +171,18 @@ return [
     'settings.tz_offset'         => 'ٹائم زون آفسیٹ (گھنٹے، -12 سے +14؛ -99 = سرور وقت)',
     'settings.save'              => 'ترتیبات محفوظ کریں',
     'settings.cancel'            => 'منسوخ کریں',
+    'settings.avatar_section'    => 'اوتار',
+    'settings.avatar_current'    => 'موجودہ اوتار',
+    'settings.avatar_upload'     => 'نیا اوتار اپ لوڈ کریں',
+    'settings.avatar_hint'       => 'JPG، PNG، GIF، یا WebP۔ زیادہ سے زیادہ 100 KB۔',
+    'settings.avatar_delete'     => 'موجودہ اوتار ہٹائیں',
+    'settings.error_display_name_required' => 'ڈسپلے نام درکار ہے۔',
+    'settings.error_display_name_length'   => 'ڈسپلے نام 50 حروف یا اس سے کم پر مشتمل ہونا چاہیے۔',
+    'settings.error_email_required'        => 'ایک درست ای میل پتہ درکار ہے۔',
+    'settings.error_email_taken'           => 'یہ ای میل پتہ پہلے سے کسی دوسرے اکاؤنٹ کے زیر استعمال ہے۔',
+    'settings.error_password_min_length'   => 'نیا پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
+    'settings.error_passwords_mismatch'    => 'پاس ورڈز مماثل نہیں ہیں۔',
+    'settings.error_tz_offset'             => 'ٹائم زون آفسیٹ -12 اور +14 کے درمیان ہونا چاہیے، یا سرور وقت کے لیے -99۔',
 
     // Private messages
     'pm.private_messages'    => 'نجی پیغامات',
@@ -184,6 +220,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'وصول کنندہ درکار ہے۔',
+    'pm.error_user_not_found'       => 'صارف "{username}" نہیں ملا۔',
+    'pm.error_subject_required'     => 'موضوع درکار ہے۔',
+    'pm.error_body_required'        => 'پیغام کا متن درکار ہے۔',
+    'pm.error_folder_name_required' => 'فولڈر کا نام درکار ہے۔',
+    'pm.error_folder_name_length'   => 'فولڈر کا نام 60 حروف یا اس سے کم پر مشتمل ہونا چاہیے۔',
 
     // Subscriptions
     'sub.title'              => 'دھاگہ فالو کریں',
@@ -195,6 +237,11 @@ return [
     'sub.unfollow'           => 'ان فالو کریں',
     'sub.back_to_thread'     => 'دھاگے پر واپس',
     'sub.follow'             => 'فالو کریں',
+    'sub.confirm_title'      => 'عمل کی تصدیق کریں',
+    'sub.confirm_remove'     => 'کیا آپ واقعی اس دھاگے سے ان سبسکرائب کرنا چاہتے ہیں؟',
+    'sub.confirm_bookmark'   => 'اپنی سبسکرپشن کو بک مارک میں تبدیل کریں (کوئی ای میل اطلاعات نہیں)؟',
+    'sub.confirm_yes'        => 'ہاں، تصدیق کریں',
+    'sub.confirm_cancel'     => 'منسوخ کریں',
 
     // Moderation
     'mod.delete_thread'            => 'دھاگہ حذف کریں',
@@ -217,6 +264,31 @@ return [
     'mod.destination'              => 'منزل فورم',
     'mod.choose_forum'             => '— فورم منتخب کریں —',
     'mod.move_submit'              => 'دھاگہ منتقل کریں',
+    'mod.merge_title'               => 'دھاگہ ضم کریں',
+    'mod.merge_prompt'              => '"{subject}" کو کسی دوسرے دھاگے میں ضم کریں۔ ضم شدہ دھاگے کی پوسٹس ہدف دھاگے میں شامل کر دی جائیں گی، اور اس دھاگے کی سبسکرپشنز محفوظ نہیں رکھی جائیں گی۔',
+    'mod.merge_target'              => 'ہدف دھاگے کی ID',
+    'mod.merge_target_hint'         => 'اس دھاگے کی عددی ID جس میں ضم کرنا ہے (اس کے URL میں نظر آتی ہے)۔',
+    'mod.merge_submit'              => 'دھاگہ ضم کریں',
+    'mod.merge_error_not_found'      => 'وہ دھاگہ ID نہیں ملی۔',
+    'mod.merge_error_same_thread'    => 'ضم کرنے کے لیے ایک مختلف دھاگہ منتخب کریں۔',
+    'mod.merge_error_failed'         => 'اس دھاگے میں ضم کرنے میں ناکام۔',
+    'mod.moderate'                 => 'ماڈریٹ کریں',
+    'mod.queue'                    => 'جائزہ قطار',
+    'mod.queue_title'              => 'زیر التواء پیغامات کی قطار',
+    'mod.queue_empty'              => 'کوئی پیغام منظوری کا منتظر نہیں ہے۔',
+    'mod.queue_forum'              => 'فورم',
+    'mod.queue_posted'             => 'پوسٹ کیا گیا',
+    'mod.reports_title'            => 'رپورٹ شدہ مواد',
+    'mod.reports_empty'            => 'کوئی کھلی رپورٹ نہیں ہے۔',
+    'mod.reports_message_missing'  => '(رپورٹ شدہ پیغام اب دستیاب نہیں ہے)',
+    'mod.reports_reported'         => 'رپورٹ کیا گیا',
+    'mod.reports_resolve'          => 'حل کریں',
+    'mod.reports_dismiss'          => 'مسترد کریں',
+    'mod.reports_view'             => 'دھاگے میں دیکھیں',
+    'report.title'                 => 'پیغام کی رپورٹ کریں',
+    'report.intro'                 => '{author} کے اس پیغام کی ماڈریٹرز کو رپورٹ کریں؟',
+    'report.reason_label'          => 'وجہ (اختیاری)',
+    'report.submit'                => 'رپورٹ جمع کروائیں',
 
     // Search
     'search.title'           => 'تلاش',
@@ -254,6 +326,77 @@ return [
     'error.403_login'        => 'لاگ ان کریں',
     'error.403_login_hint'   => 'ان فورمز تک رسائی کے لیے جن کے لیے رجسٹریشن ضروری ہے۔',
     'error.403_return'       => 'فورم انڈیکس پر واپس جائیں',
+    'error.disabled_title'    => 'سائٹ دستیاب نہیں ہے',
+    'error.disabled_message'  => 'یہ سائٹ عارضی طور پر غیر فعال ہے۔ براہ کرم بعد میں دوبارہ چیک کریں۔',
+    'error.admin_only_title'   => 'سائٹ دستیاب نہیں ہے',
+    'error.admin_only_message' => 'یہ سائٹ دیکھ بھال کے لیے عارضی طور پر بند ہے۔ براہ کرم بعد میں دوبارہ چیک کریں۔',
+    'error.read_only_title'    => 'صرف پڑھنے کے لیے',
+    'error.read_only_message'  => 'یہ سائٹ فی الحال صرف پڑھنے کے لیے ہے۔ پوسٹ کرنا اور لاگ ان کرنا عارضی طور پر غیر فعال ہیں۔',
+    'banner.read_only'         => 'یہ سائٹ فی الحال صرف پڑھنے کے لیے ہے — پوسٹ کرنا اور لاگ ان کرنا عارضی طور پر غیر فعال ہیں۔',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'اپنا پاس ورڈ تبدیل کریں',
+    'force_password_change.message'   => 'جاری رکھنے سے پہلے ایک منتظم کے لیے ضروری ہے کہ آپ نیا پاس ورڈ سیٹ کریں۔',
+    'force_password_change.new_password'     => 'نیا پاس ورڈ',
+    'force_password_change.confirm_password' => 'نئے پاس ورڈ کی تصدیق کریں',
+    'force_password_change.save'      => 'پاس ورڈ سیٹ کریں',
+    'force_password_change.error_password_min_length' => 'نیا پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
+    'force_password_change.error_passwords_mismatch'  => 'پاس ورڈز مماثل نہیں ہیں۔',
+
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum انسٹالر',
+    'install.requirements_heading'     => 'تقاضے',
+    'install.requirement_failed'       => 'ناکام',
+    'install.fix_requirements'         => 'جاری رکھنے سے پہلے اوپر دیے گئے تقاضوں کو درست کریں۔',
+    'install.fix_requirements_hint_1'  => 'یقینی بنائیں کہ',
+    'install.fix_requirements_hint_and' => 'اور',
+    'install.fix_requirements_hint_2'  => 'موجود ہیں (.example فائلوں سے کاپی کی گئی) اور یہ کہ ڈیٹا بیس کی اسناد درست ہیں۔',
+    'install.errors_heading'           => 'براہ کرم درج ذیل کو درست کریں',
+    'install.setup_heading'            => 'سائٹ اور ایڈمن سیٹ اپ',
+    'install.site_name_label'          => 'سائٹ کا نام',
+    'install.admin_account_heading'    => 'ایڈمن اکاؤنٹ',
+    'install.username_label'           => 'صارف نام',
+    'install.email_label'              => 'ای میل',
+    'install.password_label'           => 'پاس ورڈ (کم از کم 8 حروف)',
+    'install.confirm_password_label'   => 'پاس ورڈ کی تصدیق کریں',
+    'install.submit'                   => 'Phorum انسٹال کریں',
+    'install.complete_page_title'      => 'تنصیب مکمل — Phorum',
+    'install.complete_heading'         => 'تنصیب مکمل ہو گئی',
+    'install.complete_message'         => 'ڈیٹا بیس اسکیما بن چکا ہے اور آپ کا ایڈمن اکاؤنٹ تیار ہے۔',
+    'install.go_to_forum'              => 'فورم پر جائیں',
+    'install.admin_panel'              => 'ایڈمن پینل',
+    'install.error_site_name_required'  => 'سائٹ کا نام درکار ہے۔',
+    'install.error_username_required'   => 'ایڈمن صارف نام درکار ہے۔',
+    'install.error_username_format'     => 'صارف نام 3–50 حروف کا ہونا چاہیے (صرف حروف، ہندسے، _ . -)۔',
+    'install.error_email_required'      => 'ایڈمن کے لیے ایک درست ای میل پتہ درکار ہے۔',
+    'install.error_password_min_length' => 'ایڈمن پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے۔',
+    'install.error_passwords_mismatch'  => 'پاس ورڈز مماثل نہیں ہیں۔',
+    'install.error_failed'              => 'تنصیب ناکام ہو گئی: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum اپ گریڈ',
+    'upgrade.detected_heading'    => 'موجودہ Phorum 6 ڈیٹا بیس کا پتہ چلا',
+    'upgrade.detected_message'    => 'یہ ڈیٹا بیس Phorum 6 نے بنایا تھا۔ Phorum 10، Phorum 6 کے ساتھ اسکیما کے لحاظ سے ہم آہنگ ہے — کوئی موجودہ ڈیٹا تبدیل، حذف، یا کنورٹ نہیں کیا جائے گا۔',
+    'upgrade.up_to_date'          => 'کسی اسکیما تبدیلی کی ضرورت نہیں — یہ ڈیٹا بیس پہلے ہی اپ ٹو ڈیٹ ہے۔',
+    'upgrade.new_tables_heading'  => 'درج ذیل نئے ٹیبلز شامل کیے جائیں گے:',
+    'upgrade.new_patches_heading' => 'درج ذیل اسکیما اپڈیٹس لاگو کیے جائیں گے:',
+    'upgrade.submit'              => 'جاری رکھیں',
+    'upgrade.complete_page_title' => 'اپ گریڈ مکمل — Phorum',
+    'upgrade.complete_heading'    => 'اپ گریڈ مکمل ہو گیا',
+    'upgrade.complete_message'    => 'آپ کا Phorum 6 ڈیٹا بیس اب Phorum 10 پر چلنے کے لیے تیار ہے۔',
+    'upgrade.go_to_forum'         => 'فورم پر جائیں',
+    'upgrade.admin_panel'         => 'ایڈمن پینل',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'اعلانات',
 
     // -------------------------------------------------------------------------
     // Attachments

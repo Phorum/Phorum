@@ -21,7 +21,11 @@ return [
     'nav.log_in'        => 'Iniciar sesión',
     'nav.register'      => 'Registrarse',
     'nav.powered_by'    => 'Desarrollado por Phorum',
+    'nav.skip_to_content' => 'Saltar al contenido principal',
+    'nav.breadcrumb'    => 'Ruta de navegación',
+    'nav.primary'       => 'Principal',
     'nav.menu'          => 'Menú',
+    'pagination.nav_label' => 'Paginación',
 
     // -------------------------------------------------------------------------
     // Forum list (index page)
@@ -48,6 +52,7 @@ return [
     'forum.by'               => 'por',
     'forum.new'              => 'nuevo',
     'forum.mark_read'        => 'Marcar todo como leído',
+    'forum.feed_link'        => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -58,6 +63,7 @@ return [
     'thread.reopen'          => 'Reabrir',
     'thread.close'           => 'Cerrar',
     'thread.move'            => 'Mover',
+    'thread.merge'           => 'Fusionar',
     'thread.delete'          => 'Eliminar hilo',
 
     // -------------------------------------------------------------------------
@@ -78,6 +84,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'Aprobar',
     'message.delete'            => 'Eliminar',
+    'message.report'            => 'Reportar',
+    'message.registered'        => 'Registrado',
+    'message.posts'             => 'Mensajes',
 
     // -------------------------------------------------------------------------
     // Post / reply form
@@ -90,6 +99,11 @@ return [
     'post.submit_thread'     => 'Publicar hilo',
     'post.submit_reply'      => 'Publicar respuesta',
     'post.cancel'            => 'Cancelar',
+    'post.error_subject_required' => 'El asunto es obligatorio.',
+    'post.error_subject_length'   => 'El asunto debe tener 255 caracteres o menos.',
+    'post.error_body_required'    => 'El cuerpo del mensaje es obligatorio.',
+    'post.error_flood_wait'       => 'Por favor, espera {seconds} segundo(s) más antes de volver a publicar.',
+    'post.error_posting_blocked'  => 'No se permite publicar desde tu cuenta.',
 
     // -------------------------------------------------------------------------
     // Auth
@@ -126,6 +140,16 @@ return [
     'auth.resend_email_label'     => 'Correo electrónico',
     'auth.resend_submit'          => 'Reenviar',
     'auth.resend_sent'            => 'Si esa dirección tiene una confirmación pendiente, se ha enviado un nuevo enlace. Revisa tu bandeja de entrada.',
+    'auth.error_missing_credentials'  => 'Por favor, introduce tu nombre de usuario y contraseña.',
+    'auth.error_invalid_credentials'  => 'Nombre de usuario o contraseña no válidos.',
+    'auth.error_registration_blocked' => 'No se permite el registro desde tu cuenta.',
+    'auth.error_invalid_email'        => 'Por favor, introduce una dirección de correo electrónico válida.',
+    'auth.error_password_min_length'  => 'La contraseña debe tener al menos 6 caracteres.',
+    'auth.error_passwords_mismatch'   => 'Las contraseñas no coinciden.',
+    'auth.error_username_required'    => 'El nombre de usuario es obligatorio.',
+    'auth.error_username_length'      => 'El nombre de usuario debe tener entre 2 y 50 caracteres.',
+    'auth.error_email_required'       => 'Se requiere una dirección de correo electrónico válida.',
+    'auth.error_username_taken'       => 'Ese nombre de usuario ya está en uso.',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -166,6 +190,29 @@ return [
     'settings.tz_offset'         => 'Desfase horario (horas, -12 a +14; -99 = hora del servidor)',
     'settings.save'              => 'Guardar configuración',
     'settings.cancel'            => 'Cancelar',
+    'settings.avatar_section'    => 'Avatar',
+    'settings.avatar_current'    => 'Avatar actual',
+    'settings.avatar_upload'     => 'Subir nuevo avatar',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF o WebP. Máximo 100 KB.',
+    'settings.avatar_delete'     => 'Eliminar avatar actual',
+    'settings.error_display_name_required' => 'El nombre visible es obligatorio.',
+    'settings.error_display_name_length'   => 'El nombre visible debe tener 50 caracteres o menos.',
+    'settings.error_email_required'        => 'Se requiere una dirección de correo electrónico válida.',
+    'settings.error_email_taken'           => 'Esa dirección de correo electrónico ya está en uso por otra cuenta.',
+    'settings.error_password_min_length'   => 'La nueva contraseña debe tener al menos 6 caracteres.',
+    'settings.error_passwords_mismatch'    => 'Las contraseñas no coinciden.',
+    'settings.error_tz_offset'             => 'El desfase horario debe estar entre -12 y +14, o -99 para la hora del servidor.',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'Cambia tu contraseña',
+    'force_password_change.message'   => 'Un administrador requiere que establezcas una nueva contraseña antes de continuar.',
+    'force_password_change.new_password'     => 'Nueva contraseña',
+    'force_password_change.confirm_password' => 'Confirmar nueva contraseña',
+    'force_password_change.save'      => 'Establecer contraseña',
+    'force_password_change.error_password_min_length' => 'La nueva contraseña debe tener al menos 6 caracteres.',
+    'force_password_change.error_passwords_mismatch'  => 'Las contraseñas no coinciden.',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -205,6 +252,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'El destinatario es obligatorio.',
+    'pm.error_user_not_found'       => 'No se encontró el usuario "{username}".',
+    'pm.error_subject_required'     => 'El asunto es obligatorio.',
+    'pm.error_body_required'        => 'El cuerpo del mensaje es obligatorio.',
+    'pm.error_folder_name_required' => 'El nombre de la carpeta es obligatorio.',
+    'pm.error_folder_name_length'   => 'El nombre de la carpeta debe tener 60 caracteres o menos.',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -218,6 +271,11 @@ return [
     'sub.unfollow'           => 'Dejar de seguir',
     'sub.back_to_thread'     => 'Volver al hilo',
     'sub.follow'             => 'Seguir',
+    'sub.confirm_title'      => 'Confirmar acción',
+    'sub.confirm_remove'     => '¿Estás seguro de que quieres dejar de seguir este hilo?',
+    'sub.confirm_bookmark'   => '¿Cambiar tu suscripción a favorito (sin notificaciones por correo)?',
+    'sub.confirm_yes'        => 'Sí, confirmar',
+    'sub.confirm_cancel'     => 'Cancelar',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -242,6 +300,31 @@ return [
     'mod.destination'              => 'Foro de destino',
     'mod.choose_forum'             => '— elige un foro —',
     'mod.move_submit'              => 'Mover hilo',
+    'mod.merge_title'               => 'Fusionar hilo',
+    'mod.merge_prompt'              => 'Fusiona "{subject}" con otro hilo. Los mensajes del hilo fusionado se añadirán al final del hilo de destino, y las suscripciones de este hilo no se conservarán.',
+    'mod.merge_target'              => 'ID del hilo de destino',
+    'mod.merge_target_hint'         => 'El ID numérico del hilo con el que fusionar (visible en su URL).',
+    'mod.merge_submit'              => 'Fusionar hilo',
+    'mod.merge_error_not_found'      => 'No se encontró ese ID de hilo.',
+    'mod.merge_error_same_thread'    => 'Elige un hilo diferente con el que fusionar.',
+    'mod.merge_error_failed'         => 'No se pudo fusionar con ese hilo.',
+    'mod.moderate'                 => 'Moderar',
+    'mod.queue'                    => 'Cola de revisión',
+    'mod.queue_title'              => 'Cola de mensajes pendientes',
+    'mod.queue_empty'              => 'No hay mensajes pendientes de aprobación.',
+    'mod.queue_forum'              => 'Foro',
+    'mod.queue_posted'             => 'Publicado',
+    'mod.reports_title'            => 'Contenido reportado',
+    'mod.reports_empty'            => 'No hay reportes abiertos.',
+    'mod.reports_message_missing'  => '(el mensaje reportado ya no está disponible)',
+    'mod.reports_reported'         => 'reportado',
+    'mod.reports_resolve'          => 'Resolver',
+    'mod.reports_dismiss'          => 'Descartar',
+    'mod.reports_view'             => 'Ver en el hilo',
+    'report.title'                 => 'Reportar mensaje',
+    'report.intro'                 => '¿Reportar este mensaje de {author} a los moderadores?',
+    'report.reason_label'          => 'Motivo (opcional)',
+    'report.submit'                => 'Enviar reporte',
 
     // -------------------------------------------------------------------------
     // Search
@@ -273,6 +356,54 @@ return [
     'search.col_date'        => 'Fecha',
 
     // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Instalador de Phorum',
+    'install.requirements_heading'     => 'Requisitos',
+    'install.requirement_failed'       => 'fallido',
+    'install.fix_requirements'         => 'Corrige los requisitos anteriores antes de continuar.',
+    'install.fix_requirements_hint_1'  => 'Asegúrate de que',
+    'install.fix_requirements_hint_and' => 'y',
+    'install.fix_requirements_hint_2'  => 'existan (copiados de los archivos .example) y que las credenciales de la base de datos sean correctas.',
+    'install.errors_heading'           => 'Por favor, corrige lo siguiente',
+    'install.setup_heading'            => 'Configuración del sitio y del administrador',
+    'install.site_name_label'          => 'Nombre del sitio',
+    'install.admin_account_heading'    => 'Cuenta de administrador',
+    'install.username_label'           => 'Nombre de usuario',
+    'install.email_label'              => 'Correo electrónico',
+    'install.password_label'           => 'Contraseña (mín. 8 caracteres)',
+    'install.confirm_password_label'   => 'Confirmar contraseña',
+    'install.submit'                   => 'Instalar Phorum',
+    'install.complete_page_title'      => 'Instalación completa — Phorum',
+    'install.complete_heading'         => 'Instalación completa',
+    'install.complete_message'         => 'El esquema de la base de datos se ha creado y tu cuenta de administrador está lista.',
+    'install.go_to_forum'              => 'Ir al foro',
+    'install.admin_panel'              => 'Panel de administración',
+    'install.error_site_name_required'  => 'El nombre del sitio es obligatorio.',
+    'install.error_username_required'   => 'El nombre de usuario del administrador es obligatorio.',
+    'install.error_username_format'     => 'El nombre de usuario debe tener entre 3 y 50 caracteres (solo letras, números, _ . -).',
+    'install.error_email_required'      => 'Se requiere una dirección de correo electrónico de administrador válida.',
+    'install.error_password_min_length' => 'La contraseña del administrador debe tener al menos 8 caracteres.',
+    'install.error_passwords_mismatch'  => 'Las contraseñas no coinciden.',
+    'install.error_failed'              => 'La instalación falló: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Actualización de Phorum',
+    'upgrade.detected_heading'    => 'Se detectó una base de datos existente de Phorum 6',
+    'upgrade.detected_message'    => 'Esta base de datos fue creada por Phorum 6. Phorum 10 es compatible con el esquema de Phorum 6 — no se cambiará, eliminará ni convertirá ningún dato existente.',
+    'upgrade.up_to_date'          => 'No se necesitan cambios de esquema — esta base de datos ya está actualizada.',
+    'upgrade.new_tables_heading'  => 'Se añadirán las siguientes tablas nuevas:',
+    'upgrade.new_patches_heading' => 'Se aplicarán las siguientes actualizaciones de esquema:',
+    'upgrade.submit'              => 'Continuar',
+    'upgrade.complete_page_title' => 'Actualización completa — Phorum',
+    'upgrade.complete_heading'    => 'Actualización completa',
+    'upgrade.complete_message'    => 'Tu base de datos de Phorum 6 ya está lista para ejecutarse en Phorum 10.',
+    'upgrade.go_to_forum'         => 'Ir al foro',
+    'upgrade.admin_panel'         => 'Panel de administración',
+
+    // -------------------------------------------------------------------------
     // Errors
     // -------------------------------------------------------------------------
     'error.404_title'        => 'Página no encontrada',
@@ -283,6 +414,18 @@ return [
     'error.403_login'        => 'Inicia sesión',
     'error.403_login_hint'   => 'para acceder a foros que requieren registro.',
     'error.403_return'       => 'Volver al índice del foro',
+    'error.disabled_title'    => 'Sitio no disponible',
+    'error.disabled_message'  => 'Este sitio está temporalmente deshabilitado. Por favor, vuelve más tarde.',
+    'error.admin_only_title'   => 'Sitio no disponible',
+    'error.admin_only_message' => 'Este sitio está temporalmente cerrado por mantenimiento. Por favor, vuelve más tarde.',
+    'error.read_only_title'    => 'Solo lectura',
+    'error.read_only_message'  => 'Este sitio está actualmente en modo de solo lectura. Publicar e iniciar sesión están temporalmente deshabilitados.',
+    'banner.read_only'         => 'Este sitio está actualmente en modo de solo lectura — publicar e iniciar sesión están temporalmente deshabilitados.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'Anuncios',
 
     // -------------------------------------------------------------------------
     // Attachments

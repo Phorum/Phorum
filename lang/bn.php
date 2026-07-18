@@ -19,7 +19,11 @@ return [
     'nav.log_in'        => 'লগ ইন',
     'nav.register'      => 'নিবন্ধন করুন',
     'nav.powered_by'    => 'Phorum দ্বারা পরিচালিত',
+    'nav.skip_to_content' => 'মূল বিষয়বস্তুতে যান',
+    'nav.breadcrumb'    => 'ব্রেডক্রাম্ব',
+    'nav.primary'       => 'প্রধান',
     'nav.menu'          => 'মেনু',
+    'pagination.nav_label' => 'পৃষ্ঠা নেভিগেশন',
 
     // -------------------------------------------------------------------------
     // Forum list
@@ -46,6 +50,7 @@ return [
     'forum.by'            => 'লিখেছেন',
     'forum.new'           => 'নতুন',
     'forum.mark_read'     => 'সব পঠিত হিসাবে চিহ্নিত করুন',
+    'forum.feed_link'     => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -56,6 +61,7 @@ return [
     'thread.reopen'    => 'পুনরায় খুলুন',
     'thread.close'     => 'বন্ধ করুন',
     'thread.move'      => 'সরান',
+    'thread.merge'     => 'একীভূত করুন',
     'thread.delete'    => 'থ্রেড মুছুন',
 
     // -------------------------------------------------------------------------
@@ -76,6 +82,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'অনুমোদন করুন',
     'message.delete'            => 'মুছুন',
+    'message.report'            => 'রিপোর্ট করুন',
+    'message.registered'        => 'নিবন্ধিত',
+    'message.posts'             => 'পোস্ট',
 
     // -------------------------------------------------------------------------
     // Post / compose form
@@ -88,6 +97,11 @@ return [
     'post.submit_thread' => 'থ্রেড পোস্ট করুন',
     'post.submit_reply'  => 'উত্তর পোস্ট করুন',
     'post.cancel'        => 'বাতিল করুন',
+    'post.error_subject_required' => 'বিষয় আবশ্যক।',
+    'post.error_subject_length'   => 'বিষয় সর্বোচ্চ ২৫৫ অক্ষরের হতে হবে।',
+    'post.error_body_required'    => 'বার্তার মূল অংশ আবশ্যক।',
+    'post.error_flood_wait'       => 'অনুগ্রহ করে আবার পোস্ট করার আগে আরও {seconds} সেকেন্ড অপেক্ষা করুন।',
+    'post.error_posting_blocked'  => 'আপনার অ্যাকাউন্ট থেকে পোস্ট করার অনুমতি নেই।',
 
     // -------------------------------------------------------------------------
     // Authentication
@@ -124,6 +138,16 @@ return [
     'auth.resend_email_label'     => 'ইমেইল ঠিকানা',
     'auth.resend_submit'          => 'পুনরায় পাঠান',
     'auth.resend_sent'            => 'যদি সেই ঠিকানায় কোনো মুলতুবি নিশ্চিতকরণ থাকে, তাহলে একটি নতুন লিংক পাঠানো হয়েছে। আপনার ইনবক্স দেখুন।',
+    'auth.error_missing_credentials'  => 'অনুগ্রহ করে আপনার ব্যবহারকারীর নাম এবং পাসওয়ার্ড লিখুন।',
+    'auth.error_invalid_credentials'  => 'অবৈধ ব্যবহারকারীর নাম বা পাসওয়ার্ড।',
+    'auth.error_registration_blocked' => 'আপনার অ্যাকাউন্ট থেকে নিবন্ধন করার অনুমতি নেই।',
+    'auth.error_invalid_email'        => 'অনুগ্রহ করে একটি বৈধ ইমেইল ঠিকানা লিখুন।',
+    'auth.error_password_min_length'  => 'পাসওয়ার্ড কমপক্ষে ৬টি অক্ষরের হতে হবে।',
+    'auth.error_passwords_mismatch'   => 'পাসওয়ার্ড দুটি মিলছে না।',
+    'auth.error_username_required'    => 'ব্যবহারকারীর নাম আবশ্যক।',
+    'auth.error_username_length'      => 'ব্যবহারকারীর নাম ২ থেকে ৫০ অক্ষরের মধ্যে হতে হবে।',
+    'auth.error_email_required'       => 'একটি বৈধ ইমেইল ঠিকানা আবশ্যক।',
+    'auth.error_username_taken'       => 'সেই ব্যবহারকারীর নামটি ইতিমধ্যে ব্যবহৃত হচ্ছে।',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -164,6 +188,18 @@ return [
     'settings.tz_offset'         => 'টাইমজোন অফসেট (ঘণ্টা, -12 থেকে +14; -99 = সার্ভার সময়)',
     'settings.save'              => 'সেটিংস সংরক্ষণ করুন',
     'settings.cancel'            => 'বাতিল করুন',
+    'settings.avatar_section'    => 'অবতার',
+    'settings.avatar_current'    => 'বর্তমান অবতার',
+    'settings.avatar_upload'     => 'নতুন অবতার আপলোড করুন',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF, অথবা WebP। সর্বোচ্চ ১০০ KB।',
+    'settings.avatar_delete'     => 'বর্তমান অবতার মুছুন',
+    'settings.error_display_name_required' => 'প্রদর্শন নাম আবশ্যক।',
+    'settings.error_display_name_length'   => 'প্রদর্শন নাম সর্বোচ্চ ৫০ অক্ষরের হতে হবে।',
+    'settings.error_email_required'        => 'একটি বৈধ ইমেইল ঠিকানা আবশ্যক।',
+    'settings.error_email_taken'           => 'সেই ইমেইল ঠিকানাটি ইতিমধ্যে অন্য একটি অ্যাকাউন্ট ব্যবহার করছে।',
+    'settings.error_password_min_length'   => 'নতুন পাসওয়ার্ড কমপক্ষে ৬টি অক্ষরের হতে হবে।',
+    'settings.error_passwords_mismatch'    => 'পাসওয়ার্ড দুটি মিলছে না।',
+    'settings.error_tz_offset'             => 'টাইমজোন অফসেট অবশ্যই -12 থেকে +14-এর মধ্যে, অথবা সার্ভার সময়ের জন্য -99 হতে হবে।',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -203,6 +239,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'প্রাপক আবশ্যক।',
+    'pm.error_user_not_found'       => '"{username}" ব্যবহারকারী পাওয়া যায়নি।',
+    'pm.error_subject_required'     => 'বিষয় আবশ্যক।',
+    'pm.error_body_required'        => 'বার্তার মূল অংশ আবশ্যক।',
+    'pm.error_folder_name_required' => 'ফোল্ডারের নাম আবশ্যক।',
+    'pm.error_folder_name_length'   => 'ফোল্ডারের নাম সর্বোচ্চ ৬০ অক্ষরের হতে হবে।',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -218,6 +260,11 @@ return [
     'sub.unfollow'        => 'আনফলো করুন',
     'sub.back_to_thread'  => 'থ্রেডে ফিরুন',
     'sub.follow'          => 'অনুসরণ করুন',
+    'sub.confirm_title'   => 'কার্য নিশ্চিত করুন',
+    'sub.confirm_remove'  => 'আপনি কি সত্যিই এই থ্রেড থেকে সদস্যতা প্রত্যাহার করতে চান?',
+    'sub.confirm_bookmark' => 'আপনার সদস্যতা বুকমার্কে পরিবর্তন করবেন (কোনো ইমেইল বিজ্ঞপ্তি নেই)?',
+    'sub.confirm_yes'     => 'হ্যাঁ, নিশ্চিত করুন',
+    'sub.confirm_cancel'  => 'বাতিল করুন',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -247,6 +294,32 @@ return [
     'mod.destination'            => 'গন্তব্য ফোরাম',
     'mod.choose_forum'           => '— একটি ফোরাম বেছে নিন —',
     'mod.move_submit'            => 'থ্রেড সরান',
+    'mod.merge_title'            => 'থ্রেড একীভূত করুন',
+    'mod.merge_prompt'           =>
+        '"{subject}" অন্য একটি থ্রেডের সাথে একীভূত করুন। একীভূত থ্রেডের পোস্টগুলো লক্ষ্য থ্রেডে যুক্ত করা হবে, এবং এই থ্রেডের সদস্যতাগুলো সংরক্ষিত থাকবে না।',
+    'mod.merge_target'           => 'লক্ষ্য থ্রেড আইডি',
+    'mod.merge_target_hint'      => 'যে থ্রেডে একীভূত করতে হবে তার সাংখ্যিক আইডি (এর URL-এ দৃশ্যমান)।',
+    'mod.merge_submit'           => 'থ্রেড একীভূত করুন',
+    'mod.merge_error_not_found'  => 'সেই থ্রেড আইডিটি পাওয়া যায়নি।',
+    'mod.merge_error_same_thread' => 'একীভূত করার জন্য একটি ভিন্ন থ্রেড বেছে নিন।',
+    'mod.merge_error_failed'     => 'সেই থ্রেডে একীভূত করা যায়নি।',
+    'mod.moderate'               => 'মডারেট করুন',
+    'mod.queue'                  => 'পর্যালোচনা তালিকা',
+    'mod.queue_title'            => 'মুলতুবি বার্তা তালিকা',
+    'mod.queue_empty'            => 'কোনো বার্তা অনুমোদনের অপেক্ষায় নেই।',
+    'mod.queue_forum'            => 'ফোরাম',
+    'mod.queue_posted'           => 'পোস্ট করা হয়েছে',
+    'mod.reports_title'          => 'রিপোর্ট করা বিষয়বস্তু',
+    'mod.reports_empty'          => 'কোনো খোলা রিপোর্ট নেই।',
+    'mod.reports_message_missing' => '(রিপোর্ট করা বার্তাটি আর উপলব্ধ নেই)',
+    'mod.reports_reported'       => 'রিপোর্ট করা হয়েছে',
+    'mod.reports_resolve'        => 'সমাধান করুন',
+    'mod.reports_dismiss'        => 'খারিজ করুন',
+    'mod.reports_view'           => 'থ্রেডে দেখুন',
+    'report.title'                => 'বার্তা রিপোর্ট করুন',
+    'report.intro'                => '{author}-এর এই বার্তাটি মডারেটরদের কাছে রিপোর্ট করবেন?',
+    'report.reason_label'         => 'কারণ (ঐচ্ছিক)',
+    'report.submit'               => 'রিপোর্ট জমা দিন',
 
     // -------------------------------------------------------------------------
     // Search
@@ -288,6 +361,77 @@ return [
     'error.403_login'      => 'লগ ইন করুন',
     'error.403_login_hint' => 'নিবন্ধন প্রয়োজন এমন ফোরামে প্রবেশ করতে।',
     'error.403_return'     => 'ফোরাম তালিকায় ফিরুন',
+    'error.disabled_title'    => 'সাইটটি অনুপলব্ধ',
+    'error.disabled_message'  => 'এই সাইটটি সাময়িকভাবে নিষ্ক্রিয় করা হয়েছে। অনুগ্রহ করে পরে আবার দেখুন।',
+    'error.admin_only_title'   => 'সাইটটি অনুপলব্ধ',
+    'error.admin_only_message' => 'এই সাইটটি রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ রয়েছে। অনুগ্রহ করে পরে আবার দেখুন।',
+    'error.read_only_title'    => 'শুধুমাত্র পঠনযোগ্য',
+    'error.read_only_message'  => 'এই সাইটটি বর্তমানে শুধুমাত্র পঠনযোগ্য। পোস্ট করা এবং লগ ইন করা সাময়িকভাবে নিষ্ক্রিয় রয়েছে।',
+    'banner.read_only'         => 'এই সাইটটি বর্তমানে শুধুমাত্র পঠনযোগ্য — পোস্ট করা এবং লগ ইন করা সাময়িকভাবে নিষ্ক্রিয় রয়েছে।',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'   => 'আপনার পাসওয়ার্ড পরিবর্তন করুন',
+    'force_password_change.message' => 'একজন প্রশাসক চান আপনি চালিয়ে যাওয়ার আগে একটি নতুন পাসওয়ার্ড সেট করুন।',
+    'force_password_change.new_password'     => 'নতুন পাসওয়ার্ড',
+    'force_password_change.confirm_password' => 'নতুন পাসওয়ার্ড নিশ্চিত করুন',
+    'force_password_change.save'    => 'পাসওয়ার্ড সেট করুন',
+    'force_password_change.error_password_min_length' => 'নতুন পাসওয়ার্ড কমপক্ষে ৬টি অক্ষরের হতে হবে।',
+    'force_password_change.error_passwords_mismatch'  => 'পাসওয়ার্ড দুটি মিলছে না।',
+
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum ইনস্টলার',
+    'install.requirements_heading'      => 'প্রয়োজনীয়তা',
+    'install.requirement_failed'        => 'ব্যর্থ হয়েছে',
+    'install.fix_requirements'          => 'চালিয়ে যাওয়ার আগে উপরের প্রয়োজনীয়তাগুলো ঠিক করুন।',
+    'install.fix_requirements_hint_1'   => 'নিশ্চিত করুন যে',
+    'install.fix_requirements_hint_and' => 'এবং',
+    'install.fix_requirements_hint_2'   => 'বিদ্যমান রয়েছে (.example ফাইল থেকে কপি করা) এবং ডেটাবেস ক্রেডেনশিয়ালগুলো সঠিক।',
+    'install.errors_heading'            => 'অনুগ্রহ করে নিম্নলিখিতগুলো ঠিক করুন',
+    'install.setup_heading'             => 'সাইট ও অ্যাডমিন সেটআপ',
+    'install.site_name_label'           => 'সাইটের নাম',
+    'install.admin_account_heading'     => 'অ্যাডমিন অ্যাকাউন্ট',
+    'install.username_label'            => 'ব্যবহারকারীর নাম',
+    'install.email_label'               => 'ইমেইল',
+    'install.password_label'            => 'পাসওয়ার্ড (সর্বনিম্ন ৮ অক্ষর)',
+    'install.confirm_password_label'    => 'পাসওয়ার্ড নিশ্চিত করুন',
+    'install.submit'                    => 'Phorum ইনস্টল করুন',
+    'install.complete_page_title'       => 'ইনস্টলেশন সম্পন্ন — Phorum',
+    'install.complete_heading'          => 'ইনস্টলেশন সম্পন্ন',
+    'install.complete_message'          => 'ডেটাবেস স্কিমা তৈরি করা হয়েছে এবং আপনার অ্যাডমিন অ্যাকাউন্ট প্রস্তুত।',
+    'install.go_to_forum'               => 'ফোরামে যান',
+    'install.admin_panel'               => 'অ্যাডমিন প্যানেল',
+    'install.error_site_name_required'  => 'সাইটের নাম আবশ্যক।',
+    'install.error_username_required'   => 'অ্যাডমিন ব্যবহারকারীর নাম আবশ্যক।',
+    'install.error_username_format'     => 'ব্যবহারকারীর নাম ৩–৫০ অক্ষরের হতে হবে (শুধুমাত্র অক্ষর, সংখ্যা, _ . -)।',
+    'install.error_email_required'      => 'একটি বৈধ অ্যাডমিন ইমেইল ঠিকানা আবশ্যক।',
+    'install.error_password_min_length' => 'অ্যাডমিন পাসওয়ার্ড কমপক্ষে ৮টি অক্ষরের হতে হবে।',
+    'install.error_passwords_mismatch'  => 'পাসওয়ার্ড দুটি মিলছে না।',
+    'install.error_failed'              => 'ইনস্টলেশন ব্যর্থ হয়েছে: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum আপগ্রেড',
+    'upgrade.detected_heading'    => 'বিদ্যমান Phorum 6 ডেটাবেস শনাক্ত হয়েছে',
+    'upgrade.detected_message'    => 'এই ডেটাবেসটি Phorum 6 দ্বারা তৈরি করা হয়েছিল। Phorum 10 হলো Phorum 6-এর সাথে স্কিমা-সামঞ্জস্যপূর্ণ — বিদ্যমান কোনো ডেটা পরিবর্তন, মুছে ফেলা বা রূপান্তরিত হবে না।',
+    'upgrade.up_to_date'          => 'কোনো স্কিমা পরিবর্তনের প্রয়োজন নেই — এই ডেটাবেসটি ইতিমধ্যে হালনাগাদ।',
+    'upgrade.new_tables_heading'  => 'নিম্নলিখিত নতুন টেবিলগুলো যোগ করা হবে:',
+    'upgrade.new_patches_heading' => 'নিম্নলিখিত স্কিমা আপডেটগুলো প্রয়োগ করা হবে:',
+    'upgrade.submit'              => 'চালিয়ে যান',
+    'upgrade.complete_page_title' => 'আপগ্রেড সম্পন্ন — Phorum',
+    'upgrade.complete_heading'    => 'আপগ্রেড সম্পন্ন',
+    'upgrade.complete_message'    => 'আপনার Phorum 6 ডেটাবেস এখন Phorum 10-এ চালানোর জন্য প্রস্তুত।',
+    'upgrade.go_to_forum'         => 'ফোরামে যান',
+    'upgrade.admin_panel'         => 'অ্যাডমিন প্যানেল',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'ঘোষণাসমূহ',
 
     // -------------------------------------------------------------------------
     // Attachments

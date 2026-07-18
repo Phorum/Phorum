@@ -18,7 +18,11 @@ return [
     'nav.log_in'        => 'تسجيل الدخول',
     'nav.register'      => 'التسجيل',
     'nav.powered_by'    => 'مدعوم من Phorum',
+    'nav.skip_to_content' => 'تخطي إلى المحتوى الرئيسي',
+    'nav.breadcrumb'    => 'مسار التنقل',
+    'nav.primary'       => 'رئيسي',
     'nav.menu'          => 'القائمة',
+    'pagination.nav_label' => 'التنقل بين الصفحات',
 
     // Forum list
     'forum_list.no_forums'   => 'لم يتم إنشاء أي منتديات بعد.',
@@ -41,6 +45,7 @@ return [
     'forum.by'               => 'بقلم',
     'forum.new'              => 'جديد',
     'forum.mark_read'        => 'تعيين الكل كمقروء',
+    'forum.feed_link'        => 'RSS',
 
     // Thread actions
     'thread.reply'           => 'رد',
@@ -49,6 +54,7 @@ return [
     'thread.reopen'          => 'إعادة فتح',
     'thread.close'           => 'إغلاق',
     'thread.move'            => 'نقل',
+    'thread.merge'           => 'دمج',
     'thread.delete'          => 'حذف الموضوع',
 
     // Message actions
@@ -67,6 +73,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'موافقة',
     'message.delete'            => 'حذف',
+    'message.report'            => 'إبلاغ',
+    'message.registered'        => 'مسجَّل',
+    'message.posts'             => 'المشاركات',
 
     // Post form
     'post.new_thread'        => 'موضوع جديد',
@@ -77,6 +86,11 @@ return [
     'post.submit_thread'     => 'نشر الموضوع',
     'post.submit_reply'      => 'نشر الرد',
     'post.cancel'            => 'إلغاء',
+    'post.error_subject_required' => 'الموضوع مطلوب.',
+    'post.error_subject_length'   => 'يجب ألا يتجاوز الموضوع 255 حرفًا.',
+    'post.error_body_required'    => 'نص الرسالة مطلوب.',
+    'post.error_flood_wait'       => 'يرجى الانتظار {seconds} ثانية إضافية قبل النشر مرة أخرى.',
+    'post.error_posting_blocked'  => 'النشر غير مسموح به من حسابك.',
 
     // Authentication
     'auth.login_title'       => 'تسجيل الدخول',
@@ -111,6 +125,16 @@ return [
     'auth.resend_email_label'     => 'عنوان البريد الإلكتروني',
     'auth.resend_submit'          => 'إعادة الإرسال',
     'auth.resend_sent'            => 'إذا كان هذا العنوان لديه تأكيد معلّق، فقد تم إرسال رابط جديد. تحقق من صندوق الوارد.',
+    'auth.error_missing_credentials'  => 'يرجى إدخال اسم المستخدم وكلمة المرور.',
+    'auth.error_invalid_credentials'  => 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+    'auth.error_registration_blocked' => 'التسجيل غير مسموح به من حسابك.',
+    'auth.error_invalid_email'        => 'يرجى إدخال عنوان بريد إلكتروني صالح.',
+    'auth.error_password_min_length'  => 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
+    'auth.error_passwords_mismatch'   => 'كلمتا المرور غير متطابقتين.',
+    'auth.error_username_required'    => 'اسم المستخدم مطلوب.',
+    'auth.error_username_length'      => 'يجب أن يتراوح اسم المستخدم بين حرفين و50 حرفًا.',
+    'auth.error_email_required'       => 'عنوان بريد إلكتروني صالح مطلوب.',
+    'auth.error_username_taken'       => 'اسم المستخدم هذا مُستخدَم بالفعل.',
 
     // Profile
     'profile.username'       => 'اسم المستخدم',
@@ -147,6 +171,29 @@ return [
     'settings.tz_offset'         => 'فارق التوقيت (بالساعات، من -12 إلى +14؛ -99 = توقيت الخادم)',
     'settings.save'              => 'حفظ الإعدادات',
     'settings.cancel'            => 'إلغاء',
+    'settings.avatar_section'    => 'الصورة الرمزية',
+    'settings.avatar_current'    => 'الصورة الرمزية الحالية',
+    'settings.avatar_upload'     => 'رفع صورة رمزية جديدة',
+    'settings.avatar_hint'       => 'JPG أو PNG أو GIF أو WebP. الحد الأقصى 100 كيلوبايت.',
+    'settings.avatar_delete'     => 'إزالة الصورة الرمزية الحالية',
+    'settings.error_display_name_required' => 'الاسم المعروض مطلوب.',
+    'settings.error_display_name_length'   => 'يجب ألا يتجاوز الاسم المعروض 50 حرفًا.',
+    'settings.error_email_required'        => 'عنوان بريد إلكتروني صالح مطلوب.',
+    'settings.error_email_taken'           => 'عنوان البريد الإلكتروني هذا مُستخدَم بالفعل من قِبل حساب آخر.',
+    'settings.error_password_min_length'   => 'يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.',
+    'settings.error_passwords_mismatch'    => 'كلمتا المرور غير متطابقتين.',
+    'settings.error_tz_offset'             => 'يجب أن يكون فارق التوقيت بين -12 و+14، أو -99 لتوقيت الخادم.',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'تغيير كلمة المرور',
+    'force_password_change.message'   => 'يطلب منك أحد المسؤولين تعيين كلمة مرور جديدة قبل المتابعة.',
+    'force_password_change.new_password'     => 'كلمة المرور الجديدة',
+    'force_password_change.confirm_password' => 'تأكيد كلمة المرور الجديدة',
+    'force_password_change.save'      => 'تعيين كلمة المرور',
+    'force_password_change.error_password_min_length' => 'يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.',
+    'force_password_change.error_passwords_mismatch'  => 'كلمتا المرور غير متطابقتين.',
 
     // Private messages
     'pm.private_messages'    => 'الرسائل الخاصة',
@@ -184,6 +231,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'المستلم مطلوب.',
+    'pm.error_user_not_found'       => 'لم يتم العثور على المستخدم "{username}".',
+    'pm.error_subject_required'     => 'الموضوع مطلوب.',
+    'pm.error_body_required'        => 'نص الرسالة مطلوب.',
+    'pm.error_folder_name_required' => 'اسم المجلد مطلوب.',
+    'pm.error_folder_name_length'   => 'يجب ألا يتجاوز اسم المجلد 60 حرفًا.',
 
     // Subscriptions
     'sub.title'              => 'متابعة الموضوع',
@@ -195,6 +248,11 @@ return [
     'sub.unfollow'           => 'إلغاء المتابعة',
     'sub.back_to_thread'     => 'العودة إلى الموضوع',
     'sub.follow'             => 'متابعة',
+    'sub.confirm_title'      => 'تأكيد الإجراء',
+    'sub.confirm_remove'     => 'هل أنت متأكد من رغبتك في إلغاء متابعة هذا الموضوع؟',
+    'sub.confirm_bookmark'   => 'تحويل متابعتك إلى إشارة مرجعية (بدون إشعارات بريدية)؟',
+    'sub.confirm_yes'        => 'نعم، تأكيد',
+    'sub.confirm_cancel'     => 'إلغاء',
 
     // Moderation
     'mod.delete_thread'            => 'حذف الموضوع',
@@ -217,6 +275,31 @@ return [
     'mod.destination'              => 'المنتدى الهدف',
     'mod.choose_forum'             => '— اختر منتدى —',
     'mod.move_submit'              => 'نقل الموضوع',
+    'mod.merge_title'               => 'دمج الموضوع',
+    'mod.merge_prompt'              => 'دمج "{subject}" في موضوع آخر. سيتم إلحاق مشاركات الموضوع المدموج بالموضوع الهدف، ولن يتم الحفاظ على متابعات هذا الموضوع.',
+    'mod.merge_target'              => 'معرّف الموضوع الهدف',
+    'mod.merge_target_hint'         => 'المعرّف الرقمي للموضوع المراد الدمج فيه (يظهر في رابطه).',
+    'mod.merge_submit'              => 'دمج الموضوع',
+    'mod.merge_error_not_found'      => 'لم يتم العثور على معرّف الموضوع هذا.',
+    'mod.merge_error_same_thread'    => 'اختر موضوعًا مختلفًا للدمج فيه.',
+    'mod.merge_error_failed'         => 'تعذّر الدمج في هذا الموضوع.',
+    'mod.moderate'                 => 'الإشراف',
+    'mod.queue'                    => 'قائمة المراجعة',
+    'mod.queue_title'              => 'قائمة الرسائل المعلّقة',
+    'mod.queue_empty'              => 'لا توجد رسائل بانتظار الموافقة.',
+    'mod.queue_forum'              => 'المنتدى',
+    'mod.queue_posted'             => 'تاريخ النشر',
+    'mod.reports_title'            => 'المحتوى المُبلَّغ عنه',
+    'mod.reports_empty'            => 'لا توجد بلاغات مفتوحة.',
+    'mod.reports_message_missing'  => '(الرسالة المُبلَّغ عنها لم تعد متوفرة)',
+    'mod.reports_reported'         => 'تم الإبلاغ',
+    'mod.reports_resolve'          => 'حل البلاغ',
+    'mod.reports_dismiss'          => 'رفض البلاغ',
+    'mod.reports_view'             => 'عرض في الموضوع',
+    'report.title'                 => 'الإبلاغ عن رسالة',
+    'report.intro'                 => 'هل تريد الإبلاغ عن هذه الرسالة من {author} إلى المشرفين؟',
+    'report.reason_label'          => 'السبب (اختياري)',
+    'report.submit'                => 'إرسال البلاغ',
 
     // Search
     'search.title'           => 'بحث',
@@ -245,6 +328,54 @@ return [
     'search.col_forum'       => 'المنتدى',
     'search.col_date'        => 'التاريخ',
 
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'مُثبِّت Phorum',
+    'install.requirements_heading'     => 'المتطلبات',
+    'install.requirement_failed'       => 'فشل',
+    'install.fix_requirements'         => 'أصلح المتطلبات أعلاه قبل المتابعة.',
+    'install.fix_requirements_hint_1'  => 'تأكد من أن',
+    'install.fix_requirements_hint_and' => 'و',
+    'install.fix_requirements_hint_2'  => 'موجودان (تم نسخهما من ملفات .example) وأن بيانات اعتماد قاعدة البيانات صحيحة.',
+    'install.errors_heading'           => 'يرجى إصلاح ما يلي',
+    'install.setup_heading'            => 'إعداد الموقع والمسؤول',
+    'install.site_name_label'          => 'اسم الموقع',
+    'install.admin_account_heading'    => 'حساب المسؤول',
+    'install.username_label'           => 'اسم المستخدم',
+    'install.email_label'              => 'البريد الإلكتروني',
+    'install.password_label'           => 'كلمة المرور (8 أحرف على الأقل)',
+    'install.confirm_password_label'   => 'تأكيد كلمة المرور',
+    'install.submit'                   => 'تثبيت Phorum',
+    'install.complete_page_title'      => 'اكتمل التثبيت — Phorum',
+    'install.complete_heading'         => 'اكتمل التثبيت',
+    'install.complete_message'         => 'تم إنشاء مخطط قاعدة البيانات وحساب المسؤول جاهز الآن.',
+    'install.go_to_forum'              => 'الذهاب إلى المنتدى',
+    'install.admin_panel'              => 'لوحة الإدارة',
+    'install.error_site_name_required'  => 'اسم الموقع مطلوب.',
+    'install.error_username_required'   => 'اسم مستخدم المسؤول مطلوب.',
+    'install.error_username_format'     => 'يجب أن يتكون اسم المستخدم من 3 إلى 50 حرفًا (أحرف وأرقام و_ . - فقط).',
+    'install.error_email_required'      => 'عنوان بريد إلكتروني صالح للمسؤول مطلوب.',
+    'install.error_password_min_length' => 'يجب أن تتكون كلمة مرور المسؤول من 8 أحرف على الأقل.',
+    'install.error_passwords_mismatch'  => 'كلمتا المرور غير متطابقتين.',
+    'install.error_failed'              => 'فشل التثبيت: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'ترقية Phorum',
+    'upgrade.detected_heading'    => 'تم اكتشاف قاعدة بيانات Phorum 6 موجودة',
+    'upgrade.detected_message'    => 'تم إنشاء قاعدة البيانات هذه بواسطة Phorum 6. يتوافق Phorum 10 من حيث المخطط مع Phorum 6 — لن يتم تغيير أي بيانات موجودة أو حذفها أو تحويلها.',
+    'upgrade.up_to_date'          => 'لا حاجة إلى أي تغييرات في المخطط — قاعدة البيانات هذه محدّثة بالفعل.',
+    'upgrade.new_tables_heading'  => 'سيتم إضافة الجداول التالية:',
+    'upgrade.new_patches_heading' => 'سيتم تطبيق تحديثات المخطط التالية:',
+    'upgrade.submit'              => 'متابعة',
+    'upgrade.complete_page_title' => 'اكتملت الترقية — Phorum',
+    'upgrade.complete_heading'    => 'اكتملت الترقية',
+    'upgrade.complete_message'    => 'قاعدة بيانات Phorum 6 الخاصة بك جاهزة الآن للعمل على Phorum 10.',
+    'upgrade.go_to_forum'         => 'الذهاب إلى المنتدى',
+    'upgrade.admin_panel'         => 'لوحة الإدارة',
+
     // Errors
     'error.404_title'        => 'الصفحة غير موجودة',
     'error.404_message'      => 'الصفحة التي طلبتها غير موجودة.',
@@ -254,6 +385,18 @@ return [
     'error.403_login'        => 'سجّل دخولك',
     'error.403_login_hint'   => 'للوصول إلى المنتديات التي تتطلب التسجيل.',
     'error.403_return'       => 'العودة إلى فهرس المنتدى',
+    'error.disabled_title'    => 'الموقع غير متاح',
+    'error.disabled_message'  => 'هذا الموقع معطّل مؤقتًا. يرجى المحاولة مرة أخرى لاحقًا.',
+    'error.admin_only_title'   => 'الموقع غير متاح',
+    'error.admin_only_message' => 'هذا الموقع مغلق مؤقتًا للصيانة. يرجى المحاولة مرة أخرى لاحقًا.',
+    'error.read_only_title'    => 'للقراءة فقط',
+    'error.read_only_message'  => 'هذا الموقع للقراءة فقط حاليًا. تم تعطيل النشر وتسجيل الدخول مؤقتًا.',
+    'banner.read_only'         => 'هذا الموقع للقراءة فقط حاليًا — تم تعطيل النشر وتسجيل الدخول مؤقتًا.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'الإعلانات',
 
     // -------------------------------------------------------------------------
     // Attachments

@@ -19,7 +19,11 @@ return [
     'nav.log_in'        => 'लॉग इन',
     'nav.register'      => 'पंजीकरण करें',
     'nav.powered_by'    => 'Phorum द्वारा संचालित',
+    'nav.skip_to_content' => 'मुख्य सामग्री पर जाएं',
+    'nav.breadcrumb'    => 'ब्रेडक्रंब',
+    'nav.primary'       => 'प्राथमिक',
     'nav.menu'          => 'मेनू',
+    'pagination.nav_label' => 'पृष्ठांकन',
 
     // -------------------------------------------------------------------------
     // Forum list
@@ -46,6 +50,7 @@ return [
     'forum.by'            => 'द्वारा',
     'forum.new'           => 'नया',
     'forum.mark_read'     => 'सभी को पढ़ा हुआ चिह्नित करें',
+    'forum.feed_link'     => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -56,6 +61,7 @@ return [
     'thread.reopen'    => 'पुनः खोलें',
     'thread.close'     => 'बंद करें',
     'thread.move'      => 'स्थानांतरित करें',
+    'thread.merge'     => 'मर्ज करें',
     'thread.delete'    => 'थ्रेड हटाएं',
 
     // -------------------------------------------------------------------------
@@ -76,6 +82,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'स्वीकृत करें',
     'message.delete'            => 'हटाएं',
+    'message.report'            => 'रिपोर्ट करें',
+    'message.registered'        => 'पंजीकृत',
+    'message.posts'             => 'पोस्ट',
 
     // -------------------------------------------------------------------------
     // Post / compose form
@@ -88,6 +97,11 @@ return [
     'post.submit_thread' => 'थ्रेड पोस्ट करें',
     'post.submit_reply'  => 'उत्तर पोस्ट करें',
     'post.cancel'        => 'रद्द करें',
+    'post.error_subject_required' => 'विषय आवश्यक है।',
+    'post.error_subject_length'   => 'विषय 255 अक्षर या उससे कम का होना चाहिए।',
+    'post.error_body_required'    => 'संदेश आवश्यक है।',
+    'post.error_flood_wait'       => 'कृपया फिर से पोस्ट करने से पहले {seconds} और सेकंड प्रतीक्षा करें।',
+    'post.error_posting_blocked'  => 'आपके खाते से पोस्ट करने की अनुमति नहीं है।',
 
     // -------------------------------------------------------------------------
     // Authentication
@@ -124,6 +138,16 @@ return [
     'auth.resend_email_label'     => 'ईमेल पता',
     'auth.resend_submit'          => 'फिर से भेजें',
     'auth.resend_sent'            => 'यदि उस पते पर कोई लंबित पुष्टिकरण है, तो एक नया लिंक भेज दिया गया है। अपना इनबॉक्स जाँचें।',
+    'auth.error_missing_credentials'  => 'कृपया अपना उपयोगकर्ता नाम और पासवर्ड दर्ज करें।',
+    'auth.error_invalid_credentials'  => 'अमान्य उपयोगकर्ता नाम या पासवर्ड।',
+    'auth.error_registration_blocked' => 'आपके खाते से पंजीकरण की अनुमति नहीं है।',
+    'auth.error_invalid_email'        => 'कृपया एक मान्य ईमेल पता दर्ज करें।',
+    'auth.error_password_min_length'  => 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए।',
+    'auth.error_passwords_mismatch'   => 'पासवर्ड मेल नहीं खाते।',
+    'auth.error_username_required'    => 'उपयोगकर्ता नाम आवश्यक है।',
+    'auth.error_username_length'      => 'उपयोगकर्ता नाम 2 से 50 अक्षर के बीच होना चाहिए।',
+    'auth.error_email_required'       => 'एक मान्य ईमेल पता आवश्यक है।',
+    'auth.error_username_taken'       => 'वह उपयोगकर्ता नाम पहले से लिया जा चुका है।',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -164,6 +188,29 @@ return [
     'settings.tz_offset'         => 'समय क्षेत्र ऑफ़सेट (घंटे, -12 से +14; -99 = सर्वर समय)',
     'settings.save'              => 'सेटिंग सहेजें',
     'settings.cancel'            => 'रद्द करें',
+    'settings.avatar_section'    => 'अवतार',
+    'settings.avatar_current'    => 'वर्तमान अवतार',
+    'settings.avatar_upload'     => 'नया अवतार अपलोड करें',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF, या WebP। अधिकतम 100 KB।',
+    'settings.avatar_delete'     => 'वर्तमान अवतार हटाएं',
+    'settings.error_display_name_required' => 'प्रदर्शन नाम आवश्यक है।',
+    'settings.error_display_name_length'   => 'प्रदर्शन नाम 50 अक्षर या उससे कम का होना चाहिए।',
+    'settings.error_email_required'        => 'एक मान्य ईमेल पता आवश्यक है।',
+    'settings.error_email_taken'           => 'वह ईमेल पता पहले से ही किसी अन्य खाते द्वारा उपयोग में है।',
+    'settings.error_password_min_length'   => 'नया पासवर्ड कम से कम 6 अक्षर का होना चाहिए।',
+    'settings.error_passwords_mismatch'    => 'पासवर्ड मेल नहीं खाते।',
+    'settings.error_tz_offset'             => 'समय क्षेत्र ऑफ़सेट -12 से +14 के बीच होना चाहिए, या सर्वर समय के लिए -99।',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'अपना पासवर्ड बदलें',
+    'force_password_change.message'   => 'जारी रखने से पहले एक प्रशासक को आपके लिए नया पासवर्ड सेट करना आवश्यक है।',
+    'force_password_change.new_password'     => 'नया पासवर्ड',
+    'force_password_change.confirm_password' => 'नए पासवर्ड की पुष्टि करें',
+    'force_password_change.save'      => 'पासवर्ड सेट करें',
+    'force_password_change.error_password_min_length' => 'नया पासवर्ड कम से कम 6 अक्षर का होना चाहिए।',
+    'force_password_change.error_passwords_mismatch'  => 'पासवर्ड मेल नहीं खाते।',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -203,6 +250,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'प्राप्तकर्ता आवश्यक है।',
+    'pm.error_user_not_found'       => 'उपयोगकर्ता "{username}" नहीं मिला।',
+    'pm.error_subject_required'     => 'विषय आवश्यक है।',
+    'pm.error_body_required'        => 'संदेश आवश्यक है।',
+    'pm.error_folder_name_required' => 'फ़ोल्डर का नाम आवश्यक है।',
+    'pm.error_folder_name_length'   => 'फ़ोल्डर का नाम 60 अक्षर या उससे कम का होना चाहिए।',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -216,6 +269,11 @@ return [
     'sub.unfollow'        => 'अनफ़ॉलो करें',
     'sub.back_to_thread'  => 'थ्रेड पर वापस',
     'sub.follow'          => 'फ़ॉलो करें',
+    'sub.confirm_title'    => 'क्रिया की पुष्टि करें',
+    'sub.confirm_remove'   => 'क्या आप वाकई इस थ्रेड से अनसब्सक्राइब करना चाहते हैं?',
+    'sub.confirm_bookmark' => 'अपनी सदस्यता को बुकमार्क में बदलें (कोई ईमेल सूचना नहीं)?',
+    'sub.confirm_yes'      => 'हाँ, पुष्टि करें',
+    'sub.confirm_cancel'   => 'रद्द करें',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -245,6 +303,31 @@ return [
     'mod.destination'            => 'गंतव्य फ़ोरम',
     'mod.choose_forum'           => '— फ़ोरम चुनें —',
     'mod.move_submit'            => 'थ्रेड स्थानांतरित करें',
+    'mod.merge_title'             => 'थ्रेड मर्ज करें',
+    'mod.merge_prompt'            => '"{subject}" को किसी अन्य थ्रेड में मर्ज करें। मर्ज किए गए थ्रेड की पोस्ट लक्ष्य थ्रेड में जोड़ दी जाएंगी, और इस थ्रेड की सदस्यताएं सुरक्षित नहीं रखी जाएंगी।',
+    'mod.merge_target'            => 'लक्ष्य थ्रेड ID',
+    'mod.merge_target_hint'       => 'जिस थ्रेड में मर्ज करना है उसकी संख्यात्मक ID (उसके URL में दिखाई देती है)।',
+    'mod.merge_submit'            => 'थ्रेड मर्ज करें',
+    'mod.merge_error_not_found'   => 'वह थ्रेड ID नहीं मिली।',
+    'mod.merge_error_same_thread' => 'मर्ज करने के लिए एक अलग थ्रेड चुनें।',
+    'mod.merge_error_failed'      => 'उस थ्रेड में मर्ज करना संभव नहीं हुआ।',
+    'mod.moderate'                => 'मॉडरेट करें',
+    'mod.queue'                   => 'समीक्षा कतार',
+    'mod.queue_title'             => 'लंबित संदेश कतार',
+    'mod.queue_empty'             => 'स्वीकृति की प्रतीक्षा में कोई संदेश नहीं है।',
+    'mod.queue_forum'             => 'फ़ोरम',
+    'mod.queue_posted'            => 'पोस्ट किया गया',
+    'mod.reports_title'           => 'रिपोर्ट की गई सामग्री',
+    'mod.reports_empty'           => 'कोई खुली रिपोर्ट नहीं है।',
+    'mod.reports_message_missing' => '(रिपोर्ट किया गया संदेश अब उपलब्ध नहीं है)',
+    'mod.reports_reported'        => 'रिपोर्ट किया गया',
+    'mod.reports_resolve'         => 'हल करें',
+    'mod.reports_dismiss'         => 'खारिज करें',
+    'mod.reports_view'            => 'थ्रेड में देखें',
+    'report.title'                => 'संदेश की रिपोर्ट करें',
+    'report.intro'                => '{author} के इस संदेश की मॉडरेटरों को रिपोर्ट करें?',
+    'report.reason_label'         => 'कारण (वैकल्पिक)',
+    'report.submit'               => 'रिपोर्ट सबमिट करें',
 
     // -------------------------------------------------------------------------
     // Search
@@ -276,6 +359,54 @@ return [
     'search.col_date'       => 'तारीख',
 
     // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum इंस्टॉलर',
+    'install.requirements_heading'      => 'आवश्यकताएं',
+    'install.requirement_failed'       => 'विफल',
+    'install.fix_requirements'         => 'आगे बढ़ने से पहले ऊपर दी गई आवश्यकताओं को ठीक करें।',
+    'install.fix_requirements_hint_1'  => 'सुनिश्चित करें कि',
+    'install.fix_requirements_hint_and' => 'और',
+    'install.fix_requirements_hint_2'  => 'मौजूद हैं (.example फ़ाइलों से कॉपी की गई) और डेटाबेस क्रेडेंशियल सही हैं।',
+    'install.errors_heading'           => 'कृपया निम्नलिखित को ठीक करें',
+    'install.setup_heading'            => 'साइट और व्यवस्थापक सेटअप',
+    'install.site_name_label'          => 'साइट का नाम',
+    'install.admin_account_heading'    => 'व्यवस्थापक खाता',
+    'install.username_label'           => 'उपयोगकर्ता नाम',
+    'install.email_label'              => 'ईमेल',
+    'install.password_label'           => 'पासवर्ड (कम से कम 8 अक्षर)',
+    'install.confirm_password_label'   => 'पासवर्ड की पुष्टि करें',
+    'install.submit'                   => 'Phorum इंस्टॉल करें',
+    'install.complete_page_title'      => 'इंस्टॉलेशन पूर्ण — Phorum',
+    'install.complete_heading'         => 'इंस्टॉलेशन पूर्ण',
+    'install.complete_message'         => 'डेटाबेस स्कीमा बना दी गई है और आपका व्यवस्थापक खाता तैयार है।',
+    'install.go_to_forum'              => 'फ़ोरम पर जाएं',
+    'install.admin_panel'              => 'व्यवस्थापक पैनल',
+    'install.error_site_name_required'  => 'साइट का नाम आवश्यक है।',
+    'install.error_username_required'   => 'व्यवस्थापक उपयोगकर्ता नाम आवश्यक है।',
+    'install.error_username_format'     => 'उपयोगकर्ता नाम 3–50 अक्षर का होना चाहिए (केवल अक्षर, संख्या, _ . - )।',
+    'install.error_email_required'      => 'एक मान्य व्यवस्थापक ईमेल पता आवश्यक है।',
+    'install.error_password_min_length' => 'व्यवस्थापक पासवर्ड कम से कम 8 अक्षर का होना चाहिए।',
+    'install.error_passwords_mismatch'  => 'पासवर्ड मेल नहीं खाते।',
+    'install.error_failed'              => 'इंस्टॉलेशन विफल: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum अपग्रेड',
+    'upgrade.detected_heading'    => 'मौजूदा Phorum 6 डेटाबेस मिला',
+    'upgrade.detected_message'    => 'यह डेटाबेस Phorum 6 द्वारा बनाया गया था। Phorum 10, Phorum 6 के साथ स्कीमा-संगत है — कोई भी मौजूदा डेटा बदला, हटाया या परिवर्तित नहीं किया जाएगा।',
+    'upgrade.up_to_date'          => 'किसी स्कीमा परिवर्तन की आवश्यकता नहीं है — यह डेटाबेस पहले से अद्यतित है।',
+    'upgrade.new_tables_heading'  => 'निम्नलिखित नई टेबल जोड़ी जाएंगी:',
+    'upgrade.new_patches_heading' => 'निम्नलिखित स्कीमा अपडेट लागू किए जाएंगे:',
+    'upgrade.submit'              => 'जारी रखें',
+    'upgrade.complete_page_title' => 'अपग्रेड पूर्ण — Phorum',
+    'upgrade.complete_heading'    => 'अपग्रेड पूर्ण',
+    'upgrade.complete_message'    => 'आपका Phorum 6 डेटाबेस अब Phorum 10 पर चलने के लिए तैयार है।',
+    'upgrade.go_to_forum'         => 'फ़ोरम पर जाएं',
+    'upgrade.admin_panel'         => 'व्यवस्थापक पैनल',
+
+    // -------------------------------------------------------------------------
     // Error pages
     // -------------------------------------------------------------------------
     'error.404_title'    => 'पृष्ठ नहीं मिला',
@@ -286,6 +417,18 @@ return [
     'error.403_login'    => 'लॉग इन करें',
     'error.403_login_hint' => 'पंजीकरण आवश्यक फ़ोरम तक पहुँचने के लिए।',
     'error.403_return'   => 'फ़ोरम सूची पर वापस जाएं',
+    'error.disabled_title'    => 'साइट अनुपलब्ध',
+    'error.disabled_message'  => 'यह साइट अस्थायी रूप से अक्षम है। कृपया बाद में फिर जांचें।',
+    'error.admin_only_title'   => 'साइट अनुपलब्ध',
+    'error.admin_only_message' => 'यह साइट रखरखाव के लिए अस्थायी रूप से बंद है। कृपया बाद में फिर जांचें।',
+    'error.read_only_title'    => 'केवल पठनीय',
+    'error.read_only_message'  => 'यह साइट वर्तमान में केवल पठनीय है। पोस्ट करना और लॉग इन करना अस्थायी रूप से अक्षम है।',
+    'banner.read_only'         => 'यह साइट वर्तमान में केवल पठनीय है — पोस्ट करना और लॉग इन करना अस्थायी रूप से अक्षम है।',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'घोषणाएं',
 
     // -------------------------------------------------------------------------
     // Attachments

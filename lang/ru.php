@@ -17,7 +17,11 @@ return [
     'nav.log_in'        => 'Войти',
     'nav.register'      => 'Регистрация',
     'nav.powered_by'    => 'Работает на Phorum',
+    'nav.skip_to_content' => 'Перейти к основному содержимому',
+    'nav.breadcrumb'    => 'Хлебные крошки',
+    'nav.primary'       => 'Основное',
     'nav.menu'          => 'Меню',
+    'pagination.nav_label' => 'Навигация по страницам',
 
     // Forum list
     'forum_list.no_forums'   => 'Форумы ещё не созданы.',
@@ -40,6 +44,7 @@ return [
     'forum.by'               => 'от',
     'forum.new'              => 'новое',
     'forum.mark_read'        => 'Отметить всё прочитанным',
+    'forum.feed_link'        => 'RSS',
 
     // Thread actions
     'thread.reply'           => 'Ответить',
@@ -48,6 +53,7 @@ return [
     'thread.reopen'          => 'Открыть тему',
     'thread.close'           => 'Закрыть тему',
     'thread.move'            => 'Переместить',
+    'thread.merge'           => 'Объединить',
     'thread.delete'          => 'Удалить тему',
 
     // Message actions
@@ -66,6 +72,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'Одобрить',
     'message.delete'            => 'Удалить',
+    'message.report'            => 'Пожаловаться',
+    'message.registered'        => 'Зарегистрирован',
+    'message.posts'             => 'Сообщений',
 
     // Post form
     'post.new_thread'        => 'Новая тема',
@@ -76,6 +85,11 @@ return [
     'post.submit_thread'     => 'Создать тему',
     'post.submit_reply'      => 'Отправить ответ',
     'post.cancel'            => 'Отмена',
+    'post.error_subject_required' => 'Необходимо указать тему.',
+    'post.error_subject_length'   => 'Тема должна содержать не более 255 символов.',
+    'post.error_body_required'    => 'Необходимо ввести текст сообщения.',
+    'post.error_flood_wait'       => 'Пожалуйста, подождите ещё {seconds} секунд(ы), прежде чем публиковать снова.',
+    'post.error_posting_blocked'  => 'Публикация сообщений для вашего аккаунта запрещена.',
 
     // Authentication
     'auth.login_title'       => 'Вход',
@@ -110,6 +124,16 @@ return [
     'auth.resend_email_label'     => 'Адрес электронной почты',
     'auth.resend_submit'          => 'Отправить повторно',
     'auth.resend_sent'            => 'Если для этого адреса есть ожидающее подтверждение, новая ссылка отправлена. Проверьте входящие.',
+    'auth.error_missing_credentials'  => 'Пожалуйста, введите имя пользователя и пароль.',
+    'auth.error_invalid_credentials'  => 'Неверное имя пользователя или пароль.',
+    'auth.error_registration_blocked' => 'Регистрация для вашего аккаунта запрещена.',
+    'auth.error_invalid_email'        => 'Пожалуйста, введите корректный адрес электронной почты.',
+    'auth.error_password_min_length'  => 'Пароль должен содержать не менее 6 символов.',
+    'auth.error_passwords_mismatch'   => 'Пароли не совпадают.',
+    'auth.error_username_required'    => 'Необходимо указать имя пользователя.',
+    'auth.error_username_length'      => 'Имя пользователя должно содержать от 2 до 50 символов.',
+    'auth.error_email_required'       => 'Необходимо указать корректный адрес электронной почты.',
+    'auth.error_username_taken'       => 'Это имя пользователя уже занято.',
 
     // User profile
     'profile.username'       => 'Имя пользователя',
@@ -146,6 +170,27 @@ return [
     'settings.tz_offset'         => 'Временная зона (часы, от −12 до +14; −99 = серверное время)',
     'settings.save'              => 'Сохранить настройки',
     'settings.cancel'            => 'Отмена',
+    'settings.avatar_section'    => 'Аватар',
+    'settings.avatar_current'    => 'Текущий аватар',
+    'settings.avatar_upload'     => 'Загрузить новый аватар',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF или WebP. Максимум 100 КБ.',
+    'settings.avatar_delete'     => 'Удалить текущий аватар',
+    'settings.error_display_name_required' => 'Необходимо указать отображаемое имя.',
+    'settings.error_display_name_length'   => 'Отображаемое имя должно содержать не более 50 символов.',
+    'settings.error_email_required'        => 'Необходимо указать корректный адрес электронной почты.',
+    'settings.error_email_taken'           => 'Этот адрес электронной почты уже используется другим аккаунтом.',
+    'settings.error_password_min_length'   => 'Новый пароль должен содержать не менее 6 символов.',
+    'settings.error_passwords_mismatch'    => 'Пароли не совпадают.',
+    'settings.error_tz_offset'             => 'Смещение временной зоны должно быть от −12 до +14, либо −99 для серверного времени.',
+
+    // Forced password change
+    'force_password_change.title'     => 'Смена пароля',
+    'force_password_change.message'   => 'Администратор требует установить новый пароль, прежде чем продолжить.',
+    'force_password_change.new_password'     => 'Новый пароль',
+    'force_password_change.confirm_password' => 'Подтверждение нового пароля',
+    'force_password_change.save'      => 'Установить пароль',
+    'force_password_change.error_password_min_length' => 'Новый пароль должен содержать не менее 6 символов.',
+    'force_password_change.error_passwords_mismatch'  => 'Пароли не совпадают.',
 
     // Private messages
     'pm.private_messages'    => 'Личные сообщения',
@@ -183,6 +228,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'Необходимо указать получателя.',
+    'pm.error_user_not_found'       => 'Пользователь «{username}» не найден.',
+    'pm.error_subject_required'     => 'Необходимо указать тему.',
+    'pm.error_body_required'        => 'Необходимо ввести текст сообщения.',
+    'pm.error_folder_name_required' => 'Необходимо указать название папки.',
+    'pm.error_folder_name_length'   => 'Название папки должно содержать не более 60 символов.',
 
     // Thread subscriptions
     'sub.title'              => 'Подписаться на тему',
@@ -194,6 +245,11 @@ return [
     'sub.unfollow'           => 'Отписаться',
     'sub.back_to_thread'     => 'Назад к теме',
     'sub.follow'             => 'Подписаться',
+    'sub.confirm_title'      => 'Подтверждение действия',
+    'sub.confirm_remove'     => 'Вы уверены, что хотите отписаться от этой темы?',
+    'sub.confirm_bookmark'   => 'Заменить подписку на закладку (без уведомлений по электронной почте)?',
+    'sub.confirm_yes'        => 'Да, подтвердить',
+    'sub.confirm_cancel'     => 'Отмена',
 
     // Moderation
     'mod.delete_thread'            => 'Удалить тему',
@@ -216,6 +272,31 @@ return [
     'mod.destination'              => 'Форум назначения',
     'mod.choose_forum'             => '— выберите форум —',
     'mod.move_submit'              => 'Переместить тему',
+    'mod.merge_title'               => 'Объединение тем',
+    'mod.merge_prompt'              => 'Объединить «{subject}» с другой темой. Сообщения объединяемой темы будут добавлены в конец целевой темы, а подписки этой темы сохранены не будут.',
+    'mod.merge_target'              => 'ID целевой темы',
+    'mod.merge_target_hint'         => 'Числовой ID темы, в которую нужно выполнить объединение (виден в её URL).',
+    'mod.merge_submit'              => 'Объединить темы',
+    'mod.merge_error_not_found'     => 'Тема с таким ID не найдена.',
+    'mod.merge_error_same_thread'   => 'Выберите другую тему для объединения.',
+    'mod.merge_error_failed'        => 'Не удалось объединить с этой темой.',
+    'mod.moderate'                 => 'Модерация',
+    'mod.queue'                    => 'Очередь на проверку',
+    'mod.queue_title'              => 'Очередь сообщений, ожидающих проверки',
+    'mod.queue_empty'              => 'Нет сообщений, ожидающих одобрения.',
+    'mod.queue_forum'              => 'Форум',
+    'mod.queue_posted'             => 'Опубликовано',
+    'mod.reports_title'            => 'Жалобы на контент',
+    'mod.reports_empty'            => 'Нет открытых жалоб.',
+    'mod.reports_message_missing'  => '(сообщение, на которое пожаловались, больше недоступно)',
+    'mod.reports_reported'         => 'жалоба подана',
+    'mod.reports_resolve'          => 'Решить',
+    'mod.reports_dismiss'          => 'Отклонить',
+    'mod.reports_view'             => 'Просмотреть в теме',
+    'report.title'                 => 'Пожаловаться на сообщение',
+    'report.intro'                 => 'Пожаловаться модераторам на это сообщение пользователя {author}?',
+    'report.reason_label'          => 'Причина (необязательно)',
+    'report.submit'                => 'Отправить жалобу',
 
     // Search
     'search.title'           => 'Поиск',
@@ -244,6 +325,54 @@ return [
     'search.col_forum'       => 'Форум',
     'search.col_date'        => 'Дата',
 
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Установщик Phorum',
+    'install.requirements_heading'     => 'Требования',
+    'install.requirement_failed'       => 'не пройдено',
+    'install.fix_requirements'         => 'Исправьте указанные выше требования, прежде чем продолжить.',
+    'install.fix_requirements_hint_1'  => 'Убедитесь, что файлы',
+    'install.fix_requirements_hint_and' => 'и',
+    'install.fix_requirements_hint_2'  => 'существуют (скопированы из файлов .example) и что учётные данные базы данных верны.',
+    'install.errors_heading'           => 'Пожалуйста, исправьте следующее',
+    'install.setup_heading'            => 'Настройка сайта и администратора',
+    'install.site_name_label'          => 'Название сайта',
+    'install.admin_account_heading'    => 'Аккаунт администратора',
+    'install.username_label'           => 'Имя пользователя',
+    'install.email_label'              => 'Email',
+    'install.password_label'           => 'Пароль (мин. 8 символов)',
+    'install.confirm_password_label'   => 'Подтверждение пароля',
+    'install.submit'                   => 'Установить Phorum',
+    'install.complete_page_title'      => 'Установка завершена — Phorum',
+    'install.complete_heading'         => 'Установка завершена',
+    'install.complete_message'         => 'Схема базы данных создана, и ваш аккаунт администратора готов к использованию.',
+    'install.go_to_forum'              => 'Перейти на форум',
+    'install.admin_panel'              => 'Панель администратора',
+    'install.error_site_name_required'  => 'Необходимо указать название сайта.',
+    'install.error_username_required'   => 'Необходимо указать имя пользователя администратора.',
+    'install.error_username_format'     => 'Имя пользователя должно содержать от 3 до 50 символов (только буквы, цифры, _ . -).',
+    'install.error_email_required'      => 'Необходимо указать корректный адрес электронной почты администратора.',
+    'install.error_password_min_length' => 'Пароль администратора должен содержать не менее 8 символов.',
+    'install.error_passwords_mismatch'  => 'Пароли не совпадают.',
+    'install.error_failed'              => 'Установка не удалась: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Обновление Phorum',
+    'upgrade.detected_heading'    => 'Обнаружена существующая база данных Phorum 6',
+    'upgrade.detected_message'    => 'Эта база данных была создана Phorum 6. Phorum 10 совместим по схеме с Phorum 6 — существующие данные не будут изменены, удалены или преобразованы.',
+    'upgrade.up_to_date'          => 'Изменения схемы не требуются — эта база данных уже актуальна.',
+    'upgrade.new_tables_heading'  => 'Будут добавлены следующие новые таблицы:',
+    'upgrade.new_patches_heading' => 'Будут применены следующие обновления схемы:',
+    'upgrade.submit'              => 'Продолжить',
+    'upgrade.complete_page_title' => 'Обновление завершено — Phorum',
+    'upgrade.complete_heading'    => 'Обновление завершено',
+    'upgrade.complete_message'    => 'Ваша база данных Phorum 6 теперь готова к работе с Phorum 10.',
+    'upgrade.go_to_forum'         => 'Перейти на форум',
+    'upgrade.admin_panel'         => 'Панель администратора',
+
     // Error pages
     'error.404_title'        => 'Страница не найдена',
     'error.404_message'      => 'Запрошенная страница не существует.',
@@ -253,6 +382,18 @@ return [
     'error.403_login'        => 'Войдите',
     'error.403_login_hint'   => 'чтобы получить доступ к форумам, требующим регистрации.',
     'error.403_return'       => 'Вернуться к списку форумов',
+    'error.disabled_title'    => 'Сайт недоступен',
+    'error.disabled_message'  => 'Этот сайт временно отключён. Пожалуйста, зайдите позже.',
+    'error.admin_only_title'   => 'Сайт недоступен',
+    'error.admin_only_message' => 'Этот сайт временно закрыт на техническое обслуживание. Пожалуйста, зайдите позже.',
+    'error.read_only_title'    => 'Только чтение',
+    'error.read_only_message'  => 'Этот сайт сейчас доступен только для чтения. Публикация сообщений и вход в систему временно отключены.',
+    'banner.read_only'         => 'Этот сайт сейчас доступен только для чтения — публикация сообщений и вход в систему временно отключены.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'Объявления',
 
     // -------------------------------------------------------------------------
     // Attachments

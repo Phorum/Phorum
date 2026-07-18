@@ -21,7 +21,11 @@ return [
     'nav.log_in'        => '登入',
     'nav.register'      => '註冊',
     'nav.powered_by'    => '由 Phorum 驅動',
+    'nav.skip_to_content' => '跳至主要內容',
+    'nav.breadcrumb'    => '麵包屑導覽',
+    'nav.primary'       => '主要',
     'nav.menu'          => '選單',
+    'pagination.nav_label' => '分頁導覽',
 
     // -------------------------------------------------------------------------
     // Forum list (index page)
@@ -48,6 +52,7 @@ return [
     'forum.by'               => '由',
     'forum.new'              => '新',
     'forum.mark_read'        => '全部標為已讀',
+    'forum.feed_link'        => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -58,6 +63,7 @@ return [
     'thread.reopen'          => '重新開放',
     'thread.close'           => '關閉',
     'thread.move'            => '移動',
+    'thread.merge'           => '合併',
     'thread.delete'          => '刪除主題',
 
     // -------------------------------------------------------------------------
@@ -78,6 +84,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => '核准',
     'message.delete'            => '刪除',
+    'message.report'            => '檢舉',
+    'message.registered'        => '已註冊',
+    'message.posts'             => '文章數',
 
     // -------------------------------------------------------------------------
     // Post / reply form
@@ -90,6 +99,11 @@ return [
     'post.submit_thread'     => '發佈主題',
     'post.submit_reply'      => '發佈回覆',
     'post.cancel'            => '取消',
+    'post.error_subject_required' => '請輸入標題。',
+    'post.error_subject_length'   => '標題長度不可超過 255 個字元。',
+    'post.error_body_required'    => '請輸入訊息內容。',
+    'post.error_flood_wait'       => '請再等待 {seconds} 秒後才能再次發文。',
+    'post.error_posting_blocked'  => '您的帳號目前無法發文。',
 
     // -------------------------------------------------------------------------
     // Auth
@@ -126,6 +140,16 @@ return [
     'auth.resend_email_label'     => '電子郵件地址',
     'auth.resend_submit'          => '重新寄送',
     'auth.resend_sent'            => '若該地址有待確認的項目，新的連結已寄出，請查收您的收件匣。',
+    'auth.error_missing_credentials'  => '請輸入您的使用者名稱和密碼。',
+    'auth.error_invalid_credentials'  => '使用者名稱或密碼錯誤。',
+    'auth.error_registration_blocked' => '您的帳號目前無法註冊。',
+    'auth.error_invalid_email'        => '請輸入有效的電子郵件地址。',
+    'auth.error_password_min_length'  => '密碼至少須為 6 個字元。',
+    'auth.error_passwords_mismatch'   => '兩次輸入的密碼不一致。',
+    'auth.error_username_required'    => '請輸入使用者名稱。',
+    'auth.error_username_length'      => '使用者名稱長度須介於 2 到 50 個字元之間。',
+    'auth.error_email_required'       => '請輸入有效的電子郵件地址。',
+    'auth.error_username_taken'       => '此使用者名稱已被使用。',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -166,6 +190,29 @@ return [
     'settings.tz_offset'         => '時區偏移（小時，-12 至 +14；-99 = 伺服器時間）',
     'settings.save'              => '儲存設定',
     'settings.cancel'            => '取消',
+    'settings.avatar_section'    => '大頭貼',
+    'settings.avatar_current'    => '目前的大頭貼',
+    'settings.avatar_upload'     => '上傳新的大頭貼',
+    'settings.avatar_hint'       => 'JPG、PNG、GIF 或 WebP 格式，檔案大小上限 100 KB。',
+    'settings.avatar_delete'     => '移除目前的大頭貼',
+    'settings.error_display_name_required' => '請輸入顯示名稱。',
+    'settings.error_display_name_length'   => '顯示名稱長度不可超過 50 個字元。',
+    'settings.error_email_required'        => '請輸入有效的電子郵件地址。',
+    'settings.error_email_taken'           => '此電子郵件地址已被其他帳號使用。',
+    'settings.error_password_min_length'   => '新密碼至少須為 6 個字元。',
+    'settings.error_passwords_mismatch'    => '兩次輸入的密碼不一致。',
+    'settings.error_tz_offset'             => '時區偏移必須介於 -12 至 +14 之間，或為 -99（伺服器時間）。',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => '變更您的密碼',
+    'force_password_change.message'   => '管理員要求您在繼續之前設定新密碼。',
+    'force_password_change.new_password'     => '新密碼',
+    'force_password_change.confirm_password' => '確認新密碼',
+    'force_password_change.save'      => '設定密碼',
+    'force_password_change.error_password_min_length' => '新密碼至少須為 6 個字元。',
+    'force_password_change.error_passwords_mismatch'  => '兩次輸入的密碼不一致。',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -205,6 +252,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => '請輸入收件人。',
+    'pm.error_user_not_found'       => '找不到使用者「{username}」。',
+    'pm.error_subject_required'     => '請輸入主題。',
+    'pm.error_body_required'        => '請輸入訊息內容。',
+    'pm.error_folder_name_required' => '請輸入資料夾名稱。',
+    'pm.error_folder_name_length'   => '資料夾名稱長度不可超過 60 個字元。',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -218,6 +271,11 @@ return [
     'sub.unfollow'           => '取消追蹤',
     'sub.back_to_thread'     => '返回主題',
     'sub.follow'             => '追蹤',
+    'sub.confirm_title'      => '確認操作',
+    'sub.confirm_remove'     => '確定要取消追蹤此主題嗎？',
+    'sub.confirm_bookmark'   => '將您的訂閱切換為書籤（不寄送電子郵件通知）？',
+    'sub.confirm_yes'        => '是，確認',
+    'sub.confirm_cancel'     => '取消',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -242,6 +300,31 @@ return [
     'mod.destination'              => '目標討論區',
     'mod.choose_forum'             => '— 請選擇討論區 —',
     'mod.move_submit'              => '移動主題',
+    'mod.merge_title'               => '合併主題',
+    'mod.merge_prompt'              => '將「{subject}」合併至另一個主題。合併主題的文章將附加到目標主題，且此主題的訂閱將不會被保留。',
+    'mod.merge_target'              => '目標主題 ID',
+    'mod.merge_target_hint'         => '要合併進去的主題數字 ID（可在其網址中找到）。',
+    'mod.merge_submit'              => '合併主題',
+    'mod.merge_error_not_found'      => '找不到該主題 ID。',
+    'mod.merge_error_same_thread'    => '請選擇另一個不同的主題進行合併。',
+    'mod.merge_error_failed'         => '無法合併至該主題。',
+    'mod.moderate'                 => '管理',
+    'mod.queue'                    => '審核佇列',
+    'mod.queue_title'              => '待審核文章佇列',
+    'mod.queue_empty'              => '目前沒有待審核的文章。',
+    'mod.queue_forum'              => '討論區',
+    'mod.queue_posted'             => '發佈時間',
+    'mod.reports_title'            => '被檢舉的內容',
+    'mod.reports_empty'            => '目前沒有待處理的檢舉。',
+    'mod.reports_message_missing'  => '（被檢舉的文章已不存在）',
+    'mod.reports_reported'         => '已檢舉',
+    'mod.reports_resolve'          => '結案',
+    'mod.reports_dismiss'          => '駁回',
+    'mod.reports_view'             => '在主題中檢視',
+    'report.title'                 => '檢舉文章',
+    'report.intro'                 => '要向管理員檢舉 {author} 發佈的這篇文章嗎？',
+    'report.reason_label'          => '原因（選填）',
+    'report.submit'                => '送出檢舉',
 
     // -------------------------------------------------------------------------
     // Search
@@ -273,6 +356,54 @@ return [
     'search.col_date'        => '日期',
 
     // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum 安裝程式',
+    'install.requirements_heading'     => '系統需求',
+    'install.requirement_failed'       => '失敗',
+    'install.fix_requirements'         => '請先修正上述需求問題後再繼續。',
+    'install.fix_requirements_hint_1'  => '請確認',
+    'install.fix_requirements_hint_and' => '和',
+    'install.fix_requirements_hint_2'  => '已存在（從 .example 檔案複製而來），且資料庫憑證正確無誤。',
+    'install.errors_heading'           => '請修正以下問題',
+    'install.setup_heading'            => '網站與管理員設定',
+    'install.site_name_label'          => '網站名稱',
+    'install.admin_account_heading'    => '管理員帳號',
+    'install.username_label'           => '使用者名稱',
+    'install.email_label'              => '電子郵件',
+    'install.password_label'           => '密碼（至少 8 個字元）',
+    'install.confirm_password_label'   => '確認密碼',
+    'install.submit'                   => '安裝 Phorum',
+    'install.complete_page_title'      => '安裝完成 — Phorum',
+    'install.complete_heading'         => '安裝完成',
+    'install.complete_message'         => '資料庫結構已建立，您的管理員帳號已準備就緒。',
+    'install.go_to_forum'              => '前往討論區',
+    'install.admin_panel'              => '管理面板',
+    'install.error_site_name_required'  => '請輸入網站名稱。',
+    'install.error_username_required'   => '請輸入管理員使用者名稱。',
+    'install.error_username_format'     => '使用者名稱長度須為 3–50 個字元（僅限英文字母、數字、_ . -）。',
+    'install.error_email_required'      => '請輸入有效的管理員電子郵件地址。',
+    'install.error_password_min_length' => '管理員密碼至少須為 8 個字元。',
+    'install.error_passwords_mismatch'  => '兩次輸入的密碼不一致。',
+    'install.error_failed'              => '安裝失敗：{message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum 升級',
+    'upgrade.detected_heading'    => '偵測到現有的 Phorum 6 資料庫',
+    'upgrade.detected_message'    => '此資料庫是由 Phorum 6 建立的。Phorum 10 與 Phorum 6 的資料庫結構相容 — 不會變更、刪除或轉換任何現有資料。',
+    'upgrade.up_to_date'          => '不需要進行任何結構變更 — 此資料庫已是最新版本。',
+    'upgrade.new_tables_heading'  => '將新增以下新資料表：',
+    'upgrade.new_patches_heading' => '將套用以下結構更新：',
+    'upgrade.submit'              => '繼續',
+    'upgrade.complete_page_title' => '升級完成 — Phorum',
+    'upgrade.complete_heading'    => '升級完成',
+    'upgrade.complete_message'    => '您的 Phorum 6 資料庫現已可在 Phorum 10 上運作。',
+    'upgrade.go_to_forum'         => '前往討論區',
+    'upgrade.admin_panel'         => '管理面板',
+
+    // -------------------------------------------------------------------------
     // Errors
     // -------------------------------------------------------------------------
     'error.404_title'        => '找不到頁面',
@@ -283,6 +414,18 @@ return [
     'error.403_login'        => '登入',
     'error.403_login_hint'   => '以存取需要註冊才能瀏覽的討論區。',
     'error.403_return'       => '返回討論區首頁',
+    'error.disabled_title'    => '網站無法使用',
+    'error.disabled_message'  => '本網站暫時停用，請稍後再回來查看。',
+    'error.admin_only_title'   => '網站無法使用',
+    'error.admin_only_message' => '本網站因維護作業暫時關閉，請稍後再回來查看。',
+    'error.read_only_title'    => '唯讀模式',
+    'error.read_only_message'  => '本網站目前為唯讀模式，發文與登入功能暫時停用。',
+    'banner.read_only'         => '本網站目前為唯讀模式 — 發文與登入功能暫時停用。',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => '公告',
 
     // -------------------------------------------------------------------------
     // Attachments

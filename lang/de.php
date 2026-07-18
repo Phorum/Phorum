@@ -17,7 +17,11 @@ return [
     'nav.log_in'        => 'Anmelden',
     'nav.register'      => 'Registrieren',
     'nav.powered_by'    => 'Powered by Phorum',
+    'nav.skip_to_content' => 'Zum Hauptinhalt springen',
+    'nav.breadcrumb'    => 'Brotkrümelnavigation',
+    'nav.primary'       => 'Hauptnavigation',
     'nav.menu'          => 'Menü',
+    'pagination.nav_label' => 'Seitennavigation',
 
     // Forum list
     'forum_list.no_forums'   => 'Es wurden noch keine Foren erstellt.',
@@ -40,6 +44,7 @@ return [
     'forum.by'               => 'von',
     'forum.new'              => 'neu',
     'forum.mark_read'        => 'Alles als gelesen markieren',
+    'forum.feed_link'        => 'RSS',
 
     // Thread view
     'thread.reply'           => 'Antworten',
@@ -48,6 +53,7 @@ return [
     'thread.reopen'          => 'Wieder öffnen',
     'thread.close'           => 'Schließen',
     'thread.move'            => 'Verschieben',
+    'thread.merge'           => 'Zusammenführen',
     'thread.delete'          => 'Thread löschen',
 
     // Message
@@ -66,6 +72,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'Freigeben',
     'message.delete'            => 'Löschen',
+    'message.report'            => 'Melden',
+    'message.registered'        => 'Registriert',
+    'message.posts'             => 'Beiträge',
 
     // Post form
     'post.new_thread'        => 'Neuer Thread',
@@ -76,6 +85,11 @@ return [
     'post.submit_thread'     => 'Thread erstellen',
     'post.submit_reply'      => 'Antwort senden',
     'post.cancel'            => 'Abbrechen',
+    'post.error_subject_required' => 'Betreff ist erforderlich.',
+    'post.error_subject_length'   => 'Betreff darf höchstens 255 Zeichen lang sein.',
+    'post.error_body_required'    => 'Nachrichtentext ist erforderlich.',
+    'post.error_flood_wait'       => 'Bitte warten Sie noch {seconds} Sekunde(n), bevor Sie erneut posten.',
+    'post.error_posting_blocked'  => 'Das Posten ist für Ihr Konto nicht erlaubt.',
 
     // Authentication
     'auth.login_title'       => 'Anmelden',
@@ -110,6 +124,16 @@ return [
     'auth.resend_email_label'     => 'E-Mail-Adresse',
     'auth.resend_submit'          => 'Erneut senden',
     'auth.resend_sent'            => 'Wenn für diese Adresse eine ausstehende Bestätigung vorliegt, wurde ein neuer Link gesendet. Überprüfen Sie Ihren Posteingang.',
+    'auth.error_missing_credentials'  => 'Bitte geben Sie Ihren Benutzernamen und Ihr Passwort ein.',
+    'auth.error_invalid_credentials'  => 'Ungültiger Benutzername oder ungültiges Passwort.',
+    'auth.error_registration_blocked' => 'Die Registrierung ist für Ihr Konto nicht erlaubt.',
+    'auth.error_invalid_email'        => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+    'auth.error_password_min_length'  => 'Das Passwort muss mindestens 6 Zeichen lang sein.',
+    'auth.error_passwords_mismatch'   => 'Die Passwörter stimmen nicht überein.',
+    'auth.error_username_required'    => 'Benutzername ist erforderlich.',
+    'auth.error_username_length'      => 'Der Benutzername muss zwischen 2 und 50 Zeichen lang sein.',
+    'auth.error_email_required'       => 'Eine gültige E-Mail-Adresse ist erforderlich.',
+    'auth.error_username_taken'       => 'Dieser Benutzername ist bereits vergeben.',
 
     // Profile
     'profile.username'       => 'Benutzername',
@@ -146,6 +170,27 @@ return [
     'settings.tz_offset'         => 'Zeitzonenversatz (Stunden, -12 bis +14; -99 = Serverzeit)',
     'settings.save'              => 'Einstellungen speichern',
     'settings.cancel'            => 'Abbrechen',
+    'settings.avatar_section'    => 'Avatar',
+    'settings.avatar_current'    => 'Aktueller Avatar',
+    'settings.avatar_upload'     => 'Neuen Avatar hochladen',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF oder WebP. Maximal 100 KB.',
+    'settings.avatar_delete'     => 'Aktuellen Avatar entfernen',
+    'settings.error_display_name_required' => 'Anzeigename ist erforderlich.',
+    'settings.error_display_name_length'   => 'Der Anzeigename darf höchstens 50 Zeichen lang sein.',
+    'settings.error_email_required'        => 'Eine gültige E-Mail-Adresse ist erforderlich.',
+    'settings.error_email_taken'           => 'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.',
+    'settings.error_password_min_length'   => 'Das neue Passwort muss mindestens 6 Zeichen lang sein.',
+    'settings.error_passwords_mismatch'    => 'Die Passwörter stimmen nicht überein.',
+    'settings.error_tz_offset'             => 'Der Zeitzonenversatz muss zwischen -12 und +14 liegen, oder -99 für Serverzeit.',
+
+    // Forced password change
+    'force_password_change.title'     => 'Passwort ändern',
+    'force_password_change.message'   => 'Ein Administrator verlangt, dass Sie ein neues Passwort festlegen, bevor Sie fortfahren können.',
+    'force_password_change.new_password'     => 'Neues Passwort',
+    'force_password_change.confirm_password' => 'Neues Passwort bestätigen',
+    'force_password_change.save'      => 'Passwort festlegen',
+    'force_password_change.error_password_min_length' => 'Das neue Passwort muss mindestens 6 Zeichen lang sein.',
+    'force_password_change.error_passwords_mismatch'  => 'Die Passwörter stimmen nicht überein.',
 
     // Private Messages
     'pm.private_messages'    => 'Private Nachrichten',
@@ -183,6 +228,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'Empfänger ist erforderlich.',
+    'pm.error_user_not_found'       => 'Benutzer "{username}" wurde nicht gefunden.',
+    'pm.error_subject_required'     => 'Betreff ist erforderlich.',
+    'pm.error_body_required'        => 'Nachrichtentext ist erforderlich.',
+    'pm.error_folder_name_required' => 'Ordnername ist erforderlich.',
+    'pm.error_folder_name_length'   => 'Der Ordnername darf höchstens 60 Zeichen lang sein.',
 
     // Subscriptions
     'sub.title'              => 'Thread verfolgen',
@@ -194,6 +245,11 @@ return [
     'sub.unfollow'           => 'Nicht mehr verfolgen',
     'sub.back_to_thread'     => 'Zurück zum Thread',
     'sub.follow'             => 'Verfolgen',
+    'sub.confirm_title'      => 'Aktion bestätigen',
+    'sub.confirm_remove'     => 'Möchten Sie diesen Thread wirklich nicht mehr verfolgen?',
+    'sub.confirm_bookmark'   => 'Ihr Abonnement in ein Lesezeichen umwandeln (keine E-Mail-Benachrichtigungen)?',
+    'sub.confirm_yes'        => 'Ja, bestätigen',
+    'sub.confirm_cancel'     => 'Abbrechen',
 
     // Moderation
     'mod.delete_thread'            => 'Thread löschen',
@@ -216,6 +272,31 @@ return [
     'mod.destination'              => 'Zielforum',
     'mod.choose_forum'             => '— Forum auswählen —',
     'mod.move_submit'              => 'Thread verschieben',
+    'mod.merge_title'               => 'Thread zusammenführen',
+    'mod.merge_prompt'              => '„{subject}" mit einem anderen Thread zusammenführen. Die Beiträge dieses Threads werden an den Zielthread angehängt, und die Abonnements dieses Threads bleiben nicht erhalten.',
+    'mod.merge_target'              => 'Ziel-Thread-ID',
+    'mod.merge_target_hint'         => 'Die numerische ID des Threads, in den zusammengeführt werden soll (in dessen URL sichtbar).',
+    'mod.merge_submit'              => 'Thread zusammenführen',
+    'mod.merge_error_not_found'      => 'Diese Thread-ID wurde nicht gefunden.',
+    'mod.merge_error_same_thread'    => 'Wählen Sie einen anderen Thread zum Zusammenführen aus.',
+    'mod.merge_error_failed'         => 'Zusammenführen mit diesem Thread nicht möglich.',
+    'mod.moderate'                 => 'Moderieren',
+    'mod.queue'                    => 'Prüfwarteschlange',
+    'mod.queue_title'              => 'Warteschlange ausstehender Nachrichten',
+    'mod.queue_empty'              => 'Es gibt keine Nachrichten, die auf Freigabe warten.',
+    'mod.queue_forum'              => 'Forum',
+    'mod.queue_posted'             => 'Gepostet',
+    'mod.reports_title'            => 'Gemeldete Inhalte',
+    'mod.reports_empty'            => 'Keine offenen Meldungen.',
+    'mod.reports_message_missing'  => '(gemeldete Nachricht nicht mehr verfügbar)',
+    'mod.reports_reported'         => 'gemeldet',
+    'mod.reports_resolve'          => 'Erledigt',
+    'mod.reports_dismiss'          => 'Verwerfen',
+    'mod.reports_view'             => 'Im Thread ansehen',
+    'report.title'                 => 'Nachricht melden',
+    'report.intro'                 => 'Diese Nachricht von {author} den Moderatoren melden?',
+    'report.reason_label'          => 'Grund (optional)',
+    'report.submit'                => 'Meldung absenden',
 
     // Search
     'search.title'           => 'Suche',
@@ -244,6 +325,54 @@ return [
     'search.col_forum'       => 'Forum',
     'search.col_date'        => 'Datum',
 
+    // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum-Installation',
+    'install.requirements_heading'     => 'Systemanforderungen',
+    'install.requirement_failed'       => 'fehlgeschlagen',
+    'install.fix_requirements'         => 'Beheben Sie die oben genannten Anforderungen, bevor Sie fortfahren.',
+    'install.fix_requirements_hint_1'  => 'Stellen Sie sicher, dass',
+    'install.fix_requirements_hint_and' => 'und',
+    'install.fix_requirements_hint_2'  => 'vorhanden sind (kopiert aus den .example-Dateien) und dass die Datenbankzugangsdaten korrekt sind.',
+    'install.errors_heading'           => 'Bitte beheben Sie Folgendes',
+    'install.setup_heading'            => 'Website- & Admin-Einrichtung',
+    'install.site_name_label'          => 'Website-Name',
+    'install.admin_account_heading'    => 'Administratorkonto',
+    'install.username_label'           => 'Benutzername',
+    'install.email_label'              => 'E-Mail',
+    'install.password_label'           => 'Passwort (mind. 8 Zeichen)',
+    'install.confirm_password_label'   => 'Passwort bestätigen',
+    'install.submit'                   => 'Phorum installieren',
+    'install.complete_page_title'      => 'Installation abgeschlossen — Phorum',
+    'install.complete_heading'         => 'Installation abgeschlossen',
+    'install.complete_message'         => 'Das Datenbankschema wurde erstellt und Ihr Administratorkonto ist einsatzbereit.',
+    'install.go_to_forum'              => 'Zum Forum',
+    'install.admin_panel'              => 'Admin-Bereich',
+    'install.error_site_name_required'  => 'Website-Name ist erforderlich.',
+    'install.error_username_required'   => 'Administrator-Benutzername ist erforderlich.',
+    'install.error_username_format'     => 'Der Benutzername muss 3–50 Zeichen lang sein (nur Buchstaben, Zahlen, _ . -).',
+    'install.error_email_required'      => 'Eine gültige Administrator-E-Mail-Adresse ist erforderlich.',
+    'install.error_password_min_length' => 'Das Administrator-Passwort muss mindestens 8 Zeichen lang sein.',
+    'install.error_passwords_mismatch'  => 'Die Passwörter stimmen nicht überein.',
+    'install.error_failed'              => 'Installation fehlgeschlagen: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum-Upgrade',
+    'upgrade.detected_heading'    => 'Vorhandene Phorum-6-Datenbank erkannt',
+    'upgrade.detected_message'    => 'Diese Datenbank wurde von Phorum 6 erstellt. Phorum 10 ist schema-kompatibel mit Phorum 6 — es werden keine vorhandenen Daten geändert, gelöscht oder konvertiert.',
+    'upgrade.up_to_date'          => 'Es sind keine Schemaänderungen erforderlich — diese Datenbank ist bereits auf dem neuesten Stand.',
+    'upgrade.new_tables_heading'  => 'Die folgenden neuen Tabellen werden hinzugefügt:',
+    'upgrade.new_patches_heading' => 'Die folgenden Schema-Updates werden angewendet:',
+    'upgrade.submit'              => 'Weiter',
+    'upgrade.complete_page_title' => 'Upgrade abgeschlossen — Phorum',
+    'upgrade.complete_heading'    => 'Upgrade abgeschlossen',
+    'upgrade.complete_message'    => 'Ihre Phorum-6-Datenbank ist jetzt bereit für den Einsatz mit Phorum 10.',
+    'upgrade.go_to_forum'         => 'Zum Forum',
+    'upgrade.admin_panel'         => 'Admin-Bereich',
+
     // Errors
     'error.404_title'        => 'Seite nicht gefunden',
     'error.404_message'      => 'Die angeforderte Seite existiert nicht.',
@@ -253,6 +382,18 @@ return [
     'error.403_login'        => 'Melden Sie sich an',
     'error.403_login_hint'   => 'um auf Foren zuzugreifen, die eine Registrierung erfordern.',
     'error.403_return'       => 'Zurück zur Forum-Übersicht',
+    'error.disabled_title'    => 'Website nicht verfügbar',
+    'error.disabled_message'  => 'Diese Website ist vorübergehend deaktiviert. Bitte schauen Sie später wieder vorbei.',
+    'error.admin_only_title'   => 'Website nicht verfügbar',
+    'error.admin_only_message' => 'Diese Website ist vorübergehend für Wartungsarbeiten geschlossen. Bitte schauen Sie später wieder vorbei.',
+    'error.read_only_title'    => 'Nur Lesezugriff',
+    'error.read_only_message'  => 'Diese Website befindet sich derzeit im Nur-Lese-Modus. Das Posten und Anmelden ist vorübergehend deaktiviert.',
+    'banner.read_only'         => 'Diese Website befindet sich derzeit im Nur-Lese-Modus — das Posten und Anmelden ist vorübergehend deaktiviert.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'Ankündigungen',
 
     // -------------------------------------------------------------------------
     // Attachments

@@ -21,7 +21,11 @@ return [
     'nav.log_in'        => 'Masuk',
     'nav.register'      => 'Daftar',
     'nav.powered_by'    => 'Didukung oleh Phorum',
+    'nav.skip_to_content' => 'Lewati ke konten utama',
+    'nav.breadcrumb'    => 'Remah Roti',
+    'nav.primary'       => 'Utama',
     'nav.menu'          => 'Menu',
+    'pagination.nav_label' => 'Navigasi Halaman',
 
     // -------------------------------------------------------------------------
     // Forum list (index page)
@@ -48,6 +52,7 @@ return [
     'forum.by'               => 'oleh',
     'forum.new'              => 'baru',
     'forum.mark_read'        => 'Tandai Semua Dibaca',
+    'forum.feed_link'        => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -58,6 +63,7 @@ return [
     'thread.reopen'          => 'Buka Kembali',
     'thread.close'           => 'Tutup',
     'thread.move'            => 'Pindahkan',
+    'thread.merge'           => 'Gabungkan',
     'thread.delete'          => 'Hapus Utas',
 
     // -------------------------------------------------------------------------
@@ -78,6 +84,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'Setujui',
     'message.delete'            => 'Hapus',
+    'message.report'            => 'Laporkan',
+    'message.registered'        => 'Terdaftar',
+    'message.posts'             => 'Postingan',
 
     // -------------------------------------------------------------------------
     // Post / reply form
@@ -90,6 +99,11 @@ return [
     'post.submit_thread'     => 'Kirim Utas',
     'post.submit_reply'      => 'Kirim Balasan',
     'post.cancel'            => 'Batal',
+    'post.error_subject_required' => 'Subjek wajib diisi.',
+    'post.error_subject_length'   => 'Subjek harus terdiri dari 255 karakter atau kurang.',
+    'post.error_body_required'    => 'Isi pesan wajib diisi.',
+    'post.error_flood_wait'       => 'Harap tunggu {seconds} detik lagi sebelum memposting kembali.',
+    'post.error_posting_blocked'  => 'Memposting tidak diizinkan dari akun Anda.',
 
     // -------------------------------------------------------------------------
     // Auth
@@ -126,6 +140,16 @@ return [
     'auth.resend_email_label'     => 'Alamat Email',
     'auth.resend_submit'          => 'Kirim Ulang',
     'auth.resend_sent'            => 'Jika alamat tersebut memiliki konfirmasi yang tertunda, tautan baru telah dikirimkan. Periksa kotak masuk Anda.',
+    'auth.error_missing_credentials'  => 'Silakan masukkan nama pengguna dan kata sandi Anda.',
+    'auth.error_invalid_credentials'  => 'Nama pengguna atau kata sandi tidak valid.',
+    'auth.error_registration_blocked' => 'Pendaftaran tidak diizinkan dari akun Anda.',
+    'auth.error_invalid_email'        => 'Silakan masukkan alamat email yang valid.',
+    'auth.error_password_min_length'  => 'Kata sandi harus terdiri dari minimal 6 karakter.',
+    'auth.error_passwords_mismatch'   => 'Kata sandi tidak cocok.',
+    'auth.error_username_required'    => 'Nama pengguna wajib diisi.',
+    'auth.error_username_length'      => 'Nama pengguna harus terdiri antara 2 hingga 50 karakter.',
+    'auth.error_email_required'       => 'Alamat email yang valid wajib diisi.',
+    'auth.error_username_taken'       => 'Nama pengguna tersebut sudah digunakan.',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -166,6 +190,29 @@ return [
     'settings.tz_offset'         => 'Selisih Zona Waktu (jam, -12 hingga +14; -99 = waktu server)',
     'settings.save'              => 'Simpan Pengaturan',
     'settings.cancel'            => 'Batal',
+    'settings.avatar_section'    => 'Avatar',
+    'settings.avatar_current'    => 'Avatar saat ini',
+    'settings.avatar_upload'     => 'Unggah avatar baru',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF, atau WebP. Maksimal 100 KB.',
+    'settings.avatar_delete'     => 'Hapus avatar saat ini',
+    'settings.error_display_name_required' => 'Nama tampilan wajib diisi.',
+    'settings.error_display_name_length'   => 'Nama tampilan harus terdiri dari 50 karakter atau kurang.',
+    'settings.error_email_required'        => 'Alamat email yang valid wajib diisi.',
+    'settings.error_email_taken'           => 'Alamat email tersebut sudah digunakan oleh akun lain.',
+    'settings.error_password_min_length'   => 'Kata sandi baru harus terdiri dari minimal 6 karakter.',
+    'settings.error_passwords_mismatch'    => 'Kata sandi tidak cocok.',
+    'settings.error_tz_offset'             => 'Selisih zona waktu harus antara -12 dan +14, atau -99 untuk waktu server.',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'Ubah Kata Sandi Anda',
+    'force_password_change.message'   => 'Administrator mengharuskan Anda menetapkan kata sandi baru sebelum melanjutkan.',
+    'force_password_change.new_password'     => 'Kata Sandi Baru',
+    'force_password_change.confirm_password' => 'Konfirmasi Kata Sandi Baru',
+    'force_password_change.save'      => 'Tetapkan Kata Sandi',
+    'force_password_change.error_password_min_length' => 'Kata sandi baru harus terdiri dari minimal 6 karakter.',
+    'force_password_change.error_passwords_mismatch'  => 'Kata sandi tidak cocok.',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -205,6 +252,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'Penerima wajib diisi.',
+    'pm.error_user_not_found'       => 'Pengguna "{username}" tidak ditemukan.',
+    'pm.error_subject_required'     => 'Subjek wajib diisi.',
+    'pm.error_body_required'        => 'Isi pesan wajib diisi.',
+    'pm.error_folder_name_required' => 'Nama folder wajib diisi.',
+    'pm.error_folder_name_length'   => 'Nama folder harus terdiri dari 60 karakter atau kurang.',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -218,6 +271,11 @@ return [
     'sub.unfollow'           => 'Berhenti Mengikuti',
     'sub.back_to_thread'     => 'Kembali ke utas',
     'sub.follow'             => 'Ikuti',
+    'sub.confirm_title'      => 'Konfirmasi Tindakan',
+    'sub.confirm_remove'     => 'Apakah Anda yakin ingin berhenti berlangganan utas ini?',
+    'sub.confirm_bookmark'   => 'Alihkan langganan Anda menjadi bookmark (tanpa notifikasi email)?',
+    'sub.confirm_yes'        => 'Ya, konfirmasi',
+    'sub.confirm_cancel'     => 'Batal',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -242,6 +300,31 @@ return [
     'mod.destination'              => 'Forum tujuan',
     'mod.choose_forum'             => '— pilih forum —',
     'mod.move_submit'              => 'Pindahkan Utas',
+    'mod.merge_title'               => 'Gabungkan Utas',
+    'mod.merge_prompt'              => 'Gabungkan "{subject}" ke utas lain. Postingan dari utas yang digabung akan ditambahkan ke utas tujuan, dan langganan utas ini tidak akan dipertahankan.',
+    'mod.merge_target'              => 'ID utas tujuan',
+    'mod.merge_target_hint'         => 'ID numerik utas yang akan digabungkan (terlihat pada URL-nya).',
+    'mod.merge_submit'              => 'Gabungkan Utas',
+    'mod.merge_error_not_found'      => 'ID utas tersebut tidak ditemukan.',
+    'mod.merge_error_same_thread'    => 'Pilih utas lain untuk digabungkan.',
+    'mod.merge_error_failed'         => 'Tidak dapat menggabungkan ke utas tersebut.',
+    'mod.moderate'                 => 'Moderasi',
+    'mod.queue'                    => 'Antrean Peninjauan',
+    'mod.queue_title'              => 'Antrean Pesan Tertunda',
+    'mod.queue_empty'              => 'Tidak ada pesan yang menunggu persetujuan.',
+    'mod.queue_forum'              => 'Forum',
+    'mod.queue_posted'             => 'Diposting',
+    'mod.reports_title'            => 'Konten yang Dilaporkan',
+    'mod.reports_empty'            => 'Tidak ada laporan yang terbuka.',
+    'mod.reports_message_missing'  => '(pesan yang dilaporkan tidak lagi tersedia)',
+    'mod.reports_reported'         => 'dilaporkan',
+    'mod.reports_resolve'          => 'Selesaikan',
+    'mod.reports_dismiss'          => 'Abaikan',
+    'mod.reports_view'             => 'Lihat di utas',
+    'report.title'                 => 'Laporkan Pesan',
+    'report.intro'                 => 'Laporkan pesan ini dari {author} kepada moderator?',
+    'report.reason_label'          => 'Alasan (opsional)',
+    'report.submit'                => 'Kirim Laporan',
 
     // -------------------------------------------------------------------------
     // Search
@@ -273,6 +356,54 @@ return [
     'search.col_date'        => 'Tanggal',
 
     // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Penginstal Phorum',
+    'install.requirements_heading'     => 'Persyaratan',
+    'install.requirement_failed'       => 'gagal',
+    'install.fix_requirements'         => 'Perbaiki persyaratan di atas sebelum melanjutkan.',
+    'install.fix_requirements_hint_1'  => 'Pastikan',
+    'install.fix_requirements_hint_and' => 'dan',
+    'install.fix_requirements_hint_2'  => 'ada (disalin dari file .example) dan bahwa kredensial database sudah benar.',
+    'install.errors_heading'           => 'Silakan perbaiki hal berikut',
+    'install.setup_heading'            => 'Pengaturan Situs & Admin',
+    'install.site_name_label'          => 'Nama Situs',
+    'install.admin_account_heading'    => 'Akun Admin',
+    'install.username_label'           => 'Nama Pengguna',
+    'install.email_label'              => 'Email',
+    'install.password_label'           => 'Kata Sandi (min. 8 karakter)',
+    'install.confirm_password_label'   => 'Konfirmasi Kata Sandi',
+    'install.submit'                   => 'Instal Phorum',
+    'install.complete_page_title'      => 'Instalasi Selesai — Phorum',
+    'install.complete_heading'         => 'Instalasi Selesai',
+    'install.complete_message'         => 'Skema database telah dibuat dan akun admin Anda sudah siap.',
+    'install.go_to_forum'              => 'Buka Forum',
+    'install.admin_panel'              => 'Panel Admin',
+    'install.error_site_name_required'  => 'Nama situs wajib diisi.',
+    'install.error_username_required'   => 'Nama pengguna admin wajib diisi.',
+    'install.error_username_format'     => 'Nama pengguna harus terdiri dari 3–50 karakter (huruf, angka, _ . - saja).',
+    'install.error_email_required'      => 'Alamat email admin yang valid wajib diisi.',
+    'install.error_password_min_length' => 'Kata sandi admin harus terdiri dari minimal 8 karakter.',
+    'install.error_passwords_mismatch'  => 'Kata sandi tidak cocok.',
+    'install.error_failed'              => 'Instalasi gagal: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Peningkatan Phorum',
+    'upgrade.detected_heading'    => 'Database Phorum 6 yang sudah ada terdeteksi',
+    'upgrade.detected_message'    => 'Database ini dibuat oleh Phorum 6. Phorum 10 kompatibel secara skema dengan Phorum 6 — tidak ada data yang ada akan diubah, dihapus, atau dikonversi.',
+    'upgrade.up_to_date'          => 'Tidak ada perubahan skema yang diperlukan — database ini sudah yang terbaru.',
+    'upgrade.new_tables_heading'  => 'Tabel baru berikut akan ditambahkan:',
+    'upgrade.new_patches_heading' => 'Pembaruan skema berikut akan diterapkan:',
+    'upgrade.submit'              => 'Lanjutkan',
+    'upgrade.complete_page_title' => 'Peningkatan Selesai — Phorum',
+    'upgrade.complete_heading'    => 'Peningkatan Selesai',
+    'upgrade.complete_message'    => 'Database Phorum 6 Anda kini siap untuk dijalankan pada Phorum 10.',
+    'upgrade.go_to_forum'         => 'Buka Forum',
+    'upgrade.admin_panel'         => 'Panel Admin',
+
+    // -------------------------------------------------------------------------
     // Errors
     // -------------------------------------------------------------------------
     'error.404_title'        => 'Halaman Tidak Ditemukan',
@@ -283,6 +414,18 @@ return [
     'error.403_login'        => 'Masuk',
     'error.403_login_hint'   => 'untuk mengakses forum yang memerlukan pendaftaran.',
     'error.403_return'       => 'Kembali ke Indeks Forum',
+    'error.disabled_title'    => 'Situs Tidak Tersedia',
+    'error.disabled_message'  => 'Situs ini untuk sementara dinonaktifkan. Silakan periksa kembali nanti.',
+    'error.admin_only_title'   => 'Situs Tidak Tersedia',
+    'error.admin_only_message' => 'Situs ini untuk sementara ditutup untuk pemeliharaan. Silakan periksa kembali nanti.',
+    'error.read_only_title'    => 'Hanya Baca',
+    'error.read_only_message'  => 'Situs ini saat ini hanya baca. Memposting dan masuk untuk sementara dinonaktifkan.',
+    'banner.read_only'         => 'Situs ini saat ini hanya baca — memposting dan masuk untuk sementara dinonaktifkan.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'Pengumuman',
 
     // -------------------------------------------------------------------------
     // Attachments

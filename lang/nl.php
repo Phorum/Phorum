@@ -28,7 +28,11 @@ return [
     'nav.log_in'        => 'Inloggen',
     'nav.register'      => 'Registreren',
     'nav.powered_by'    => 'Mogelijk gemaakt door Phorum',
+    'nav.skip_to_content' => 'Naar de hoofdinhoud',
+    'nav.breadcrumb'    => 'Kruimelpad',
+    'nav.primary'       => 'Hoofdnavigatie',
     'nav.menu'          => 'Menu',
+    'pagination.nav_label' => 'Paginering',
 
     // -------------------------------------------------------------------------
     // Forum list (index page)
@@ -55,6 +59,7 @@ return [
     'forum.by'               => 'door',
     'forum.new'              => 'nieuw',
     'forum.mark_read'        => 'Alles markeren als gelezen',
+    'forum.feed_link'        => 'RSS',
 
     // -------------------------------------------------------------------------
     // Thread view
@@ -65,6 +70,7 @@ return [
     'thread.reopen'          => 'Heropenen',
     'thread.close'           => 'Sluiten',
     'thread.move'            => 'Verplaatsen',
+    'thread.merge'           => 'Samenvoegen',
     'thread.delete'          => 'Discussie verwijderen',
 
     // -------------------------------------------------------------------------
@@ -85,6 +91,9 @@ return [
     'message.changes_back'      => 'Back to thread',
     'message.approve'           => 'Goedkeuren',
     'message.delete'            => 'Verwijderen',
+    'message.report'            => 'Melden',
+    'message.registered'        => 'Geregistreerd',
+    'message.posts'             => 'Berichten',
 
     // -------------------------------------------------------------------------
     // Post / reply form
@@ -97,6 +106,11 @@ return [
     'post.submit_thread'     => 'Discussie plaatsen',
     'post.submit_reply'      => 'Reactie plaatsen',
     'post.cancel'            => 'Annuleren',
+    'post.error_subject_required' => 'Onderwerp is verplicht.',
+    'post.error_subject_length'   => 'Onderwerp mag maximaal 255 tekens bevatten.',
+    'post.error_body_required'    => 'Berichttekst is verplicht.',
+    'post.error_flood_wait'       => 'Wacht nog {seconds} seconde(n) voordat u opnieuw kunt plaatsen.',
+    'post.error_posting_blocked'  => 'Plaatsen is niet toegestaan vanaf uw account.',
 
     // -------------------------------------------------------------------------
     // Auth
@@ -133,6 +147,16 @@ return [
     'auth.resend_email_label'     => 'E-mailadres',
     'auth.resend_submit'          => 'Opnieuw versturen',
     'auth.resend_sent'            => 'Als dat adres een openstaande bevestiging heeft, is er een nieuwe link verstuurd. Controleer uw inbox.',
+    'auth.error_missing_credentials'  => 'Voer uw gebruikersnaam en wachtwoord in.',
+    'auth.error_invalid_credentials'  => 'Ongeldige gebruikersnaam of wachtwoord.',
+    'auth.error_registration_blocked' => 'Registreren is niet toegestaan vanaf uw account.',
+    'auth.error_invalid_email'        => 'Voer een geldig e-mailadres in.',
+    'auth.error_password_min_length'  => 'Wachtwoord moet minimaal 6 tekens bevatten.',
+    'auth.error_passwords_mismatch'   => 'Wachtwoorden komen niet overeen.',
+    'auth.error_username_required'    => 'Gebruikersnaam is verplicht.',
+    'auth.error_username_length'      => 'Gebruikersnaam moet tussen 2 en 50 tekens lang zijn.',
+    'auth.error_email_required'       => 'Een geldig e-mailadres is verplicht.',
+    'auth.error_username_taken'       => 'Deze gebruikersnaam is al in gebruik.',
 
     // -------------------------------------------------------------------------
     // User profile
@@ -173,6 +197,29 @@ return [
     'settings.tz_offset'         => 'Tijdzoneverschuiving (uren, -12 t/m +14; -99 = servertijd)',
     'settings.save'              => 'Instellingen opslaan',
     'settings.cancel'            => 'Annuleren',
+    'settings.avatar_section'    => 'Avatar',
+    'settings.avatar_current'    => 'Huidige avatar',
+    'settings.avatar_upload'     => 'Nieuwe avatar uploaden',
+    'settings.avatar_hint'       => 'JPG, PNG, GIF of WebP. Maximaal 100 KB.',
+    'settings.avatar_delete'     => 'Huidige avatar verwijderen',
+    'settings.error_display_name_required' => 'Weergavenaam is verplicht.',
+    'settings.error_display_name_length'   => 'Weergavenaam mag maximaal 50 tekens bevatten.',
+    'settings.error_email_required'        => 'Een geldig e-mailadres is verplicht.',
+    'settings.error_email_taken'           => 'Dit e-mailadres is al in gebruik bij een ander account.',
+    'settings.error_password_min_length'   => 'Nieuw wachtwoord moet minimaal 6 tekens bevatten.',
+    'settings.error_passwords_mismatch'    => 'Wachtwoorden komen niet overeen.',
+    'settings.error_tz_offset'             => 'Tijdzoneverschuiving moet tussen -12 en +14 liggen, of -99 voor servertijd.',
+
+    // -------------------------------------------------------------------------
+    // Forced password change
+    // -------------------------------------------------------------------------
+    'force_password_change.title'     => 'Wijzig uw wachtwoord',
+    'force_password_change.message'   => 'Een beheerder vereist dat u een nieuw wachtwoord instelt voordat u verdergaat.',
+    'force_password_change.new_password'     => 'Nieuw wachtwoord',
+    'force_password_change.confirm_password' => 'Nieuw wachtwoord bevestigen',
+    'force_password_change.save'      => 'Wachtwoord instellen',
+    'force_password_change.error_password_min_length' => 'Nieuw wachtwoord moet minimaal 6 tekens bevatten.',
+    'force_password_change.error_passwords_mismatch'  => 'Wachtwoorden komen niet overeen.',
 
     // -------------------------------------------------------------------------
     // Private messages
@@ -212,6 +259,12 @@ return [
     'pm.col_buddy'           => 'User',
     'pm.col_mutual'          => 'Mutual',
     'pm.col_last_active'     => 'Last Active',
+    'pm.error_recipient_required'   => 'Ontvanger is verplicht.',
+    'pm.error_user_not_found'       => 'Gebruiker "{username}" niet gevonden.',
+    'pm.error_subject_required'     => 'Onderwerp is verplicht.',
+    'pm.error_body_required'        => 'Berichttekst is verplicht.',
+    'pm.error_folder_name_required' => 'Mapnaam is verplicht.',
+    'pm.error_folder_name_length'   => 'Mapnaam mag maximaal 60 tekens bevatten.',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions
@@ -225,6 +278,11 @@ return [
     'sub.unfollow'           => 'Ontvolgen',
     'sub.back_to_thread'     => 'Terug naar discussie',
     'sub.follow'             => 'Volgen',
+    'sub.confirm_title'      => 'Actie bevestigen',
+    'sub.confirm_remove'     => 'Weet u zeker dat u zich wilt uitschrijven voor deze discussie?',
+    'sub.confirm_bookmark'   => 'Uw abonnement omzetten naar een bladwijzer (geen e-mailmeldingen)?',
+    'sub.confirm_yes'        => 'Ja, bevestigen',
+    'sub.confirm_cancel'     => 'Annuleren',
 
     // -------------------------------------------------------------------------
     // Moderation
@@ -249,6 +307,31 @@ return [
     'mod.destination'              => 'Doelforum',
     'mod.choose_forum'             => '\u{2014} kies een forum \u{2014}',
     'mod.move_submit'              => 'Discussie verplaatsen',
+    'mod.merge_title'               => 'Discussie samenvoegen',
+    'mod.merge_prompt'              => '"{subject}" samenvoegen met een andere discussie. De berichten van de samengevoegde discussie worden toegevoegd aan de doeldiscussie, en de abonnementen van deze discussie blijven niet behouden.',
+    'mod.merge_target'              => 'ID van doeldiscussie',
+    'mod.merge_target_hint'         => 'Het numerieke ID van de discussie waarmee moet worden samengevoegd (zichtbaar in de URL).',
+    'mod.merge_submit'              => 'Discussie samenvoegen',
+    'mod.merge_error_not_found'      => 'Dat discussie-ID is niet gevonden.',
+    'mod.merge_error_same_thread'    => 'Kies een andere discussie om mee samen te voegen.',
+    'mod.merge_error_failed'         => 'Samenvoegen met die discussie is niet gelukt.',
+    'mod.moderate'                 => 'Modereren',
+    'mod.queue'                    => 'Wachtrij',
+    'mod.queue_title'              => 'Wachtrij voor berichten',
+    'mod.queue_empty'              => 'Er zijn geen berichten die wachten op goedkeuring.',
+    'mod.queue_forum'              => 'Forum',
+    'mod.queue_posted'             => 'Geplaatst',
+    'mod.reports_title'            => 'Meldingen',
+    'mod.reports_empty'            => 'Geen openstaande meldingen.',
+    'mod.reports_message_missing'  => '(gemeld bericht niet meer beschikbaar)',
+    'mod.reports_reported'         => 'gemeld',
+    'mod.reports_resolve'          => 'Afhandelen',
+    'mod.reports_dismiss'          => 'Afwijzen',
+    'mod.reports_view'             => 'Bekijken in discussie',
+    'report.title'                 => 'Bericht melden',
+    'report.intro'                 => 'Dit bericht van {author} melden bij de moderators?',
+    'report.reason_label'          => 'Reden (optioneel)',
+    'report.submit'                => 'Melding versturen',
 
     // -------------------------------------------------------------------------
     // Search
@@ -280,6 +363,54 @@ return [
     'search.col_date'        => 'Datum',
 
     // -------------------------------------------------------------------------
+    // Install
+    // -------------------------------------------------------------------------
+    'install.page_title'               => 'Phorum-installatie',
+    'install.requirements_heading'     => 'Vereisten',
+    'install.requirement_failed'       => 'mislukt',
+    'install.fix_requirements'         => 'Los de bovenstaande vereisten op voordat u verdergaat.',
+    'install.fix_requirements_hint_1'  => 'Zorg ervoor dat',
+    'install.fix_requirements_hint_and' => 'en',
+    'install.fix_requirements_hint_2'  => 'bestaan (gekopieerd van de .example-bestanden) en dat de databasegegevens correct zijn.',
+    'install.errors_heading'           => 'Los het volgende op',
+    'install.setup_heading'            => 'Site- en beheerdersinstellingen',
+    'install.site_name_label'          => 'Sitenaam',
+    'install.admin_account_heading'    => 'Beheerdersaccount',
+    'install.username_label'           => 'Gebruikersnaam',
+    'install.email_label'              => 'E-mail',
+    'install.password_label'           => 'Wachtwoord (min. 8 tekens)',
+    'install.confirm_password_label'   => 'Wachtwoord bevestigen',
+    'install.submit'                   => 'Phorum installeren',
+    'install.complete_page_title'      => 'Installatie voltooid — Phorum',
+    'install.complete_heading'         => 'Installatie voltooid',
+    'install.complete_message'         => 'Het databaseschema is aangemaakt en uw beheerdersaccount is klaar voor gebruik.',
+    'install.go_to_forum'              => 'Naar het forum',
+    'install.admin_panel'              => 'Beheerderspaneel',
+    'install.error_site_name_required'  => 'Sitenaam is verplicht.',
+    'install.error_username_required'   => 'Gebruikersnaam van de beheerder is verplicht.',
+    'install.error_username_format'     => 'Gebruikersnaam moet 3–50 tekens lang zijn (alleen letters, cijfers, _ . -).',
+    'install.error_email_required'      => 'Een geldig e-mailadres van de beheerder is verplicht.',
+    'install.error_password_min_length' => 'Wachtwoord van de beheerder moet minimaal 8 tekens bevatten.',
+    'install.error_passwords_mismatch'  => 'Wachtwoorden komen niet overeen.',
+    'install.error_failed'              => 'Installatie mislukt: {message}',
+
+    // -------------------------------------------------------------------------
+    // Upgrade (existing Phorum 6 database → Phorum 10)
+    // -------------------------------------------------------------------------
+    'upgrade.page_title'          => 'Phorum-upgrade',
+    'upgrade.detected_heading'    => 'Bestaande Phorum 6-database gedetecteerd',
+    'upgrade.detected_message'    => 'Deze database is aangemaakt door Phorum 6. Phorum 10 is schema-compatibel met Phorum 6 — er worden geen bestaande gegevens gewijzigd, verwijderd of geconverteerd.',
+    'upgrade.up_to_date'          => 'Er zijn geen schemawijzigingen nodig — deze database is al up-to-date.',
+    'upgrade.new_tables_heading'  => 'De volgende nieuwe tabellen worden toegevoegd:',
+    'upgrade.new_patches_heading' => 'De volgende schema-updates worden toegepast:',
+    'upgrade.submit'              => 'Doorgaan',
+    'upgrade.complete_page_title' => 'Upgrade voltooid — Phorum',
+    'upgrade.complete_heading'    => 'Upgrade voltooid',
+    'upgrade.complete_message'    => 'Uw Phorum 6-database is nu klaar om te draaien op Phorum 10.',
+    'upgrade.go_to_forum'         => 'Naar het forum',
+    'upgrade.admin_panel'         => 'Beheerderspaneel',
+
+    // -------------------------------------------------------------------------
     // Errors
     // -------------------------------------------------------------------------
     'error.404_title'        => 'Pagina niet gevonden',
@@ -290,6 +421,18 @@ return [
     'error.403_login'        => 'Log in',
     'error.403_login_hint'   => 'om forums te bekijken waarvoor registratie vereist is.',
     'error.403_return'       => 'Terug naar forumoverzicht',
+    'error.disabled_title'    => 'Site niet beschikbaar',
+    'error.disabled_message'  => 'Deze site is tijdelijk uitgeschakeld. Kom later nog eens terug.',
+    'error.admin_only_title'   => 'Site niet beschikbaar',
+    'error.admin_only_message' => 'Deze site is tijdelijk gesloten voor onderhoud. Kom later nog eens terug.',
+    'error.read_only_title'    => 'Alleen-lezen',
+    'error.read_only_message'  => 'Deze site staat momenteel op alleen-lezen. Plaatsen en inloggen zijn tijdelijk uitgeschakeld.',
+    'banner.read_only'         => 'Deze site staat momenteel op alleen-lezen — plaatsen en inloggen zijn tijdelijk uitgeschakeld.',
+
+    // -------------------------------------------------------------------------
+    // Announcements
+    // -------------------------------------------------------------------------
+    'announcements.heading' => 'Aankondigingen',
 
     // -------------------------------------------------------------------------
     // Attachments
