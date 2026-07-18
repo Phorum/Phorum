@@ -326,7 +326,7 @@ table.announcements-list th a {
 }
 
 .announcements-list .fa-info-circle {
-    color: var(--info-bd);
+    color: #6792C0;
 }
 
 table.forum-list td,
@@ -377,7 +377,7 @@ table.announcements-list tr:hover td {
 }
 
 .thread-icon {
-    color: var(--border-light);
+    color: #618BBB;
     margin-right: 0;
 }
 
@@ -1078,6 +1078,10 @@ table.search-results th {
 .forum-group-header a {
     color: inherit;
     text-decoration: none;
+}
+
+.forum-group-header .fa-folder {
+    color: #F5DB63;
 }
 
 .forum-group-header a:hover,
