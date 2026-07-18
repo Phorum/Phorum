@@ -48,6 +48,7 @@ class UserMapper extends AbstractPhorumMapper
         'moderator_data'        => [],
         'force_password_change' => [],
         'shadow_banned'     => [],
+        'deleted_count'     => [],
     ];
 
     /**
@@ -97,6 +98,15 @@ class UserMapper extends AbstractPhorumMapper
         $this->crud()->run(
             'UPDATE ' . $this->table() . ' SET posts = posts + 1 WHERE user_id = :id',
             [':id' => $userId]
+        );
+    }
+
+    /** Track a moderator-deleted message against a user — the "bad" side of the karma check. */
+    public function incrementDeletedCount(int $userId, int $by = 1): void
+    {
+        $this->crud()->run(
+            'UPDATE ' . $this->table() . ' SET deleted_count = deleted_count + :by WHERE user_id = :id',
+            [':by' => $by, ':id' => $userId]
         );
     }
 

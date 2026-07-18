@@ -15,6 +15,13 @@ use Phorum\Model\User;
 
 class MessageService
 {
+    /**
+     * Minimum (deleted + approved) messages before the karma ratio check
+     * applies — otherwise a low-activity user's very first deleted post
+     * would read as "100% bad."
+     */
+    private const KARMA_MIN_SAMPLE = 3;
+
     public function __construct(
         private readonly MessageMapper $messages,
         private readonly ForumMapper   $forums,
@@ -51,9 +58,15 @@ class MessageService
         $minAccountAgeDays = (int) ($this->settings?->getSetting('min_account_age_days') ?? 0);
         $accountTooNew     = $minAccountAgeDays > 0 && ($now - $user->date_added) < $minAccountAgeDays * 86400;
 
+        $karmaThresholdPercent = (int) ($this->settings?->getSetting('karma_threshold_percent') ?? 0);
+        $totalMessages         = $user->posts + $user->deleted_count;
+        $badKarma              = $karmaThresholdPercent > 0
+                                && $totalMessages >= self::KARMA_MIN_SAMPLE
+                                && ($user->deleted_count / $totalMessages) * 100 >= $karmaThresholdPercent;
+
         $msg->status      = $user->shadow_banned
                             ? MessageMapper::STATUS_SHADOW
-                            : (($forum->moderation > 0 || $accountTooNew)
+                            : (($forum->moderation > 0 || $accountTooNew || $badKarma)
                                 ? MessageMapper::STATUS_UNAPPROVED
                                 : MessageMapper::STATUS_APPROVED);
         $msg->sort        = MessageMapper::SORT_DEFAULT;

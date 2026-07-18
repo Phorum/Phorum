@@ -18,9 +18,26 @@ class SettingsController extends AdminController
         'mail_host'      => ['label' => 'SMTP Host',          'type' => 'text'],
         'mail_port'      => ['label' => 'SMTP Port',          'type' => 'number'],
         'mail_from'      => ['label' => 'Mail From Address',  'type' => 'email'],
-        'flood_interval' => ['label' => 'Minimum Seconds Between Posts (0 = disabled)', 'type' => 'number'],
-        'edit_time_limit' => ['label' => 'Edit Time Limit (minutes, 0 = unlimited)', 'type' => 'number'],
-        'min_account_age_days' => ['label' => 'Minimum Account Age for Auto-Approval (days, 0 = disabled)', 'type' => 'number'],
+        'flood_interval' => [
+            'label' => 'Minimum Seconds Between Posts',
+            'type'  => 'number',
+            'hint'  => '0 = disabled',
+        ],
+        'edit_time_limit' => [
+            'label' => 'Edit Time Limit (minutes)',
+            'type'  => 'number',
+            'hint'  => '0 = unlimited',
+        ],
+        'min_account_age_days' => [
+            'label' => 'Minimum Account Age for Auto-Approval (days)',
+            'type'  => 'number',
+            'hint'  => '0 = disabled',
+        ],
+        'karma_threshold_percent' => [
+            'label' => 'Karma Threshold %',
+            'type'  => 'number',
+            'hint'  => 'Hold future posts once this share of a user\'s messages are moderator-deleted. 0 = disabled.',
+        ],
     ];
 
     private readonly SettingMapper $settings;

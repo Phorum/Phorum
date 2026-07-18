@@ -41,6 +41,7 @@ class ModerationService
         $this->messages->setStatus($messageId, MessageMapper::STATUS_DELETED);
         $this->messages->recalcThreadStats($msg->thread);
         $this->forums->recalcStats($msg->forum_id);
+        $this->users?->incrementDeletedCount($msg->user_id);
         phorum_api_hook('delete', [$msg->message_id]);
     }
 
@@ -56,7 +57,27 @@ class ModerationService
         phorum_api_hook('before_delete', $root);
         $this->messages->setStatusForThread($threadId, MessageMapper::STATUS_DELETED);
         $this->forums->recalcStats($forumId);
+        $this->incrementDeletedCountForAuthors($messageIds);
         phorum_api_hook('delete', $messageIds);
+    }
+
+    /**
+     * Track a moderator-deleted thread against each distinct author in it —
+     * a user with 3 messages in the deleted thread gets deleted_count += 3,
+     * matching how `posts` already counts per-message, not per-action.
+     */
+    private function incrementDeletedCountForAuthors(array $messageIds): void
+    {
+        if ($this->users === null || empty($messageIds)) return;
+
+        $messages = $this->messages->loadMulti($messageIds) ?? [];
+        $counts   = [];
+        foreach ($messages as $msg) {
+            $counts[$msg->user_id] = ($counts[$msg->user_id] ?? 0) + 1;
+        }
+        foreach ($counts as $userId => $count) {
+            $this->users->incrementDeletedCount($userId, $count);
+        }
     }
 
     /** Approve a single unapproved message. */

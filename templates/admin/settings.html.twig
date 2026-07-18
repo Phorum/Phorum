@@ -18,6 +18,9 @@
                     <label for="field_{{ key }}" class="{{ stored[key]|default('') ? 'active' : '' }}">
                         {{ meta.label }}
                     </label>
+                    {% if meta.hint is defined %}
+                        <span class="helper-text">{{ meta.hint }}</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

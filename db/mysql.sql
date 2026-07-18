@@ -183,6 +183,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     moderator_data           text               NOT NULL,
     force_password_change    tinyint(1)         NOT NULL DEFAULT 0,
     shadow_banned            tinyint(1)         NOT NULL DEFAULT 0,
+    deleted_count            int unsigned       NOT NULL DEFAULT 0,
 
     PRIMARY KEY (user_id),
     UNIQUE KEY username (username),

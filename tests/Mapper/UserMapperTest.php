@@ -174,4 +174,24 @@ class UserMapperTest extends MapperTestCase
         $uids = array_map('intval', array_column($results, 'user_id'));
         $this->assertContains($uid, $uids);
     }
+
+    // -------------------------------------------------------------------------
+    // incrementDeletedCount
+    // -------------------------------------------------------------------------
+
+    public function testIncrementDeletedCountDefaultsToOne(): void
+    {
+        $uid = $this->seedUser(['deleted_count' => 5]);
+        $mapper = $this->makeMapper();
+        $mapper->incrementDeletedCount($uid);
+        $this->assertSame(6, $mapper->load($uid)->deleted_count);
+    }
+
+    public function testIncrementDeletedCountByExplicitAmount(): void
+    {
+        $uid = $this->seedUser(['deleted_count' => 2]);
+        $mapper = $this->makeMapper();
+        $mapper->incrementDeletedCount($uid, 3);
+        $this->assertSame(5, $mapper->load($uid)->deleted_count);
+    }
 }

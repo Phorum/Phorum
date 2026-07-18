@@ -8,6 +8,7 @@ use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SubscriberMapper;
+use Phorum\Mapper\UserMapper;
 use Phorum\Model\Message;
 use Phorum\Service\ModerationService;
 use PHPUnit\Framework\TestCase;
@@ -77,6 +78,33 @@ class ModerationServiceTest extends TestCase
         $svc->deleteMessage(999);
     }
 
+    public function testDeleteMessageIncrementsAuthorDeletedCount(): void
+    {
+        $reply          = $this->makeMessage(2, 1, thread: 1);
+        $reply->user_id = 42;
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->with(2)->willReturn($reply);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->once())->method('incrementDeletedCount')->with(42, 1);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class), $users);
+        $svc->deleteMessage(2);
+    }
+
+    public function testDeleteMessageDoesNotErrorWithoutUserMapper(): void
+    {
+        $reply = $this->makeMessage(2, 1, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->with(2)->willReturn($reply);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->deleteMessage(2); // no UserMapper injected — must not throw
+        $this->assertTrue(true);
+    }
+
     // -------------------------------------------------------------------------
     // deleteThread()
     // -------------------------------------------------------------------------
@@ -113,6 +141,45 @@ class ModerationServiceTest extends TestCase
         $svc->deleteThread(1);
 
         $this->assertSame([1, 2, 3], $deleted);
+    }
+
+    public function testDeleteThreadIncrementsEachDistinctAuthorByTheirMessageCount(): void
+    {
+        $root = $this->makeMessage(1, 0, thread: 1);
+        $root->user_id = 10;
+        $replyA           = $this->makeMessage(2, 1, thread: 1);
+        $replyA->user_id  = 20;
+        $replyB           = $this->makeMessage(3, 1, thread: 1);
+        $replyB->user_id  = 10; // same author as root — should accumulate, not overwrite
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn($root);
+        $msgMapper->method('findIdsByThread')->willReturn([1, 2, 3]);
+        $msgMapper->method('loadMulti')->with([1, 2, 3])->willReturn([$root, $replyA, $replyB]);
+
+        $users = $this->createMock(UserMapper::class);
+        $calls = [];
+        $users->method('incrementDeletedCount')->willReturnCallback(function ($userId, $by) use (&$calls) {
+            $calls[$userId] = $by;
+        });
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class), $users);
+        $svc->deleteThread(1);
+
+        $this->assertSame(['10' => 2, '20' => 1], $calls);
+    }
+
+    public function testDeleteThreadDoesNotErrorWithoutUserMapper(): void
+    {
+        $root = $this->makeMessage(1, 0, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn($root);
+        $msgMapper->method('findIdsByThread')->willReturn([1]);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->deleteThread(1); // no UserMapper injected — must not throw
+        $this->assertTrue(true);
     }
 
     public function testDeleteThreadDoesNothingForMissingId(): void

@@ -72,6 +72,16 @@ class MessageServiceTest extends TestCase
         return $settings;
     }
 
+    /** Build a SettingMapper mock returning a fixed karma_threshold_percent value. */
+    private function makeSettingsWithKarmaThreshold(?int $percent): SettingMapper
+    {
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnCallback(
+            fn(string $name) => $name === 'karma_threshold_percent' ? $percent : null
+        );
+        return $settings;
+    }
+
     // -------------------------------------------------------------------------
     // post() — new thread
     // -------------------------------------------------------------------------
@@ -211,6 +221,105 @@ class MessageServiceTest extends TestCase
 
         $user             = $this->makeShadowBannedUser();
         $user->date_added = time();
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_SHADOW, $msg->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // post() — karma threshold
+    // -------------------------------------------------------------------------
+
+    public function testBadKarmaRatioCreatesUnapprovedMessageWhenThresholdEnabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithKarmaThreshold(30);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user                = $this->makeUser();
+        $user->posts         = 7;
+        $user->deleted_count = 3; // 3/10 = 30%, at threshold
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_UNAPPROVED, $msg->status);
+    }
+
+    public function testGoodKarmaRatioCreatesApprovedMessageWhenThresholdEnabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithKarmaThreshold(30);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user                = $this->makeUser();
+        $user->posts         = 9;
+        $user->deleted_count = 1; // 1/10 = 10%, below threshold
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testBadRatioBelowMinimumSampleSizeStillApproves(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithKarmaThreshold(30);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user                = $this->makeUser();
+        $user->posts         = 0;
+        $user->deleted_count = 1; // 100% deleted, but only 1 total message — below the minimum sample
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testBadKarmaRatioApprovesWhenThresholdDisabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithKarmaThreshold(0);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user                = $this->makeUser();
+        $user->posts         = 0;
+        $user->deleted_count = 10;
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testBadKarmaRatioApprovesWhenSettingsNotProvided(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $svc         = new MessageService($msgMapper, $forumMapper);
+
+        $user                = $this->makeUser();
+        $user->posts         = 0;
+        $user->deleted_count = 10;
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testShadowBanTakesPrecedenceOverBadKarma(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithKarmaThreshold(30);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user                = $this->makeShadowBannedUser();
+        $user->posts         = 0;
+        $user->deleted_count = 10;
 
         $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
 
