@@ -1,0 +1,2 @@
+title: BBCode
+desc: Renders messages stored with format=bbcode (all Phorum 6.x content) — bold, italic, quotes, code blocks, links, images, and autolinked bare URLs/emails.
