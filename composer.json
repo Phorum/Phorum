@@ -5,6 +5,7 @@
     "license": "BSD-3-Clause",
     "require": {
         "php": ">=8.3",
+        "aws/aws-sdk-php": "^3.0",
         "dealnews/data-mapper": "^3.4",
         "dealnews/db": "^4.1",
         "dealnews/schema-org": "^0.1.0",

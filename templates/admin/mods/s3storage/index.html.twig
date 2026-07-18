@@ -1,0 +1,64 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}S3 File Storage{% endblock %}
+
+{% block content %}
+<h4 class="page-title">S3 File Storage</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_s3_bucket" type="text" name="s3_bucket" value="{{ s3_bucket|e }}">
+                    <label for="field_s3_bucket" class="{{ s3_bucket ? 'active' : '' }}">Bucket Name</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_s3_region" type="text" name="s3_region" value="{{ s3_region|e }}">
+                    <label for="field_s3_region" class="{{ s3_region ? 'active' : '' }}">Region</label>
+                    <span class="helper-text">e.g. us-east-1</span>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_s3_access_key" type="text" name="s3_access_key" value="{{ s3_access_key|e }}" autocomplete="off">
+                    <label for="field_s3_access_key" class="{{ s3_access_key ? 'active' : '' }}">Access Key ID</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_s3_secret_key" type="password" name="s3_secret_key" value="" autocomplete="new-password">
+                    <label for="field_s3_secret_key">Secret Access Key</label>
+                    <span class="helper-text">
+                        {% if s3_has_secret %}A secret key is already configured. Leave blank to keep it.{% else %}Required.{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_s3_key_prefix" type="text" name="s3_key_prefix" value="{{ s3_key_prefix|e }}">
+                    <label for="field_s3_key_prefix" class="{{ s3_key_prefix ? 'active' : '' }}">Object Key Prefix</label>
+                    <span class="helper-text">Optional. Files are stored at {prefix}/{file_id} within the bucket.</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

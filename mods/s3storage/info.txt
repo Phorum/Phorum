@@ -1,0 +1,3 @@
+title: S3 File Storage
+desc: Stores message attachments and avatars in Amazon S3 instead of the database, serving downloads via short-lived signed URLs.
+configure: /admin/s3storage

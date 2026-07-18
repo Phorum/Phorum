@@ -70,6 +70,11 @@ class FileController extends Controller
             return $this->forbidden();
         }
 
+        $redirectUrl = phorum_api_hook('file_serve_url', $file, 'attachment');
+        if (is_string($redirectUrl) && $redirectUrl !== '') {
+            return $this->redirect($redirectUrl);
+        }
+
         $rawData  = $this->fileService->retrieve($file);
 
         // MIME detection via finfo, falling back to extension map
@@ -110,6 +115,11 @@ class FileController extends Controller
         $file = $this->fileMapper->findAvatarForUser($userId);
         if ($file === null) {
             return $this->notFound();
+        }
+
+        $redirectUrl = phorum_api_hook('file_serve_url', $file, 'inline');
+        if (is_string($redirectUrl) && $redirectUrl !== '') {
+            return $this->redirect($redirectUrl);
         }
 
         $rawData  = $this->fileService->retrieve($file);
