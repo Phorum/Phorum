@@ -107,6 +107,47 @@
                     toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 });
             })();
+
+            (function () {
+                var dropdowns = document.querySelectorAll('.mod-dropdown');
+                if (!dropdowns.length) {
+                    return;
+                }
+
+                function closeDropdown(dropdown) {
+                    dropdown.classList.remove('is-open');
+                    var toggle = dropdown.querySelector('.mod-dropdown-toggle');
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                }
+
+                dropdowns.forEach(function (dropdown) {
+                    var toggle = dropdown.querySelector('.mod-dropdown-toggle');
+                    if (!toggle) {
+                        return;
+                    }
+                    toggle.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        var isOpen = dropdown.classList.toggle('is-open');
+                        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    });
+                });
+
+                document.addEventListener('click', function (event) {
+                    dropdowns.forEach(function (dropdown) {
+                        if (!dropdown.contains(event.target)) {
+                            closeDropdown(dropdown);
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        dropdowns.forEach(closeDropdown);
+                    }
+                });
+            })();
         </script>
     {% endblock %}
 </body>

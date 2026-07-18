@@ -38,16 +38,23 @@
             {% endif %}
         {% endif %}
         {% if can_moderate %}
-            <a href="{{ path('/moderate/queue') }}" class="btn-mod">{{ trans('mod.queue') }}</a>
-            <a href="{{ path('/moderate/reports') }}" class="btn-mod">{{ trans('mod.reports_title') }}</a>
-            {% if root.closed %}
-                <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/open') }}" class="btn-mod">{{ trans('thread.reopen') }}</a>
-            {% else %}
-                <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/close') }}" class="btn-mod">{{ trans('thread.close') }}</a>
-            {% endif %}
-            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}" class="btn-mod">{{ trans('thread.move') }}</a>
-            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/merge') }}" class="btn-mod">{{ trans('thread.merge') }}</a>
-            <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="btn-mod btn-danger">{{ trans('thread.delete') }}</a>
+            <div class="mod-dropdown">
+                <button type="button" class="btn-mod mod-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
+                    <i class="fa fa-gavel"></i>{{ trans('mod.moderate') }} <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="mod-dropdown-menu">
+                    <a href="{{ path('/moderate/queue') }}">{{ trans('mod.queue') }}</a>
+                    <a href="{{ path('/moderate/reports') }}">{{ trans('mod.reports_title') }}</a>
+                    {% if root.closed %}
+                        <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/open') }}">{{ trans('thread.reopen') }}</a>
+                    {% else %}
+                        <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/close') }}">{{ trans('thread.close') }}</a>
+                    {% endif %}
+                    <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}">{{ trans('thread.move') }}</a>
+                    <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/merge') }}">{{ trans('thread.merge') }}</a>
+                    <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="mod-dropdown-danger">{{ trans('thread.delete') }}</a>
+                </div>
+            </div>
         {% endif %}
         {% if feeds_enabled %}
             <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ root.message_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>

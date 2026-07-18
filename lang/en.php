@@ -315,6 +315,7 @@ return [
     'mod.merge_error_not_found'      => 'That thread ID was not found.',
     'mod.merge_error_same_thread'    => 'Choose a different thread to merge into.',
     'mod.merge_error_failed'         => 'Unable to merge into that thread.',
+    'mod.moderate'                 => 'Moderate',
     'mod.queue'                    => 'Review Queue',
     'mod.queue_title'              => 'Pending Message Queue',
     'mod.queue_empty'              => 'No messages are awaiting approval.',

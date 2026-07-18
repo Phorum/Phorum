@@ -827,6 +827,62 @@ input.btn-primary:hover {
     color: #111;
 }
 
+/* --- Moderator action dropdown --------------------------------------------
+   Collapses the moderator-only thread/forum actions (Review Queue, Reported
+   Content, Close/Reopen, Move, Merge, Delete) behind one "Moderate" toggle
+   instead of a row of same-weight buttons next to Reply/Follow/RSS. */
+
+.mod-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.mod-dropdown-toggle .fa-caret-down {
+    margin-right: 0;
+    margin-left: 0.35em;
+}
+
+.mod-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 30;
+    min-width: 180px;
+    margin-top: 4px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--btn-shadow);
+    overflow: hidden;
+}
+
+.mod-dropdown.is-open .mod-dropdown-menu {
+    display: block;
+}
+
+.mod-dropdown-menu a {
+    display: block;
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.mod-dropdown-menu a:hover {
+    background: var(--accent-light);
+}
+
+.mod-dropdown-menu a.mod-dropdown-danger {
+    color: #a63232;
+}
+
+.mod-dropdown-menu a.mod-dropdown-danger:hover {
+    background: #a63232;
+    color: var(--white);
+}
+
 /* Submit inputs that look like buttons */
 
 input[type="submit"],
