@@ -31,6 +31,23 @@
 </blockquote>
 {% endif %}
 
+{% if show_preview %}
+<div class="post-preview">
+    <h2>{{ trans('post.preview') }}</h2>
+    {% include 'message/_post.html.twig' with {
+        msg: preview_msg,
+        forum: forum,
+        can_reply: false,
+        can_moderate: false,
+        can_edit_ids: [],
+        new_ids: [],
+        current_user_id: 0,
+        track_edits: false,
+        users_map: preview_users_map
+    } only %}
+</div>
+{% endif %}
+
 <form method="post" action="{{ path('/forum/' ~ forum.forum_id ~ '/post' ~ (parent ? '?reply=' ~ parent.message_id : '')) }}" enctype="multipart/form-data">
     {{ csrf_field() }}
     <div class="form-row">
@@ -57,7 +74,8 @@
     {% endif %}
 
     <div class="form-actions">
-        <button type="submit">{% if parent %}{{ trans('post.submit_reply') }}{% else %}{{ trans('post.submit_thread') }}{% endif %}</button>
+        <button type="submit" name="action" value="submit">{% if parent %}{{ trans('post.submit_reply') }}{% else %}{{ trans('post.submit_thread') }}{% endif %}</button>
+        <button type="submit" name="action" value="preview" class="btn-secondary">{{ trans('post.preview') }}</button>
         <a href="{{ path(parent ? '/forum/' ~ forum.forum_id ~ '/thread/' ~ parent.thread : '/forum/' ~ forum.forum_id) }}"
            class="btn-cancel">{{ trans('post.cancel') }}</a>
     </div>

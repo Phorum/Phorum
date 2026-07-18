@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => 'Kirim Utas',
     'post.submit_reply'      => 'Kirim Balasan',
     'post.cancel'            => 'Batal',
+    'post.preview'           => 'Pratinjau',
     'post.error_subject_required' => 'Subjek wajib diisi.',
     'post.error_subject_length'   => 'Subjek harus terdiri dari 255 karakter atau kurang.',
     'post.error_body_required'    => 'Isi pesan wajib diisi.',

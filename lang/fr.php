@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => 'Publier le fil',
     'post.submit_reply'      => 'Publier la réponse',
     'post.cancel'            => 'Annuler',
+    'post.preview'           => 'Aperçu',
     'post.error_subject_required' => 'Le sujet est obligatoire.',
     'post.error_subject_length'   => 'Le sujet doit comporter au maximum 255 caractères.',
     'post.error_body_required'    => 'Le corps du message est obligatoire.',

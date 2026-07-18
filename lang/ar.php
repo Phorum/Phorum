@@ -86,6 +86,7 @@ return [
     'post.submit_thread'     => 'نشر الموضوع',
     'post.submit_reply'      => 'نشر الرد',
     'post.cancel'            => 'إلغاء',
+    'post.preview'           => 'معاينة',
     'post.error_subject_required' => 'الموضوع مطلوب.',
     'post.error_subject_length'   => 'يجب ألا يتجاوز الموضوع 255 حرفًا.',
     'post.error_body_required'    => 'نص الرسالة مطلوب.',

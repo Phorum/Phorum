@@ -1076,6 +1076,15 @@ p.error {
     font-size: var(--fs-sm);
 }
 
+.post-preview {
+    margin-bottom: 12px;
+}
+
+.post-preview h2 {
+    margin: 0 0 4px 0;
+    font-size: var(--fs-sm);
+}
+
 /* --- Information / warning boxes ----------------------------------------- */
 
 div.info-box {

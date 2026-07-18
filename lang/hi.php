@@ -97,6 +97,7 @@ return [
     'post.submit_thread' => 'थ्रेड पोस्ट करें',
     'post.submit_reply'  => 'उत्तर पोस्ट करें',
     'post.cancel'        => 'रद्द करें',
+    'post.preview'       => 'पूर्वावलोकन',
     'post.error_subject_required' => 'विषय आवश्यक है।',
     'post.error_subject_length'   => 'विषय 255 अक्षर या उससे कम का होना चाहिए।',
     'post.error_body_required'    => 'संदेश आवश्यक है।',

@@ -97,6 +97,7 @@ return [
     'post.submit_thread' => 'থ্রেড পোস্ট করুন',
     'post.submit_reply'  => 'উত্তর পোস্ট করুন',
     'post.cancel'        => 'বাতিল করুন',
+    'post.preview'       => 'পূর্বরূপ',
     'post.error_subject_required' => 'বিষয় আবশ্যক।',
     'post.error_subject_length'   => 'বিষয় সর্বোচ্চ ২৫৫ অক্ষরের হতে হবে।',
     'post.error_body_required'    => 'বার্তার মূল অংশ আবশ্যক।',

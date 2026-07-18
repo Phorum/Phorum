@@ -14,6 +14,7 @@ use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Model\Message;
 use Phorum\Service\AnnouncementService;
 use Phorum\Service\BanService;
 use Phorum\Service\FileService;
@@ -47,7 +48,7 @@ class MessageControllerTest extends ControllerTestCase
 
         return new MessageController(
             config:         $this->makeConfig(),
-            twig:           $this->makeTwig(),
+            twig:           $deps['twig'] ?? $this->makeTwig(),
             forums:         $deps['forums']         ?? $this->createMock(ForumMapper::class),
             messages:       $deps['messages']       ?? $this->createMock(MessageMapper::class),
             perms:          $perms,
@@ -365,6 +366,72 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(302, $response->status);
     }
 
+    public function testPostPreviewShowsRenderedBodyWithoutPersisting(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->expects($this->never())->method('post');
+
+        $twig = $this->makeTwig();
+        $twig->expects($this->once())->method('render')->with(
+            'message/post.html.twig',
+            $this->callback(function (array $ctx): bool {
+                return $ctx['show_preview'] === true
+                    && $ctx['body'] === 'Hello world!'
+                    && $ctx['preview_msg'] instanceof Message
+                    && $ctx['preview_msg']->subject === 'New Thread'
+                    && $ctx['preview_msg']->body === 'Hello world!'
+                    && !empty($ctx['preview_users_map']);
+            })
+        );
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'messageService'=> $msgService,
+            'twig'          => $twig,
+        ]);
+        $response = $ctrl->post($this->makePostRequest(
+            post:   ['action' => 'preview', 'subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testPostPreviewStillValidatesRequiredFields(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->expects($this->never())->method('post');
+
+        $twig = $this->makeTwig();
+        $twig->expects($this->once())->method('render')->with(
+            'message/post.html.twig',
+            $this->callback(function (array $ctx): bool {
+                return $ctx['show_preview'] === false
+                    && in_array('Message body is required.', $ctx['errors'], true);
+            })
+        );
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'messageService'=> $msgService,
+            'twig'          => $twig,
+        ]);
+        $response = $ctrl->post($this->makePostRequest(
+            post:   ['action' => 'preview', 'subject' => 'New Thread', 'body' => ''],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
     // -------------------------------------------------------------------------
     // editMessage
     // -------------------------------------------------------------------------
@@ -611,5 +678,58 @@ class MessageControllerTest extends ControllerTestCase
             tokens: ['message_id' => '1'],
         ));
         $this->assertSame(302, $response->status);
+    }
+
+    public function testEditMessagePreviewShowsRenderedBodyWithoutPersisting(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 1;
+        $msg->status  = MessageMapper::STATUS_APPROVED;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->expects($this->never())->method('edit');
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByIds')->willReturn([1 => $user]);
+
+        $twig = $this->makeTwig();
+        $twig->expects($this->once())->method('render')->with(
+            'message/edit.html.twig',
+            $this->callback(function (array $ctx) use ($msg): bool {
+                return $ctx['show_preview'] === true
+                    && $ctx['body'] === 'Updated body.'
+                    && $ctx['preview_msg'] instanceof Message
+                    && $ctx['preview_msg']->subject === 'Updated Subject'
+                    && $ctx['preview_msg']->body === 'Updated body.'
+                    && $ctx['preview_msg']->meta === $msg->meta
+                    && !empty($ctx['preview_users_map']);
+            })
+        );
+
+        $ctrl     = $this->makeController([
+            'messages'      => $messages,
+            'forums'        => $forums,
+            'messageService'=> $msgService,
+            'fileService'   => $fileService,
+            'users'         => $users,
+            'twig'          => $twig,
+        ]);
+        $response = $ctrl->editMessage($this->makePostRequest(
+            post:   ['action' => 'preview', 'subject' => 'Updated Subject', 'body' => 'Updated body.'],
+            tokens: ['message_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
     }
 }

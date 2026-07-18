@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => 'Publicar hilo',
     'post.submit_reply'      => 'Publicar respuesta',
     'post.cancel'            => 'Cancelar',
+    'post.preview'           => 'Vista previa',
     'post.error_subject_required' => 'El asunto es obligatorio.',
     'post.error_subject_length'   => 'El asunto debe tener 255 caracteres o menos.',
     'post.error_body_required'    => 'El cuerpo del mensaje es obligatorio.',

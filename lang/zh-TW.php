@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => '發佈主題',
     'post.submit_reply'      => '發佈回覆',
     'post.cancel'            => '取消',
+    'post.preview'           => '預覽',
     'post.error_subject_required' => '請輸入標題。',
     'post.error_subject_length'   => '標題長度不可超過 255 個字元。',
     'post.error_body_required'    => '請輸入訊息內容。',

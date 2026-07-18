@@ -277,14 +277,16 @@ class MessageController extends Controller
             }
         }
 
-        $errors  = [];
-        $subject = '';
-        $body    = '';
+        $errors    = [];
+        $subject   = '';
+        $body      = '';
+        $isPreview = false;
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
-            $subject = trim($request->post['subject'] ?? '');
-            $body    = trim($request->post['body']    ?? '');
+            $isPreview = ($request->post['action'] ?? '') === 'preview';
+            $subject   = trim($request->post['subject'] ?? '');
+            $body      = trim($request->post['body']    ?? '');
 
             if ($subject === '') {
                 if ($parent !== null) {
@@ -300,57 +302,83 @@ class MessageController extends Controller
                 $errors[] = Lang::get('post.error_body_required');
             }
 
-            if (empty($errors) && !$this->perms->canModerate($forum, $user)) {
-                $wait = $this->floodControl->secondsRemaining($user->user_id);
-                if ($wait > 0) {
-                    $errors[] = Lang::get('post.error_flood_wait', ['seconds' => $wait]);
+            if (!$isPreview) {
+                if (empty($errors) && !$this->perms->canModerate($forum, $user)) {
+                    $wait = $this->floodControl->secondsRemaining($user->user_id);
+                    if ($wait > 0) {
+                        $errors[] = Lang::get('post.error_flood_wait', ['seconds' => $wait]);
+                    }
                 }
-            }
-
-            if (empty($errors)) {
-                $authorName = $user->display_name !== '' ? $user->display_name : $user->username;
-                if (
-                    $this->banService->checkIp($forumId) ||
-                    $this->banService->checkEmail($user->email, $forumId) ||
-                    $this->banService->checkUsername($authorName, $forumId) ||
-                    $this->banService->checkSpamWords($body, $forumId)
-                ) {
-                    $errors[] = Lang::get('post.error_posting_blocked');
-                }
-            }
-
-            if (empty($errors)) {
-                $msg = $this->messageService->post($forum, $user, $subject, $body, $parentId);
-
-                if ($msg->status === 2) {
-                    $this->searchIndex->indexMessage(
-                        $msg->message_id, $msg->forum_id, $msg->author, $msg->subject, $msg->body
-                    );
-                }
-
-                // Store any uploaded attachments
-                $this->storeUploads($forum, $msg->message_id, $user->user_id, $errors, $request);
 
                 if (empty($errors)) {
-                    if ($msg->status === 2) {
-                        $this->subscriptions->notifySubscribers($msg, $forum, excludeUserId: $user->user_id);
+                    $authorName = $user->display_name !== '' ? $user->display_name : $user->username;
+                    if (
+                        $this->banService->checkIp($forumId) ||
+                        $this->banService->checkEmail($user->email, $forumId) ||
+                        $this->banService->checkUsername($authorName, $forumId) ||
+                        $this->banService->checkSpamWords($body, $forumId)
+                    ) {
+                        $errors[] = Lang::get('post.error_posting_blocked');
                     }
-                    $this->subscriptions->notifyModerators($msg, $forum);
+                }
 
-                    return $this->redirect(Url::thread($forumId, $msg->thread, $msg->message_id));
+                if (empty($errors)) {
+                    $msg = $this->messageService->post($forum, $user, $subject, $body, $parentId);
+
+                    if ($msg->status === 2) {
+                        $this->searchIndex->indexMessage(
+                            $msg->message_id, $msg->forum_id, $msg->author, $msg->subject, $msg->body
+                        );
+                    }
+
+                    // Store any uploaded attachments
+                    $this->storeUploads($forum, $msg->message_id, $user->user_id, $errors, $request);
+
+                    if (empty($errors)) {
+                        if ($msg->status === 2) {
+                            $this->subscriptions->notifySubscribers($msg, $forum, excludeUserId: $user->user_id);
+                        }
+                        $this->subscriptions->notifyModerators($msg, $forum);
+
+                        return $this->redirect(Url::thread($forumId, $msg->thread, $msg->message_id));
+                    }
                 }
             }
         } elseif ($parent !== null) {
             $subject = 'Re: ' . $parent->subject;
         }
 
+        $showPreview = $isPreview && empty($errors);
+        $previewMsg  = null;
+        $previewUsersMap = [];
+
+        if ($showPreview) {
+            $previewMsg              = new Message();
+            $previewMsg->forum_id    = $forum->forum_id;
+            $previewMsg->thread      = $parent->thread ?? 0;
+            $previewMsg->parent_id   = $parentId;
+            $previewMsg->user_id     = $user->user_id;
+            $previewMsg->author      = $user->display_name !== '' ? $user->display_name : $user->username;
+            $previewMsg->subject     = $subject;
+            $previewMsg->body        = $body;
+            $previewMsg->datestamp   = time();
+            $previewMsg->status      = $forum->moderation > 0
+                                        ? MessageMapper::STATUS_UNAPPROVED
+                                        : MessageMapper::STATUS_APPROVED;
+            $previewMsg->meta        = MessageMeta::fromArray(['format' => 'markdown'])->encode();
+            $previewUsersMap         = [$user->user_id => $user];
+        }
+
         return $this->respond($this->render('message/post.html.twig', [
-            'forum'    => $forum,
-            'parent'   => $parent,
-            'subject'  => $subject,
-            'body'     => $body,
-            'errors'   => $errors,
-            'theme'    => $this->resolveTheme($forum),
+            'forum'             => $forum,
+            'parent'            => $parent,
+            'subject'           => $subject,
+            'body'              => $body,
+            'errors'            => $errors,
+            'theme'             => $this->resolveTheme($forum),
+            'show_preview'      => $showPreview,
+            'preview_msg'       => $previewMsg,
+            'preview_users_map' => $previewUsersMap,
         ]));
     }
 
@@ -374,14 +402,16 @@ class MessageController extends Controller
             return $this->forbidden();
         }
 
-        $errors  = [];
-        $subject = $msg->subject;
-        $body    = $msg->body;
+        $errors    = [];
+        $subject   = $msg->subject;
+        $body      = $msg->body;
+        $isPreview = false;
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
-            $subject = trim($request->post['subject'] ?? '');
-            $body    = trim($request->post['body']    ?? '');
+            $isPreview = ($request->post['action'] ?? '') === 'preview';
+            $subject   = trim($request->post['subject'] ?? '');
+            $body      = trim($request->post['body']    ?? '');
 
             if ($subject === '') {
                 $errors[] = Lang::get('post.error_subject_required');
@@ -393,7 +423,7 @@ class MessageController extends Controller
                 $errors[] = Lang::get('post.error_body_required');
             }
 
-            if (empty($errors)) {
+            if (!$isPreview && empty($errors)) {
                 $tracker = ($this->config->get('track_edits', false) ?? false)
                     ? new MessageTrackingMapper()
                     : null;
@@ -429,14 +459,28 @@ class MessageController extends Controller
 
         $attachments = $this->fileService->getAttachments($msg->message_id);
 
+        $showPreview = $isPreview && empty($errors);
+        $previewMsg  = null;
+        $previewUsersMap = [];
+
+        if ($showPreview) {
+            $previewMsg          = clone $msg;
+            $previewMsg->subject = $subject;
+            $previewMsg->body    = $body;
+            $previewUsersMap     = $msg->user_id > 0 ? $this->users->findByIds([$msg->user_id]) : [];
+        }
+
         return $this->respond($this->render('message/edit.html.twig', [
-            'forum'       => $forum,
-            'msg'         => $msg,
-            'subject'     => $subject,
-            'body'        => $body,
-            'errors'      => $errors,
-            'attachments' => $attachments,
-            'theme'       => $this->resolveTheme($forum),
+            'forum'             => $forum,
+            'msg'               => $msg,
+            'subject'           => $subject,
+            'body'              => $body,
+            'errors'            => $errors,
+            'attachments'       => $attachments,
+            'theme'             => $this->resolveTheme($forum),
+            'show_preview'      => $showPreview,
+            'preview_msg'       => $previewMsg,
+            'preview_users_map' => $previewUsersMap,
         ]));
     }
 

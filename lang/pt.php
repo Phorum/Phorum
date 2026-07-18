@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => 'Publicar tópico',
     'post.submit_reply'      => 'Publicar resposta',
     'post.cancel'            => 'Cancelar',
+    'post.preview'           => 'Pré-visualização',
     'post.error_subject_required' => 'O assunto é obrigatório.',
     'post.error_subject_length'   => 'O assunto deve ter no máximo 255 caracteres.',
     'post.error_body_required'    => 'O corpo da mensagem é obrigatório.',

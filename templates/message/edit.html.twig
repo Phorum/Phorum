@@ -18,6 +18,23 @@
 
 {% include '_form_errors.html.twig' %}
 
+{% if show_preview %}
+<div class="post-preview">
+    <h2>{{ trans('post.preview') }}</h2>
+    {% include 'message/_post.html.twig' with {
+        msg: preview_msg,
+        forum: forum,
+        can_reply: false,
+        can_moderate: false,
+        can_edit_ids: [],
+        new_ids: [],
+        current_user_id: 0,
+        track_edits: false,
+        users_map: preview_users_map
+    } only %}
+</div>
+{% endif %}
+
 <form method="post" action="{{ path('/message/' ~ msg.message_id ~ '/edit') }}" enctype="multipart/form-data">
     {{ csrf_field() }}
 
@@ -58,7 +75,8 @@
     {% endif %}
 
     <div class="form-row">
-        <button type="submit">{{ trans('message.save_edit') }}</button>
+        <button type="submit" name="action" value="submit">{{ trans('message.save_edit') }}</button>
+        <button type="submit" name="action" value="preview" class="btn-secondary">{{ trans('post.preview') }}</button>
         <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ msg.thread) }}#msg-{{ msg.message_id }}">{{ trans('post.cancel') }}</a>
     </div>
 </form>

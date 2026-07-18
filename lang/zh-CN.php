@@ -99,6 +99,7 @@ return [
     'post.submit_thread'     => '发布主题',
     'post.submit_reply'      => '发布回复',
     'post.cancel'            => '取消',
+    'post.preview'           => '预览',
     'post.error_subject_required' => '标题为必填项。',
     'post.error_subject_length'   => '标题不能超过 255 个字符。',
     'post.error_body_required'    => '内容为必填项。',

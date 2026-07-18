@@ -85,6 +85,7 @@ return [
     'post.submit_thread'     => 'Создать тему',
     'post.submit_reply'      => 'Отправить ответ',
     'post.cancel'            => 'Отмена',
+    'post.preview'           => 'Предпросмотр',
     'post.error_subject_required' => 'Необходимо указать тему.',
     'post.error_subject_length'   => 'Тема должна содержать не более 255 символов.',
     'post.error_body_required'    => 'Необходимо ввести текст сообщения.',

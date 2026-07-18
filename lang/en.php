@@ -106,6 +106,7 @@ return [
     'post.submit_thread'     => 'Post Thread',
     'post.submit_reply'      => 'Post Reply',
     'post.cancel'            => 'Cancel',
+    'post.preview'           => 'Preview',
     'post.error_subject_required' => 'Subject is required.',
     'post.error_subject_length'   => 'Subject must be 255 characters or fewer.',
     'post.error_body_required'    => 'Message body is required.',

@@ -106,6 +106,7 @@ return [
     'post.submit_thread'     => 'Discussie plaatsen',
     'post.submit_reply'      => 'Reactie plaatsen',
     'post.cancel'            => 'Annuleren',
+    'post.preview'           => 'Voorbeeld',
     'post.error_subject_required' => 'Onderwerp is verplicht.',
     'post.error_subject_length'   => 'Onderwerp mag maximaal 255 tekens bevatten.',
     'post.error_body_required'    => 'Berichttekst is verplicht.',

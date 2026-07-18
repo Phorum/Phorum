@@ -85,6 +85,7 @@ return [
     'post.submit_thread'     => 'Thread erstellen',
     'post.submit_reply'      => 'Antwort senden',
     'post.cancel'            => 'Abbrechen',
+    'post.preview'           => 'Vorschau',
     'post.error_subject_required' => 'Betreff ist erforderlich.',
     'post.error_subject_length'   => 'Betreff darf höchstens 255 Zeichen lang sein.',
     'post.error_body_required'    => 'Nachrichtentext ist erforderlich.',

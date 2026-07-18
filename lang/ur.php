@@ -86,6 +86,7 @@ return [
     'post.submit_thread'     => 'دھاگہ پوسٹ کریں',
     'post.submit_reply'      => 'جواب پوسٹ کریں',
     'post.cancel'            => 'منسوخ کریں',
+    'post.preview'           => 'پیش نمائش',
     'post.error_subject_required' => 'موضوع درکار ہے۔',
     'post.error_subject_length'   => 'موضوع 255 حروف یا اس سے کم پر مشتمل ہونا چاہیے۔',
     'post.error_body_required'    => 'پیغام کا متن درکار ہے۔',
