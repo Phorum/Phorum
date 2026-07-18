@@ -51,10 +51,30 @@ abstract class MapperTestCase extends TestCase
         self::$pdo->connect();
         self::$crud = new CRUD(self::$pdo);
 
-        $schema = file_get_contents(dirname(__DIR__, 2) . '/db/sqlite_test.sql');
-        foreach (array_filter(array_map('trim', explode(';', $schema))) as $stmt) {
-            self::$pdo->exec($stmt);
+        $root = dirname(__DIR__, 2);
+        foreach (self::schemaFiles($root) as $file) {
+            $schema = file_get_contents($file);
+            foreach (array_filter(array_map('trim', explode(';', $schema))) as $stmt) {
+                self::$pdo->exec($stmt);
+            }
         }
+    }
+
+    /**
+     * db/sqlite_test.sql plus every mods/{name}/sqlite_test.sql found —
+     * mirrors SchemaInstaller::allSchemaFiles() so a module's own tables
+     * (e.g. mods/webhooks/sqlite_test.sql) are available to mapper tests
+     * without a core schema file edit.
+     *
+     * @return string[]
+     */
+    private static function schemaFiles(string $root): array
+    {
+        $files = [$root . '/db/sqlite_test.sql'];
+        foreach (glob($root . '/mods/*/sqlite_test.sql') ?: [] as $file) {
+            $files[] = $file;
+        }
+        return $files;
     }
 
     protected function setUp(): void

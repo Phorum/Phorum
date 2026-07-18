@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Tests\Http\Controllers\Admin;
 
+use Phorum\Hook\HookDispatcher;
 use Phorum\Http\Controllers\Admin\BanController;
 use Phorum\Http\Request;
 use Phorum\Mapper\BanMapper;
@@ -143,6 +144,27 @@ class AdminBanControllerTest extends ControllerTestCase
         $response = $ctrl->create($this->makePostRequest(['type' => '1', 'string' => 'evil.com']));
         $this->assertSame(302, $response->status);
         $this->assertSame('/admin/bans', $response->headers['Location']);
+    }
+
+    public function testCreatePostFiresAfterBanCreateHook(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $fired = null;
+        HookDispatcher::getInstance()->register('after_ban_create', function (Ban $ban) use (&$fired) {
+            $fired = $ban;
+            return null;
+        });
+
+        $bans = $this->createMock(BanMapper::class);
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([]);
+
+        $ctrl = $this->makeController(['bans' => $bans, 'forums' => $forums]);
+        $ctrl->create($this->makePostRequest(['type' => '1', 'string' => 'evil.com']));
+
+        $this->assertInstanceOf(Ban::class, $fired);
+        $this->assertSame('evil.com', $fired->string);
     }
 
     // -------------------------------------------------------------------------

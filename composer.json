@@ -8,6 +8,7 @@
         "dealnews/data-mapper": "^3.4",
         "dealnews/db": "^4.1",
         "dealnews/schema-org": "^0.1.0",
+        "guzzlehttp/guzzle": "^7.9",
         "league/commonmark": "^2.8",
         "pagemill/router": "^3.0",
         "phpmailer/phpmailer": "^7.1",

@@ -72,6 +72,7 @@ class BanController extends AdminController
             if (empty($errors)) {
                 $this->bans->save($ban);
                 $this->logAction('create', $ban);
+                phorum_api_hook('after_ban_create', $ban);
                 return $this->redirect('/admin/bans');
             }
         }

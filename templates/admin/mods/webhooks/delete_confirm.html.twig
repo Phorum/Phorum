@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Delete Webhook{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Delete Webhook</h4>
+<div class="card z-depth-1">
+    <div class="card-content">
+        <p>Delete the webhook pointed at <strong>{{ webhook.url|e }}</strong>?</p>
+        <p class="grey-text">This cannot be undone.</p>
+    </div>
+    <div class="card-action">
+        <form method="post" style="display:inline">
+            {{ csrf_field() }}
+            <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                <i class="material-icons left">remove_circle</i>Delete
+            </button>
+        </form>
+        <a href="{{ path('/admin/webhooks') }}" class="btn-flat waves-effect">Cancel</a>
+    </div>
+</div>
+{% endblock %}

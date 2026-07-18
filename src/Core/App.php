@@ -23,6 +23,9 @@ class App
     private Router      $router;
     private Environment $twig;
 
+    /** Routes contributed by enabled modules' own routes.php, merged in by initRouter(). */
+    private array $moduleRoutes = [];
+
     public function __construct(private readonly Config $config)
     {
         $this->initTwig();    // registers Markdown format hook
@@ -232,19 +235,30 @@ class App
         }
     }
 
+    /**
+     * Resolve a route's 'action' string to a [class, method] pair. A leading
+     * backslash marks a fully-qualified class name used as-is — the only way
+     * a module (not PSR-4 autoloaded under Phorum\Http\Controllers\) can
+     * supply its own admin controller, e.g. '\Phorum\Mod\Webhooks\Admin\WebhooksController@index'.
+     * Everything else keeps the normal Phorum\Http\Controllers\ prefix.
+     */
     private function resolveAction(string $action): array
     {
         [$controller, $method] = str_contains($action, '@')
             ? explode('@', $action, 2)
             : [$action, 'index'];
 
-        return ["Phorum\\Http\\Controllers\\{$controller}", $method];
+        $class = str_starts_with($controller, '\\')
+            ? ltrim($controller, '\\')
+            : "Phorum\\Http\\Controllers\\{$controller}";
+
+        return [$class, $method];
     }
 
     private function initRouter(): void
     {
         $routes       = require ROOT_PATH . '/etc/routes.php';
-        $this->router = new Router($routes);
+        $this->router = new Router(array_merge($routes, $this->moduleRoutes));
     }
 
     private function initTwig(): void
@@ -278,6 +292,17 @@ class App
             $file = ROOT_PATH . '/mods/' . $name . '/' . $name . '.php';
             if (file_exists($file)) {
                 require_once $file;
+            }
+
+            // Optional: a module can ship its own routes.php returning the
+            // same route-array shape as etc/routes.php — merged in below by
+            // initRouter(), so a module never needs a core routes.php edit.
+            $routesFile = ROOT_PATH . '/mods/' . $name . '/routes.php';
+            if (file_exists($routesFile)) {
+                $moduleRoutes = require $routesFile;
+                if (is_array($moduleRoutes)) {
+                    $this->moduleRoutes = array_merge($this->moduleRoutes, $moduleRoutes);
+                }
             }
         }
     }

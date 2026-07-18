@@ -34,8 +34,12 @@
                             <span class="badge-inactive">Disabled</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <form method="post" action="{{ path('/admin/modules') }}" style="display:inline">
+                    <td class="admin-actions">
+                        {% if mod.enabled and mod.info.configure %}
+                            <a href="{{ path(mod.info.configure) }}"
+                               class="btn-small waves-effect blue lighten-1">Configure</a>
+                        {% endif %}
+                        <form method="post" action="{{ path('/admin/modules') }}">
                             {{ csrf_field() }}
                             <input type="hidden" name="mod" value="{{ mod.name|e }}">
                             {% if mod.enabled %}

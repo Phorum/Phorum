@@ -5,6 +5,7 @@ namespace Phorum\Tests\Http\Controllers\Admin;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Impersonation;
+use Phorum\Hook\HookDispatcher;
 use Phorum\Http\Controllers\Admin\UserController;
 use Phorum\Http\Request;
 use Phorum\Mapper\MessageMapper;
@@ -188,6 +189,36 @@ class AdminUserControllerTest extends ControllerTestCase
             tokens: ['user_id' => '2'],
         ));
         $this->assertSame(200, $response->status);
+    }
+
+    public function testEditPostEnablingShadowBanFiresAfterShadowBanChangeHook(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $target = $this->makeUser(2);
+        $target->shadow_banned = 0;
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findIdsByUserStatus')->willReturn([]);
+
+        $fired = null;
+        HookDispatcher::getInstance()->register('after_shadow_ban_change', function (array $payload) use (&$fired) {
+            $fired = $payload;
+            return null;
+        });
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages]);
+        $ctrl->edit($this->makePostRequest(
+            post:   ['display_name' => 'User Two', 'email' => 'user2@example.com', 'shadow_banned' => '1'],
+            tokens: ['user_id' => '2'],
+        ));
+
+        $this->assertNotNull($fired);
+        $this->assertSame($target, $fired['user']);
+        $this->assertTrue($fired['enabled']);
     }
 
     public function testEditPostDisablingShadowBanRestoresMessagesAndLogsAction(): void

@@ -1,0 +1,3 @@
+title: Webhooks
+desc: Sends outgoing HTTP webhooks (with optional custom payload templates) when posts, registrations, bans, and shadow-ban changes happen.
+configure: /admin/webhooks

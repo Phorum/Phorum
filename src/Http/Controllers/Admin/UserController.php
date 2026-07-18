@@ -153,9 +153,11 @@ class UserController extends AdminController
                 if ($shadowBanned && !$wasShadowBanned) {
                     $this->applyShadowBan($userId);
                     $this->modLog->record($currentAdmin->user_id, 'shadow_ban_enable', 'user', $userId, 0, $user->username);
+                    phorum_api_hook('after_shadow_ban_change', ['user' => $user, 'enabled' => true]);
                 } elseif (!$shadowBanned && $wasShadowBanned) {
                     $this->liftShadowBan($userId);
                     $this->modLog->record($currentAdmin->user_id, 'shadow_ban_disable', 'user', $userId, 0, $user->username);
+                    phorum_api_hook('after_shadow_ban_change', ['user' => $user, 'enabled' => false]);
                 }
 
                 phorum_api_hook('admin_users_form_save', $request->post);

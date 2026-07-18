@@ -1,0 +1,96 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ is_new ? 'New Webhook' : 'Edit Webhook' }}{% endblock %}
+
+{% block content %}
+<h4 class="page-title">{{ is_new ? 'New Webhook' : 'Edit Webhook' }}</h4>
+
+{% if errors is not empty %}
+<div class="card-panel red lighten-4 red-text text-darken-4">
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12">
+                    <input id="field_url" type="text" name="url" value="{{ webhook.url|e }}">
+                    <label for="field_url" class="{{ webhook.url ? 'active' : '' }}">Endpoint URL</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Events</strong></p>
+                </div>
+                {% for name, label in events %}
+                <div class="col s12 m6">
+                    <label>
+                        <input type="checkbox" name="events[]" value="{{ name }}" {{ name in selected_events ? 'checked' : '' }}>
+                        <span>{{ label }}</span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="active" value="1" {{ webhook.active ? 'checked' : '' }}>
+                        <span>Active</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m4">
+                    <input id="field_content_type" type="text" name="content_type" value="{{ webhook.content_type|e }}">
+                    <label for="field_content_type" class="active">Content-Type</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12">
+                    <textarea id="field_payload_template" name="payload_template" class="materialize-textarea" style="font-family:monospace">{{ webhook.payload_template|e }}</textarea>
+                    <label for="field_payload_template" class="{{ webhook.payload_template ? 'active' : '' }}">Custom Payload Template (optional)</label>
+                </div>
+                <div class="col s12">
+                    <small class="grey-text">
+                        Leave blank to send the standard payload: <code>{"event": "...", "timestamp": ..., "data": {...}}</code>.
+                        Otherwise, enter a Twig template rendering the raw request body — available variables are
+                        <code>event</code> (string), <code>timestamp</code> (unix time), and <code>data</code> (event-specific fields).
+                        Example for Slack: <code>{% verbatim %}{"text": "New post *{{ data.subject }}* by {{ data.author }}"}{% endverbatim %}</code>
+                    </small>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px">
+                        Signing secret: <code>{{ webhook.secret }}</code> — sent requests include an
+                        <code>X-Phorum-Signature: sha256=&lt;hmac&gt;</code> header computed with this secret.
+                    </p>
+                    {% if not is_new %}
+                    <label>
+                        <input type="checkbox" name="regenerate_secret" value="1">
+                        <span>Regenerate secret on save</span>
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save
+                    </button>
+                    <a href="{{ path('/admin/webhooks') }}" class="btn-flat waves-effect">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
