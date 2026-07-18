@@ -84,7 +84,7 @@ class MessageController extends Controller
         $this->subscriptions  = $subscriptions ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
         $this->searchIndex    = $searchIndex   ?? new SearchMapper();
         $this->users          = $users          ?? new UserMapper();
-        $this->messageService = $messageService ?? new MessageService($this->messages, $this->forums, $this->users);
+        $this->messageService = $messageService ?? new MessageService($this->messages, $this->forums, $this->users, $this->settings);
         $this->announcements  = $announcements  ?? new AnnouncementService();
         $this->floodControl   = $floodControl   ?? new FloodControlService($this->messages, $this->settings);
         $this->schemaOrg      = $schemaOrg      ?? new SchemaOrgService($config);

@@ -7,6 +7,7 @@ use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\MessageTrackingMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
 use Phorum\Model\MessageMeta;
@@ -59,6 +60,16 @@ class MessageServiceTest extends TestCase
         $mapper->method('save')->willReturnArgument(0);
         $mapper->method('load')->willReturn(null);
         return $mapper;
+    }
+
+    /** Build a SettingMapper mock returning a fixed min_account_age_days value. */
+    private function makeSettingsWithMinAccountAgeDays(?int $days): SettingMapper
+    {
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnCallback(
+            fn(string $name) => $name === 'min_account_age_days' ? $days : null
+        );
+        return $settings;
     }
 
     // -------------------------------------------------------------------------
@@ -126,6 +137,84 @@ class MessageServiceTest extends TestCase
 
         $svc = new MessageService($msgMapper, $forumMapper, $userMapper);
         $svc->post($this->makeForum(moderation: 0), $this->makeShadowBannedUser(), 'Subject', 'Body');
+    }
+
+    // -------------------------------------------------------------------------
+    // post() — minimum account age
+    // -------------------------------------------------------------------------
+
+    public function testNewAccountCreatesUnapprovedMessageWhenThresholdEnabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithMinAccountAgeDays(7);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user             = $this->makeUser();
+        $user->date_added = time(); // registered right now
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_UNAPPROVED, $msg->status);
+    }
+
+    public function testOldAccountCreatesApprovedMessageWhenThresholdEnabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithMinAccountAgeDays(7);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user             = $this->makeUser();
+        $user->date_added = time() - (30 * 86400); // registered 30 days ago
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testNewAccountCreatesApprovedMessageWhenThresholdDisabled(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithMinAccountAgeDays(0);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user             = $this->makeUser();
+        $user->date_added = time();
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testNewAccountCreatesApprovedMessageWhenSettingsNotProvided(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $svc         = new MessageService($msgMapper, $forumMapper);
+
+        $user             = $this->makeUser();
+        $user->date_added = time();
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_APPROVED, $msg->status);
+    }
+
+    public function testShadowBanTakesPrecedenceOverNewAccountThreshold(): void
+    {
+        $msgMapper   = $this->makeSavingMapper();
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $settings    = $this->makeSettingsWithMinAccountAgeDays(7);
+        $svc         = new MessageService($msgMapper, $forumMapper, settings: $settings);
+
+        $user             = $this->makeShadowBannedUser();
+        $user->date_added = time();
+
+        $msg = $svc->post($this->makeForum(moderation: 0), $user, 'Subject', 'Body');
+
+        $this->assertSame(MessageMapper::STATUS_SHADOW, $msg->status);
     }
 
     public function testPostNewThreadHasZeroParentId(): void

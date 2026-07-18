@@ -6,6 +6,7 @@ namespace Phorum\Service;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\MessageTrackingMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
@@ -17,7 +18,8 @@ class MessageService
     public function __construct(
         private readonly MessageMapper $messages,
         private readonly ForumMapper   $forums,
-        private readonly ?UserMapper   $users = null,
+        private readonly ?UserMapper   $users    = null,
+        private readonly ?SettingMapper $settings = null,
     ) {}
 
     /**
@@ -45,9 +47,13 @@ class MessageService
         $msg->datestamp   = $now;
         $msg->modifystamp = $now;
         $msg->ip          = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        $minAccountAgeDays = (int) ($this->settings?->getSetting('min_account_age_days') ?? 0);
+        $accountTooNew     = $minAccountAgeDays > 0 && ($now - $user->date_added) < $minAccountAgeDays * 86400;
+
         $msg->status      = $user->shadow_banned
                             ? MessageMapper::STATUS_SHADOW
-                            : ($forum->moderation > 0
+                            : (($forum->moderation > 0 || $accountTooNew)
                                 ? MessageMapper::STATUS_UNAPPROVED
                                 : MessageMapper::STATUS_APPROVED);
         $msg->sort        = MessageMapper::SORT_DEFAULT;

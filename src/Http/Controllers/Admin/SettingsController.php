@@ -20,6 +20,7 @@ class SettingsController extends AdminController
         'mail_from'      => ['label' => 'Mail From Address',  'type' => 'email'],
         'flood_interval' => ['label' => 'Minimum Seconds Between Posts (0 = disabled)', 'type' => 'number'],
         'edit_time_limit' => ['label' => 'Edit Time Limit (minutes, 0 = unlimited)', 'type' => 'number'],
+        'min_account_age_days' => ['label' => 'Minimum Account Age for Auto-Approval (days, 0 = disabled)', 'type' => 'number'],
     ];
 
     private readonly SettingMapper $settings;
