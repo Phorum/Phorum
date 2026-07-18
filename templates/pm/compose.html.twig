@@ -15,6 +15,13 @@
 
         {% include '_form_errors.html.twig' %}
 
+        {% if show_preview %}
+        <div class="post-preview">
+            <h2>{{ trans('post.preview') }}</h2>
+            {% include 'pm/_message.html.twig' with {message: preview_msg, sender: preview_sender, recipients: preview_recipients} only %}
+        </div>
+        {% endif %}
+
         <form method="post" action="{{ path('/pm/compose') }}" class="pm-compose-form">
             {{ csrf_field() }}
             <div class="form-row">
@@ -30,10 +37,11 @@
             </div>
             <div class="form-row">
                 <label for="body">{{ trans('pm.body') }}</label>
-                <textarea id="body" name="body" rows="15" required>{{ body|e }}</textarea>
+                <textarea id="body" name="body" rows="15">{{ body|e }}</textarea>
             </div>
             <div class="form-row form-actions">
-                <button type="submit" class="button">{{ trans('pm.send') }}</button>
+                <button type="submit" name="action" value="submit" class="button">{{ trans('pm.send') }}</button>
+                <button type="submit" name="action" value="preview" class="btn-secondary">{{ trans('post.preview') }}</button>
                 <a href="{{ path('/pm') }}">{{ trans('pm.cancel') }}</a>
             </div>
         </form>

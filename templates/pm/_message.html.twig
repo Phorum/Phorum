@@ -1,0 +1,34 @@
+<table class="tbl-boxed pm-headers">
+    <tr>
+        <th scope="row">{{ trans('pm.subject') }}</th>
+        <td>{{ message.subject|e }}</td>
+    </tr>
+    <tr>
+        <th scope="row">{{ trans('pm.col_from') }}</th>
+        <td>
+            {% if sender %}
+                <a href="{{ path('/user/' ~ sender.user_id) }}">{{ sender.display_name ?: sender.username }}</a>
+            {% else %}
+                {{ message.author|e }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th scope="row">{{ trans('pm.col_to') }}</th>
+        <td>
+            {% for r in recipients %}
+                <a href="{{ path('/user/' ~ r.user_id) }}">{{ r.username|e }}</a>{% if not loop.last %}, {% endif %}
+            {% else %}
+                &mdash;
+            {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th scope="row">{{ trans('pm.col_date') }}</th>
+        <td>{{ message.datestamp|datestamp }}</td>
+    </tr>
+</table>
+
+<div class="pm-body">
+    {{ message.message|format(message.meta) }}
+</div>

@@ -23,7 +23,7 @@ class PmControllerTest extends ControllerTestCase
     {
         return new PmController(
             config:    $this->makeConfig(),
-            twig:      $this->makeTwig(),
+            twig:      $deps['twig'] ?? $this->makeTwig(),
             pmService: $deps['pmService'] ?? $this->createMock(PmService::class),
             users:     $deps['users']     ?? $this->createMock(UserMapper::class),
             buddies:   $deps['buddies']   ?? $this->createMock(PmBuddyMapper::class),
@@ -194,6 +194,63 @@ class PmControllerTest extends ControllerTestCase
         ));
         $this->assertSame(302, $response->status);
         $this->assertSame('/pm', $response->headers['Location']);
+    }
+
+    public function testComposePreviewShowsRenderedMessageWithoutSending(): void
+    {
+        $sender = $this->makeUser(1);
+        Auth::setUser($sender);
+
+        $recipient = $this->makeUser(2);
+        $users     = $this->createMock(UserMapper::class);
+        $users->method('findByUsername')->willReturn($recipient);
+
+        $pmService = $this->createMock(PmService::class);
+        $pmService->expects($this->never())->method('send');
+
+        $twig = $this->makeTwig();
+        $twig->expects($this->once())->method('render')->with(
+            'pm/compose.html.twig',
+            $this->callback(function (array $ctx): bool {
+                return $ctx['show_preview'] === true
+                    && $ctx['preview_msg'] instanceof PmMessage
+                    && $ctx['preview_msg']->subject === 'Hello'
+                    && $ctx['preview_msg']->message === 'World'
+                    && $ctx['preview_sender'] instanceof \Phorum\Model\User
+                    && $ctx['preview_recipients'] === [['user_id' => 2, 'username' => 'user2']];
+            })
+        );
+
+        $ctrl     = $this->makeController(['users' => $users, 'pmService' => $pmService, 'twig' => $twig]);
+        $response = $ctrl->compose($this->makePostRequest(
+            post:   ['action' => 'preview', 'to_username' => 'user2', 'subject' => 'Hello', 'body' => 'World'],
+            server: ['REQUEST_URI' => '/pm/compose'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testComposePreviewStillValidatesRequiredFields(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $pmService = $this->createMock(PmService::class);
+        $pmService->expects($this->never())->method('send');
+
+        $twig = $this->makeTwig();
+        $twig->expects($this->once())->method('render')->with(
+            'pm/compose.html.twig',
+            $this->callback(function (array $ctx): bool {
+                return $ctx['show_preview'] === false
+                    && in_array('Message body is required.', $ctx['errors'], true);
+            })
+        );
+
+        $ctrl     = $this->makeController(['pmService' => $pmService, 'twig' => $twig]);
+        $response = $ctrl->compose($this->makePostRequest(
+            post:   ['action' => 'preview', 'to_username' => '', 'subject' => 'Hello', 'body' => ''],
+            server: ['REQUEST_URI' => '/pm/compose'],
+        ));
+        $this->assertSame(200, $response->status);
     }
 
     // -------------------------------------------------------------------------

@@ -15,6 +15,7 @@ use Phorum\Mapper\PmMessageMapper;
 use Phorum\Mapper\PmXrefMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\MessageMeta;
+use Phorum\Model\PmMessage;
 use Phorum\Service\MailService;
 use Phorum\Service\PmService;
 use Twig\Environment;
@@ -166,8 +167,11 @@ class PmController extends Controller
             }
         }
 
+        $isPreview = false;
+
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
+            $isPreview  = ($request->post['action'] ?? '') === 'preview';
             $toUsername = trim($request->post['to_username'] ?? '');
             $subject    = trim($request->post['subject']     ?? '');
             $body       = trim($request->post['body']        ?? '');
@@ -189,7 +193,7 @@ class PmController extends Controller
                 $errors[] = Lang::get('pm.error_body_required');
             }
 
-            if (empty($errors) && $toUser !== null) {
+            if (!$isPreview && empty($errors) && $toUser !== null) {
                 $service->send(
                     fromUserId: $user->user_id,
                     author:     $user->display_name !== '' ? $user->display_name : $user->username,
@@ -201,12 +205,34 @@ class PmController extends Controller
             }
         }
 
+        $subject = $request->post['subject'] ?? $replySubject;
+        $body    = $request->post['body']    ?? $replyBody;
+
+        $showPreview = $isPreview && empty($errors);
+        $previewMsg  = null;
+
+        if ($showPreview) {
+            $previewMsg            = new PmMessage();
+            $previewMsg->user_id   = $user->user_id;
+            $previewMsg->author    = $user->display_name !== '' ? $user->display_name : $user->username;
+            $previewMsg->subject   = $subject;
+            $previewMsg->message   = $body;
+            $previewMsg->datestamp = time();
+            $previewMsg->meta      = MessageMeta::fromArray(['format' => 'markdown'])->encode();
+        }
+
         return $this->respond($this->render('pm/compose.html.twig', [
-            'to_user'      => $toUser,
-            'subject'      => $request->post['subject']  ?? $replySubject,
-            'body'         => $request->post['body']      ?? $replyBody,
-            'errors'       => $errors,
-            'folders'      => $service->listFolders($user->user_id),
+            'to_user'            => $toUser,
+            'subject'            => $subject,
+            'body'               => $body,
+            'errors'             => $errors,
+            'folders'            => $service->listFolders($user->user_id),
+            'show_preview'       => $showPreview,
+            'preview_msg'        => $previewMsg,
+            'preview_sender'     => $user,
+            'preview_recipients' => $showPreview && $toUser !== null
+                ? [['user_id' => $toUser->user_id, 'username' => $toUser->username]]
+                : [],
         ]));
     }
 
