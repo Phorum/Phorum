@@ -15,10 +15,17 @@ final class Url
         return "/forum/{$forumId}";
     }
 
-    /** $messageId, if given, appends a "#msg-{id}" fragment to scroll to that post. */
-    public static function thread(int $forumId, int $threadId, ?int $messageId = null): string
+    /**
+     * $messageId, if given, appends a "#msg-{id}" fragment to scroll to that post.
+     * $page, if given and greater than 1, appends a "?page={page}" query string
+     * before the fragment, for flat (non-threaded) paginated thread views.
+     */
+    public static function thread(int $forumId, int $threadId, ?int $messageId = null, ?int $page = null): string
     {
         $url = self::forum($forumId) . "/thread/{$threadId}";
+        if ($page !== null && $page > 1) {
+            $url .= "?page={$page}";
+        }
         if ($messageId !== null) {
             $url .= "#msg-{$messageId}";
         }

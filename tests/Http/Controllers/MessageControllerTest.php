@@ -94,7 +94,9 @@ class MessageControllerTest extends ControllerTestCase
         $forums = $this->createMock(ForumMapper::class);
         $forums->method('load')->willReturn($this->makeForum());
 
+        $root = $this->makeMessage(10, 1, 10);
         $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
         $messages->method('findByThread')->willReturn(null);
 
         $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
@@ -102,10 +104,23 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(404, $response->status);
     }
 
-    public function testThreadReturns404WhenRootNotInThread(): void
+    public function testThreadReturns404WhenRootNotFound(): void
     {
         $forums = $this->createMock(ForumMapper::class);
         $forums->method('load')->willReturn($this->makeForum());
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testThreadReturns404WhenRootNotInThreadedTree(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['threaded_read' => 1]));
 
         // Returns messages but none has message_id == thread_id (10)
         $msg = $this->makeMessage(99, 1, 10);
@@ -124,6 +139,7 @@ class MessageControllerTest extends ControllerTestCase
 
         $root = $this->makeMessage(10, 1, 10);
         $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
         $messages->method('findByThread')->willReturn([$root]);
 
         $subs = $this->createMock(SubscriptionService::class);
@@ -135,6 +151,157 @@ class MessageControllerTest extends ControllerTestCase
             'subscriptions' => $subs,
         ]);
         $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadDefaultsToPageOne(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $root->thread_count = 5;
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->expects($this->once())->method('findByThread')->with(10, null, 25, 0)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadUsesReadLengthForPerPage(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $root->thread_count = 25;
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->expects($this->once())->method('findByThread')->with(10, null, 10, 10)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['page' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadClampsPageBeyondTotalPages(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $root->thread_count = 15; // 2 pages at 10/page
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        // Clamped to page 2 (offset 10), not the requested page 99.
+        $messages->expects($this->once())->method('findByThread')->with(10, null, 10, 10)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['page' => '99'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadedModeIgnoresPageParam(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['threaded_read' => 1]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        // Threaded mode fetches the whole thread via findByThread(), no findRoot().
+        $messages->expects($this->once())->method('findByThread')->with(10, null)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['page' => '5'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadRedirectsWhenMsgParamResolvesToDifferentPage(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $root->thread_count = 25;
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findMessagePosition')->willReturn(21); // lands on page 3
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['msg' => '55'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertStringContainsString('page=3', $response->headers['Location']);
+        $this->assertStringContainsString('#msg-55', $response->headers['Location']);
+    }
+
+    public function testThreadDoesNotRedirectWhenMsgParamAlreadyOnRequestedPage(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $root->thread_count = 25;
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findMessagePosition')->willReturn(11); // page 2
+        $messages->method('findByThread')->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['msg' => '55', 'page' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadIgnoresMsgParamWhenPositionUnresolvable(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findMessagePosition')->willReturn(null);
+        $messages->method('findByThread')->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(
+            tokens: ['forum_id' => '1', 'thread_id' => '10'],
+            query:  ['msg' => '999'],
+        ));
         $this->assertSame(200, $response->status);
     }
 
@@ -155,6 +322,7 @@ class MessageControllerTest extends ControllerTestCase
         $reply1 = $this->makeMessage(11, 1, 10);
         $reply2 = $this->makeMessage(12, 1, 10);
         $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
         $messages->method('findByThread')->willReturn([$root, $reply1, $reply2]);
 
         $perms = $this->createMock(PermissionService::class);
@@ -306,6 +474,43 @@ class MessageControllerTest extends ControllerTestCase
         ));
         $this->assertSame(302, $response->status);
         $this->assertStringContainsString('/forum/1/thread/42', $response->headers['Location']);
+    }
+
+    public function testPostReplyRedirectsToResolvedPageWhenForumIsPaginatedFlat(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $postedMsg        = $this->makeMessage(42, 1, 5);
+        $postedMsg->status = 2;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findMessagePosition')->willReturn(21); // page 3 at 10/page
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'banService'    => $ban,
+            'messageService'=> $msgService,
+            'messages'      => $messages,
+        ]);
+        $response = $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'Re: Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertStringContainsString('/forum/1/thread/5?page=3#msg-42', $response->headers['Location']);
     }
 
     public function testPostBlockedByFloodControl(): void
@@ -678,6 +883,45 @@ class MessageControllerTest extends ControllerTestCase
             tokens: ['message_id' => '1'],
         ));
         $this->assertSame(302, $response->status);
+    }
+
+    public function testEditMessagePostSuccessRedirectsToResolvedPageWhenForumIsPaginatedFlat(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg           = $this->makeMessage(7, 1, 3);
+        $msg->user_id  = 1;
+        $msg->status   = MessageMapper::STATUS_APPROVED;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+        $messages->method('findMessagePosition')->willReturn(31); // page 4 at 10/page
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['read_length' => 10]));
+
+        $updatedMsg = $this->makeMessage(7, 1, 3);
+        $updatedMsg->status = MessageMapper::STATUS_APPROVED;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('edit')->willReturn($updatedMsg);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+
+        $ctrl     = $this->makeController([
+            'messages'      => $messages,
+            'forums'        => $forums,
+            'messageService'=> $msgService,
+            'fileService'   => $fileService,
+        ]);
+        $response = $ctrl->editMessage($this->makePostRequest(
+            post:   ['subject' => 'Updated Subject', 'body' => 'Updated body.'],
+            tokens: ['message_id' => '7'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertStringContainsString('/forum/1/thread/3?page=4#msg-7', $response->headers['Location']);
     }
 
     public function testEditMessagePreviewShowsRenderedBodyWithoutPersisting(): void

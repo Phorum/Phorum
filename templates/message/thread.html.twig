@@ -2,6 +2,10 @@
 
 {% block title %}{{ root.subject }} &mdash; {{ forum.name }} &mdash; {{ site_name }}{% endblock %}
 {% block head %}
+    {% set canonical_url = absolute_url(pagination_url(base_url, page)) %}
+    <link rel="canonical" href="{{ canonical_url }}">
+    {% if page > 1 %}<link rel="prev" href="{{ absolute_url(pagination_url(base_url, page - 1)) }}">{% endif %}
+    {% if page < pages %}<link rel="next" href="{{ absolute_url(pagination_url(base_url, page + 1)) }}">{% endif %}
     <meta property="og:site_name" content="{{ site_name }}">
     <meta property="og:type" content="article">
     <meta property="og:title" content="{{ root.subject }}">
@@ -78,6 +82,8 @@
         {% include 'message/_post.html.twig' with {msg: msg, forum: forum, can_reply: can_reply, can_moderate: can_moderate, new_ids: new_ids|default([]), current_user_id: current_user_id, track_edits: track_edits|default(false), users_map: users_map|default({}), can_edit_ids: can_edit_ids|default([])} %}
     {% endfor %}
 {% endif %}
+
+{% include '_pagination.html.twig' %}
 
 {% macro message_node(msg, forum, can_reply, can_moderate, new_ids, current_user_id, users_map, track_edits, can_edit_ids) %}
     {% import _self as macros %}

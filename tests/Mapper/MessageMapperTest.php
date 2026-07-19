@@ -205,6 +205,143 @@ class MessageMapperTest extends MapperTestCase
         $this->assertCount(1, $mapper->findByThread($t, viewerUserId: 8));
     }
 
+    public function testFindByThreadAppliesLimitAndOffset(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        for ($i = 2; $i <= 5; $i++) {
+            $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => $i]);
+        }
+
+        $mapper = $this->makeMapper();
+
+        $page1 = $mapper->findByThread($t, limit: 2, offset: 0);
+        $this->assertCount(2, $page1);
+        $this->assertSame(1, $page1[0]->datestamp);
+        $this->assertSame(2, $page1[1]->datestamp);
+
+        $page2 = $mapper->findByThread($t, limit: 2, offset: 2);
+        $this->assertCount(2, $page2);
+        $this->assertSame(3, $page2[0]->datestamp);
+        $this->assertSame(4, $page2[1]->datestamp);
+    }
+
+    public function testFindByThreadWithNullLimitReturnsEverything(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        for ($i = 2; $i <= 5; $i++) {
+            $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => $i]);
+        }
+
+        $mapper = $this->makeMapper();
+        $this->assertCount(5, $mapper->findByThread($t));
+    }
+
+    // -------------------------------------------------------------------------
+    // findRoot
+    // -------------------------------------------------------------------------
+
+    public function testFindRootReturnsRootMessage(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'subject' => 'Root subject']);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $mapper = $this->makeMapper();
+        $root   = $mapper->findRoot($t);
+        $this->assertNotNull($root);
+        $this->assertSame($t, $root->message_id);
+        $this->assertSame('Root subject', $root->subject);
+    }
+
+    public function testFindRootReturnsNullWhenRootUnapprovedOrDeleted(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'status' => MessageMapper::STATUS_DELETED]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findRoot($t));
+    }
+
+    public function testFindRootIncludesViewersOwnShadowBannedRoot(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'user_id' => 7, 'status' => MessageMapper::STATUS_SHADOW]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findRoot($t));
+        $this->assertNotNull($mapper->findRoot($t, viewerUserId: 7));
+        $this->assertNull($mapper->findRoot($t, viewerUserId: 8));
+    }
+
+    // -------------------------------------------------------------------------
+    // findMessagePosition
+    // -------------------------------------------------------------------------
+
+    public function testFindMessagePositionReturnsOneForFirstMessage(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $mapper = $this->makeMapper();
+        $this->assertSame(1, $mapper->findMessagePosition($t, $t));
+    }
+
+    public function testFindMessagePositionReturnsCorrectOrdinalForLaterMessage(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 2]);
+        $third = $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 3]);
+
+        $mapper = $this->makeMapper();
+        $this->assertSame(3, $mapper->findMessagePosition($t, $third));
+    }
+
+    public function testFindMessagePositionReturnsNullForMessageNotInThread(): void
+    {
+        $t     = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        $other = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$other} WHERE message_id = {$other}");
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findMessagePosition($t, $other));
+    }
+
+    public function testFindMessagePositionReturnsNullForUnapprovedMessage(): void
+    {
+        $t      = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $reply  = $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 2, 'status' => MessageMapper::STATUS_UNAPPROVED]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findMessagePosition($t, $reply));
+    }
+
+    public function testFindMessagePositionBreaksTiesOnMessageIdWhenDatestampsMatch(): void
+    {
+        $t      = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $first  = $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 1]);
+        $second = $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 1]);
+
+        $mapper = $this->makeMapper();
+        $this->assertSame(2, $mapper->findMessagePosition($t, $first));
+        $this->assertSame(3, $mapper->findMessagePosition($t, $second));
+    }
+
+    public function testFindMessagePositionIncludesViewersOwnShadowBannedMessage(): void
+    {
+        $t     = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 1, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $reply = $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 1, 'datestamp' => 2, 'user_id' => 7, 'status' => MessageMapper::STATUS_SHADOW]);
+
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findMessagePosition($t, $reply));
+        $this->assertSame(2, $mapper->findMessagePosition($t, $reply, viewerUserId: 7));
+    }
+
     // -------------------------------------------------------------------------
     // setThreadId
     // -------------------------------------------------------------------------

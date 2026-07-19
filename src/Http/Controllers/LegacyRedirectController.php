@@ -3,10 +3,14 @@ declare(strict_types=1);
 
 namespace Phorum\Http\Controllers;
 
+use Phorum\Core\Config;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
+use Phorum\Mapper\ForumMapper;
+use Phorum\Mapper\MessageMapper;
+use Twig\Environment;
 
 /**
  * Issues 301 redirects for Phorum 6 legacy URLs.
@@ -18,6 +22,20 @@ use Phorum\Http\Response;
  */
 class LegacyRedirectController extends Controller
 {
+    private readonly ForumMapper   $forums;
+    private readonly MessageMapper $messages;
+
+    public function __construct(
+        Config          $config,
+        Environment     $twig,
+        ?ForumMapper    $forums   = null,
+        ?MessageMapper  $messages = null,
+    ) {
+        parent::__construct($config, $twig);
+        $this->forums   = $forums   ?? new ForumMapper();
+        $this->messages = $messages ?? new MessageMapper();
+    }
+
     /**
      * index.php[?{forum_id}]  →  /forum/{forum_id}, or / with no forum_id.
      *
@@ -58,7 +76,12 @@ class LegacyRedirectController extends Controller
 
     /**
      * read.php?{forum_id},{thread_id}[,{message_id}]
-     *   →  /forum/{forum_id}/thread/{thread_id}[#msg-{message_id}]
+     *   →  /forum/{forum_id}/thread/{thread_id}[?page={n}][#msg-{message_id}]
+     *
+     * When a message_id is given, its containing page is resolved (for
+     * forums in flat reading mode) so the deep link still lands on the right
+     * page now that thread pages are paginated. Resolution failures degrade
+     * gracefully to the un-paged link — never blocks the base redirect.
      */
     public function read(Request $request): Response
     {
@@ -68,7 +91,21 @@ class LegacyRedirectController extends Controller
         $msg_id    = (int) ($pos[2] ?? 0);
 
         if ($forum_id > 0 && $thread_id > 0) {
-            $url = Url::thread($forum_id, $thread_id, ($msg_id > 0 && $msg_id !== $thread_id) ? $msg_id : null);
+            $targetMsg = ($msg_id > 0 && $msg_id !== $thread_id) ? $msg_id : null;
+            $page      = null;
+
+            if ($targetMsg !== null) {
+                $forum = $this->forums->load($forum_id);
+                if ($forum !== null && !$forum->threaded_read) {
+                    $perPage  = $forum->read_length ?: 25;
+                    $position = $this->messages->findMessagePosition($thread_id, $targetMsg);
+                    if ($position !== null) {
+                        $page = max(1, (int) ceil($position / $perPage));
+                    }
+                }
+            }
+
+            $url = Url::thread($forum_id, $thread_id, $targetMsg, $page);
             return $this->redirect($url, 301);
         } else {
             return $this->redirect('/', 301);

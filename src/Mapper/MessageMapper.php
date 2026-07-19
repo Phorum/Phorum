@@ -117,13 +117,22 @@ class MessageMapper extends AbstractPhorumMapper
      *
      * $viewerUserId, when given, also includes the viewer's own
      * STATUS_SHADOW replies in this thread (see findThreadsInForum()).
+     *
+     * $limit/$offset, when $limit is given, page the result for the flat
+     * (non-threaded) reading view. Omitting $limit (the default) returns the
+     * entire thread, unchanged from before pagination existed — required for
+     * threaded-mode rendering and feed generation, which still need the whole
+     * thread in one call.
      */
-    public function findByThread(int $threadId, ?int $viewerUserId = null): ?array
+    public function findByThread(int $threadId, ?int $viewerUserId = null, ?int $limit = null, int $offset = 0): ?array
     {
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE thread = :thread'
                 . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
-                . ' ORDER BY datestamp ASC';
+                . ' ORDER BY datestamp ASC, message_id ASC';
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+        }
         $params = [
             ':thread'       => $threadId,
             ':status'       => self::STATUS_APPROVED,
@@ -132,6 +141,73 @@ class MessageMapper extends AbstractPhorumMapper
         ];
         $rows = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
+    }
+
+    /**
+     * Fetch just the thread root row (message_id === thread), applying the
+     * same approved/shadow-own visibility filter as findByThread(). Used by
+     * the flat, paginated thread view to resolve the header/subject/actions
+     * without needing the root to be inside the current page's LIMIT/OFFSET
+     * window.
+     */
+    public function findRoot(int $threadId, ?int $viewerUserId = null): ?Message
+    {
+        $sql    = 'SELECT * FROM ' . $this->table()
+                . ' WHERE message_id = :id'
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
+                . ' LIMIT 1';
+        $params = [
+            ':id'            => $threadId,
+            ':status'        => self::STATUS_APPROVED,
+            ':shadow_status' => self::STATUS_SHADOW,
+            ':viewer_id'     => $viewerUserId ?? 0,
+        ];
+        $rows = $this->crud()->runFetch($sql, $params);
+        return empty($rows) ? null : $this->setData($rows[0]);
+    }
+
+    /**
+     * Return the 1-based ordinal position of $messageId within $threadId's
+     * datestamp-ASC, message_id-ASC visibility-filtered ordering — i.e. which
+     * slot it would occupy in the full, unpaginated findByThread() result.
+     * Callers divide by the per-page size and ceil() to get a page number.
+     * Returns null if the message doesn't exist, isn't in this thread, or
+     * isn't visible to $viewerUserId.
+     */
+    public function findMessagePosition(int $threadId, int $messageId, ?int $viewerUserId = null): ?int
+    {
+        $target = $this->crud()->runFetch(
+            'SELECT datestamp FROM ' . $this->table()
+            . ' WHERE message_id = :msg_id AND thread = :thread'
+            . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))',
+            [
+                ':msg_id'        => $messageId,
+                ':thread'        => $threadId,
+                ':status'        => self::STATUS_APPROVED,
+                ':shadow_status' => self::STATUS_SHADOW,
+                ':viewer_id'     => $viewerUserId ?? 0,
+            ]
+        );
+        if (empty($target)) {
+            return null;
+        }
+        $targetDatestamp = (int) $target[0]['datestamp'];
+
+        $rows = $this->crud()->runFetch(
+            'SELECT COUNT(*) AS cnt FROM ' . $this->table()
+            . ' WHERE thread = :thread'
+            . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
+            . '   AND (datestamp < :ts OR (datestamp = :ts AND message_id <= :msg_id))',
+            [
+                ':thread'        => $threadId,
+                ':status'        => self::STATUS_APPROVED,
+                ':shadow_status' => self::STATUS_SHADOW,
+                ':viewer_id'     => $viewerUserId ?? 0,
+                ':ts'            => $targetDatestamp,
+                ':msg_id'        => $messageId,
+            ]
+        );
+        return (int) $rows[0]['cnt'];
     }
 
     /** After inserting a root post, self-reference its thread field. */

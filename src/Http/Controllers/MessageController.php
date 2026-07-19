@@ -157,25 +157,68 @@ class MessageController extends Controller
             return $this->forbidden();
         }
 
-        $threadMessages = $this->messages->findByThread($threadId, Auth::user()?->user_id);
-        if ($threadMessages === null) {
-            return $this->notFound();
-        }
+        $currentUser  = Auth::user();
+        $viewerUserId = $currentUser?->user_id;
+        $threaded     = (bool) $forum->threaded_read;
 
-        // The root message is the one whose message_id equals the thread id
-        $root = null;
-        foreach ($threadMessages as $msg) {
-            if ($msg->message_id === $threadId) {
-                $root = $msg;
-                break;
+        if ($threaded) {
+            // Threaded mode always renders the whole reply tree in one page —
+            // an OFFSET window could split a parent from its child.
+            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId);
+            if ($threadMessages === null) {
+                return $this->notFound();
+            }
+
+            $root = null;
+            foreach ($threadMessages as $msg) {
+                if ($msg->message_id === $threadId) {
+                    $root = $msg;
+                    break;
+                }
+            }
+            if ($root === null) {
+                return $this->notFound();
+            }
+
+            $page  = 1;
+            $pages = 1;
+        } else {
+            $perPage = $forum->read_length ?: 25;
+            $page    = max(1, (int) ($request->query['page'] ?? 1));
+
+            $root = $this->messages->findRoot($threadId, $viewerUserId);
+            if ($root === null) {
+                return $this->notFound();
+            }
+
+            $total = $root->thread_count;
+            $pages = $total > 0 ? (int) ceil($total / $perPage) : 1;
+
+            // A message-specific deep link (?msg=) may resolve to a different
+            // page than the one requested — redirect there rather than
+            // silently showing the wrong page.
+            $msgParam = (int) ($request->query['msg'] ?? 0);
+            if ($msgParam > 0 && $msgParam !== $threadId) {
+                $position = $this->messages->findMessagePosition($threadId, $msgParam, $viewerUserId);
+                if ($position !== null) {
+                    $targetPage = max(1, (int) ceil($position / $perPage));
+                    if ($targetPage !== $page) {
+                        return $this->redirect(Url::thread($forumId, $threadId, $msgParam, $targetPage));
+                    }
+                }
+            }
+
+            if ($page > $pages) {
+                $page = $pages;
+            }
+            $offset = ($page - 1) * $perPage;
+
+            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId, $perPage, $offset);
+            if ($threadMessages === null) {
+                return $this->notFound();
             }
         }
-        if ($root === null) {
-            return $this->notFound();
-        }
 
-        $currentUser = Auth::user();
-        $threaded    = (bool) $forum->threaded_read;
         $canReply    = !$root->closed && $this->perms->canReply($forum, $currentUser);
         $canModerate = $this->perms->canModerate($forum, $currentUser);
 
@@ -230,6 +273,9 @@ class MessageController extends Controller
                                 ? $this->buildTree($threadMessages, $threadId)
                                 : $threadMessages,
             'threaded'     => $threaded,
+            'page'         => $page,
+            'pages'        => $pages,
+            'base_url'     => Url::thread($forumId, $threadId),
             'can_reply'    => $canReply,
             'can_moderate' => $canModerate,
             'can_edit_ids' => $canEditIds,
@@ -340,7 +386,10 @@ class MessageController extends Controller
                         }
                         $this->subscriptions->notifyModerators($msg, $forum);
 
-                        return $this->redirect(Url::thread($forumId, $msg->thread, $msg->message_id));
+                        return $this->redirect(Url::thread(
+                            $forumId, $msg->thread, $msg->message_id,
+                            $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $user->user_id)
+                        ));
                     }
                 }
             }
@@ -452,7 +501,10 @@ class MessageController extends Controller
                 $this->storeUploads($forum, $msg->message_id, $currentUser->user_id, $errors, $request);
 
                 if (empty($errors)) {
-                    return $this->redirect(Url::thread($msg->forum_id, $msg->thread, $msg->message_id));
+                    return $this->redirect(Url::thread(
+                        $msg->forum_id, $msg->thread, $msg->message_id,
+                        $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $currentUser->user_id)
+                    ));
                 }
             }
         }
@@ -575,6 +627,24 @@ class MessageController extends Controller
         }
 
         return $roots;
+    }
+
+    /**
+     * Resolve which flat-mode page a message lands on, for redirects after
+     * posting/editing — a new reply is always the newest message, so it
+     * always lands on the last page, not page 1. Returns null in threaded
+     * mode (no pagination to resolve) or when the position can't be found.
+     */
+    private function resolveMessagePage(Forum $forum, int $threadId, int $messageId, ?int $viewerUserId): ?int
+    {
+        if ($forum->threaded_read) {
+            return null;
+        }
+
+        $perPage  = $forum->read_length ?: 25;
+        $position = $this->messages->findMessagePosition($threadId, $messageId, $viewerUserId);
+
+        return $position !== null ? max(1, (int) ceil($position / $perPage)) : null;
     }
 
     /**
