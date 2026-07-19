@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => '该用户名已被使用。',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => '使用 Google 继续',
+    'oauth.button_github' => '使用 GitHub 继续',
+    'oauth.error_provider_error'        => '登录已取消或提供商返回了错误。请重试。',
+    'oauth.error_state_mismatch'        => '您的登录会话已过期或无效。请重试。',
+    'oauth.error_token_exchange_failed' => '无法完成与该提供商的登录。请重试。',
+    'oauth.error_email_not_verified'    => '您的电子邮件地址未在该提供商处验证，因此我们无法为您登录。请在提供商处验证您的电子邮件后重试。',
+    'oauth.error_login_failed'          => '登录时出现问题。请重试。',
+    'oauth.error_account_inactive'      => '您的账户尚未激活。请查看您的电子邮件以获取确认链接。',
+    'oauth.error_not_configured'        => '该登录选项目前不可用。',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => '用户名',

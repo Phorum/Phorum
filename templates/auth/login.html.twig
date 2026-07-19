@@ -35,4 +35,6 @@
 
 <p><a href="{{ path('/register') }}">{{ trans('auth.create_account') }}</a></p>
 <p><a href="{{ path('/forgot-password') }}">{{ trans('auth.forgot_password') }}</a></p>
+
+{{ hook('auth_login_buttons', {redirect: redirect}) }}
 {% endblock %}

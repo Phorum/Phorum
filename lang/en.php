@@ -160,6 +160,19 @@ return [
     'auth.error_username_taken'       => 'That username is already taken.',
 
     // -------------------------------------------------------------------------
+    // OAuth login (mods/oauth)
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Continue with Google',
+    'oauth.button_github' => 'Continue with GitHub',
+    'oauth.error_provider_error'        => 'Login was cancelled or the provider returned an error. Please try again.',
+    'oauth.error_state_mismatch'        => 'Your login session expired or is invalid. Please try again.',
+    'oauth.error_token_exchange_failed' => 'We could not complete login with that provider. Please try again.',
+    'oauth.error_email_not_verified'    => 'Your email address is not verified with that provider, so we cannot sign you in. Please verify your email with the provider and try again.',
+    'oauth.error_login_failed'          => 'Something went wrong signing you in. Please try again.',
+    'oauth.error_account_inactive'      => 'Your account is not active yet. Check your email for a confirmation link.',
+    'oauth.error_not_configured'        => 'That login option is not currently available.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Username',

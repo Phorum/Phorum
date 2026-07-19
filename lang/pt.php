@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => 'Esse nome de usuário já está em uso.',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Continuar com o Google',
+    'oauth.button_github' => 'Continuar com o GitHub',
+    'oauth.error_provider_error'        => 'O login foi cancelado ou o provedor retornou um erro. Tente novamente.',
+    'oauth.error_state_mismatch'        => 'Sua sessão de login expirou ou é inválida. Tente novamente.',
+    'oauth.error_token_exchange_failed' => 'Não foi possível concluir o login com esse provedor. Tente novamente.',
+    'oauth.error_email_not_verified'    => 'Seu endereço de e-mail não está verificado com esse provedor, então não podemos fazer seu login. Verifique seu e-mail com o provedor e tente novamente.',
+    'oauth.error_login_failed'          => 'Algo deu errado ao fazer login. Tente novamente.',
+    'oauth.error_account_inactive'      => 'Sua conta ainda não está ativa. Verifique seu e-mail para um link de confirmação.',
+    'oauth.error_not_configured'        => 'Essa opção de login não está disponível no momento.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Nome de usuário',

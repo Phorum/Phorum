@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => 'Ce nom d\'utilisateur est déjà pris.',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Continuer avec Google',
+    'oauth.button_github' => 'Continuer avec GitHub',
+    'oauth.error_provider_error'        => 'La connexion a été annulée ou le fournisseur a renvoyé une erreur. Veuillez réessayer.',
+    'oauth.error_state_mismatch'        => 'Votre session de connexion a expiré ou n\'est pas valide. Veuillez réessayer.',
+    'oauth.error_token_exchange_failed' => 'Nous n\'avons pas pu terminer la connexion avec ce fournisseur. Veuillez réessayer.',
+    'oauth.error_email_not_verified'    => 'Votre adresse e-mail n\'est pas vérifiée auprès de ce fournisseur, nous ne pouvons donc pas vous connecter. Veuillez vérifier votre e-mail auprès du fournisseur et réessayer.',
+    'oauth.error_login_failed'          => 'Une erreur s\'est produite lors de la connexion. Veuillez réessayer.',
+    'oauth.error_account_inactive'      => 'Votre compte n\'est pas encore actif. Consultez votre e-mail pour un lien de confirmation.',
+    'oauth.error_not_configured'        => 'Cette option de connexion n\'est pas disponible actuellement.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Nom d\'utilisateur',

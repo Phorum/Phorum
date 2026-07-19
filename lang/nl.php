@@ -160,6 +160,19 @@ return [
     'auth.error_username_taken'       => 'Deze gebruikersnaam is al in gebruik.',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Doorgaan met Google',
+    'oauth.button_github' => 'Doorgaan met GitHub',
+    'oauth.error_provider_error'        => 'Inloggen is geannuleerd of de provider heeft een fout geretourneerd. Probeer het opnieuw.',
+    'oauth.error_state_mismatch'        => 'Uw inlogsessie is verlopen of ongeldig. Probeer het opnieuw.',
+    'oauth.error_token_exchange_failed' => 'We konden het inloggen bij deze provider niet voltooien. Probeer het opnieuw.',
+    'oauth.error_email_not_verified'    => 'Uw e-mailadres is niet geverifieerd bij deze provider, dus we kunnen u niet aanmelden. Verifieer uw e-mail bij de provider en probeer het opnieuw.',
+    'oauth.error_login_failed'          => 'Er is iets misgegaan bij het inloggen. Probeer het opnieuw.',
+    'oauth.error_account_inactive'      => 'Uw account is nog niet actief. Controleer uw e-mail voor een bevestigingslink.',
+    'oauth.error_not_configured'        => 'Die inlogoptie is momenteel niet beschikbaar.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Gebruikersnaam',

@@ -137,6 +137,17 @@ return [
     'auth.error_email_required'       => 'ایک درست ای میل پتہ درکار ہے۔',
     'auth.error_username_taken'       => 'یہ صارف نام پہلے سے استعمال میں ہے۔',
 
+    // OAuth login
+    'oauth.button_google' => 'Google کے ساتھ جاری رکھیں',
+    'oauth.button_github' => 'GitHub کے ساتھ جاری رکھیں',
+    'oauth.error_provider_error'        => 'لاگ ان منسوخ کر دیا گیا یا فراہم کنندہ نے خرابی واپس کی۔ براہ کرم دوبارہ کوشش کریں۔',
+    'oauth.error_state_mismatch'        => 'آپ کا لاگ ان سیشن ختم ہو گیا ہے یا غلط ہے۔ براہ کرم دوبارہ کوشش کریں۔',
+    'oauth.error_token_exchange_failed' => 'ہم اس فراہم کنندہ کے ساتھ لاگ ان مکمل نہیں کر سکے۔ براہ کرم دوبارہ کوشش کریں۔',
+    'oauth.error_email_not_verified'    => 'آپ کا ای میل ایڈریس اس فراہم کنندہ کے ساتھ تصدیق شدہ نہیں ہے، اس لیے ہم آپ کو سائن ان نہیں کر سکتے۔ براہ کرم فراہم کنندہ کے ساتھ اپنا ای میل تصدیق کریں اور دوبارہ کوشش کریں۔',
+    'oauth.error_login_failed'          => 'آپ کو سائن ان کرنے میں کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔',
+    'oauth.error_account_inactive'      => 'آپ کا اکاؤنٹ ابھی فعال نہیں ہے۔ تصدیقی لنک کے لیے اپنا ای میل چیک کریں۔',
+    'oauth.error_not_configured'        => 'یہ لاگ ان آپشن فی الحال دستیاب نہیں ہے۔',
+
     // Profile
     'profile.username'       => 'صارف نام',
     'profile.name'           => 'نام',

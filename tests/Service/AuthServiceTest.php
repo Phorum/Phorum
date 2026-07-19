@@ -111,6 +111,49 @@ class AuthServiceTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // loginUser()
+    // -------------------------------------------------------------------------
+
+    public function testLoginUserSetsAuthUser(): void
+    {
+        $user   = $this->makeUser();
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        (new AuthService($mapper))->loginUser($user);
+        $this->assertSame($user, Auth::user());
+    }
+
+    public function testLoginUserFiresAfterLoginHook(): void
+    {
+        $user   = $this->makeUser();
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        $seen = null;
+        HookDispatcher::getInstance()->register('after_login', function ($u) use (&$seen) {
+            $seen = $u;
+            return null;
+        });
+
+        (new AuthService($mapper))->loginUser($user);
+        $this->assertSame($user, $seen);
+    }
+
+    public function testLoginUserSetsLongTermSessionOnlyWhenRemembered(): void
+    {
+        $user   = $this->makeUser();
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        (new AuthService($mapper))->loginUser($user, remember: false);
+        $this->assertSame('', $user->sessid_lt);
+
+        (new AuthService($mapper))->loginUser($user, remember: true);
+        $this->assertNotSame('', $user->sessid_lt);
+    }
+
+    // -------------------------------------------------------------------------
     // register()
     // -------------------------------------------------------------------------
 

@@ -73,10 +73,28 @@ class AuthController extends Controller
             }
         }
 
+        $oauthError = $this->oauthErrorMessage((string) ($request->query['oauth_error'] ?? ''));
+
         return $this->respond($this->render('auth/login.html.twig', [
-            'errors'   => $error !== null ? [$error] : [],
+            'errors'   => array_values(array_filter([$error, $oauthError])),
             'redirect' => $request->query['redirect'] ?? '/',
         ]));
+    }
+
+    /**
+     * Translate a known ?oauth_error= code (set by mods/oauth's controller
+     * on redirect) into a login-page error message. Unknown/absent codes
+     * are silently ignored rather than surfaced, since this query param is
+     * attacker-controlled.
+     */
+    private function oauthErrorMessage(string $code): ?string
+    {
+        $known = [
+            'provider_error', 'state_mismatch', 'token_exchange_failed',
+            'email_not_verified', 'login_failed', 'account_inactive', 'not_configured',
+        ];
+
+        return in_array($code, $known, true) ? Lang::get('oauth.error_' . $code) : null;
     }
 
     // -------------------------------------------------------------------------

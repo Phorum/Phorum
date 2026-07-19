@@ -1,0 +1,93 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}OAuth Login{% endblock %}
+
+{% block content %}
+<h4 class="page-title">OAuth Login (Google &amp; GitHub)</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <span class="card-title">Google</span>
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="oauth_google_enabled" value="1" {{ google_enabled ? 'checked' : '' }}>
+                        <span>Enable "Continue with Google"</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_google_client_id" type="text" name="oauth_google_client_id" value="{{ google_client_id|e }}">
+                    <label for="field_google_client_id" class="{{ google_client_id ? 'active' : '' }}">Client ID</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_google_client_secret" type="password" name="oauth_google_client_secret" value="" autocomplete="new-password">
+                    <label for="field_google_client_secret">Client Secret</label>
+                    <span class="helper-text">
+                        {% if google_has_secret %}A client secret is already configured. Leave blank to keep it.{% else %}Required to enable.{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="col s12">
+                    <span class="helper-text">Callback URL to register with Google: <code>{{ google_callback }}</code></span>
+                </div>
+            </div>
+
+            <hr>
+
+            <span class="card-title">GitHub</span>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="col s12">
+                    <label>
+                        <input type="checkbox" name="oauth_github_enabled" value="1" {{ github_enabled ? 'checked' : '' }}>
+                        <span>Enable "Continue with GitHub"</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_github_client_id" type="text" name="oauth_github_client_id" value="{{ github_client_id|e }}">
+                    <label for="field_github_client_id" class="{{ github_client_id ? 'active' : '' }}">Client ID</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_github_client_secret" type="password" name="oauth_github_client_secret" value="" autocomplete="new-password">
+                    <label for="field_github_client_secret">Client Secret</label>
+                    <span class="helper-text">
+                        {% if github_has_secret %}A client secret is already configured. Leave blank to keep it.{% else %}Required to enable.{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+                <div class="col s12">
+                    <span class="helper-text">Callback URL to register with GitHub: <code>{{ github_callback }}</code></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

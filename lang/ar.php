@@ -137,6 +137,17 @@ return [
     'auth.error_email_required'       => 'عنوان بريد إلكتروني صالح مطلوب.',
     'auth.error_username_taken'       => 'اسم المستخدم هذا مُستخدَم بالفعل.',
 
+    // OAuth login
+    'oauth.button_google' => 'المتابعة باستخدام Google',
+    'oauth.button_github' => 'المتابعة باستخدام GitHub',
+    'oauth.error_provider_error'        => 'تم إلغاء تسجيل الدخول أو أعاد مزوّد الخدمة خطأً. يرجى المحاولة مرة أخرى.',
+    'oauth.error_state_mismatch'        => 'انتهت صلاحية جلسة تسجيل الدخول أو أنها غير صالحة. يرجى المحاولة مرة أخرى.',
+    'oauth.error_token_exchange_failed' => 'تعذّر علينا إكمال تسجيل الدخول باستخدام ذلك المزوّد. يرجى المحاولة مرة أخرى.',
+    'oauth.error_email_not_verified'    => 'عنوان بريدك الإلكتروني غير موثّق لدى هذا المزوّد، لذا لا يمكننا تسجيل دخولك. يرجى توثيق بريدك الإلكتروني لدى المزوّد والمحاولة مرة أخرى.',
+    'oauth.error_login_failed'          => 'حدث خطأ ما أثناء تسجيل دخولك. يرجى المحاولة مرة أخرى.',
+    'oauth.error_account_inactive'      => 'حسابك غير مُفعّل بعد. تحقّق من بريدك الإلكتروني للحصول على رابط التأكيد.',
+    'oauth.error_not_configured'        => 'خيار تسجيل الدخول هذا غير متوفر حاليًا.',
+
     // Profile
     'profile.username'       => 'اسم المستخدم',
     'profile.name'           => 'الاسم',

@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => 'Nama pengguna tersebut sudah digunakan.',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Lanjutkan dengan Google',
+    'oauth.button_github' => 'Lanjutkan dengan GitHub',
+    'oauth.error_provider_error'        => 'Login dibatalkan atau penyedia mengembalikan kesalahan. Silakan coba lagi.',
+    'oauth.error_state_mismatch'        => 'Sesi login Anda telah kedaluwarsa atau tidak valid. Silakan coba lagi.',
+    'oauth.error_token_exchange_failed' => 'Kami tidak dapat menyelesaikan login dengan penyedia tersebut. Silakan coba lagi.',
+    'oauth.error_email_not_verified'    => 'Alamat email Anda belum diverifikasi dengan penyedia tersebut, sehingga kami tidak dapat masuk untuk Anda. Silakan verifikasi email Anda dengan penyedia dan coba lagi.',
+    'oauth.error_login_failed'          => 'Terjadi kesalahan saat masuk. Silakan coba lagi.',
+    'oauth.error_account_inactive'      => 'Akun Anda belum aktif. Periksa email Anda untuk tautan konfirmasi.',
+    'oauth.error_not_configured'        => 'Opsi login tersebut saat ini tidak tersedia.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Nama Pengguna',

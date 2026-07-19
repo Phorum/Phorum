@@ -136,6 +136,17 @@ return [
     'auth.error_email_required'       => 'Eine gültige E-Mail-Adresse ist erforderlich.',
     'auth.error_username_taken'       => 'Dieser Benutzername ist bereits vergeben.',
 
+    // OAuth login
+    'oauth.button_google' => 'Mit Google anmelden',
+    'oauth.button_github' => 'Mit GitHub anmelden',
+    'oauth.error_provider_error'        => 'Die Anmeldung wurde abgebrochen oder der Anbieter hat einen Fehler gemeldet. Bitte versuchen Sie es erneut.',
+    'oauth.error_state_mismatch'        => 'Ihre Anmeldesitzung ist abgelaufen oder ungültig. Bitte versuchen Sie es erneut.',
+    'oauth.error_token_exchange_failed' => 'Die Anmeldung über diesen Anbieter konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
+    'oauth.error_email_not_verified'    => 'Ihre E-Mail-Adresse ist bei diesem Anbieter nicht bestätigt, daher können wir Sie nicht anmelden. Bitte bestätigen Sie Ihre E-Mail-Adresse beim Anbieter und versuchen Sie es erneut.',
+    'oauth.error_login_failed'          => 'Bei der Anmeldung ist etwas schiefgelaufen. Bitte versuchen Sie es erneut.',
+    'oauth.error_account_inactive'      => 'Ihr Konto ist noch nicht aktiv. Prüfen Sie Ihre E-Mails auf einen Bestätigungslink.',
+    'oauth.error_not_configured'        => 'Diese Anmeldeoption ist derzeit nicht verfügbar.',
+
     // Profile
     'profile.username'       => 'Benutzername',
     'profile.name'           => 'Name',

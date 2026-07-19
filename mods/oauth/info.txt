@@ -1,0 +1,3 @@
+title: OAuth Login (Google & GitHub)
+desc: Adds "Continue with Google" / "Continue with GitHub" login buttons. Auto-links to an existing account by verified email, or auto-registers a new one.
+configure: /admin/oauth

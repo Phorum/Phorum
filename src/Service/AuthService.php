@@ -59,6 +59,19 @@ class AuthService
         return $user;
     }
 
+    /**
+     * Create a session for a User that has already been authenticated by
+     * some out-of-band means (e.g. an OAuth provider) — the public
+     * counterpart to the private password-login path in login(), for
+     * callers that have already resolved a trusted User and just need the
+     * same cookie/session-row/after_login side effects login() performs.
+     */
+    public function loginUser(User $user, bool $remember = false): void
+    {
+        $this->createSession($user, $remember);
+        phorum_api_hook('after_login', $user);
+    }
+
     public function logout(User $user): void
     {
         phorum_api_hook('before_logout', $user);

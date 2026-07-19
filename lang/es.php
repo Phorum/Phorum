@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => 'Ese nombre de usuario ya está en uso.',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => 'Continuar con Google',
+    'oauth.button_github' => 'Continuar con GitHub',
+    'oauth.error_provider_error'        => 'El inicio de sesión se canceló o el proveedor devolvió un error. Inténtalo de nuevo.',
+    'oauth.error_state_mismatch'        => 'Tu sesión de inicio de sesión ha caducado o no es válida. Inténtalo de nuevo.',
+    'oauth.error_token_exchange_failed' => 'No pudimos completar el inicio de sesión con ese proveedor. Inténtalo de nuevo.',
+    'oauth.error_email_not_verified'    => 'Tu dirección de correo electrónico no está verificada con ese proveedor, por lo que no podemos iniciar tu sesión. Verifica tu correo electrónico con el proveedor e inténtalo de nuevo.',
+    'oauth.error_login_failed'          => 'Algo salió mal al iniciar tu sesión. Inténtalo de nuevo.',
+    'oauth.error_account_inactive'      => 'Tu cuenta aún no está activa. Revisa tu correo electrónico para encontrar un enlace de confirmación.',
+    'oauth.error_not_configured'        => 'Esa opción de inicio de sesión no está disponible actualmente.',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => 'Nombre de usuario',

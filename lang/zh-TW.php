@@ -153,6 +153,19 @@ return [
     'auth.error_username_taken'       => '此使用者名稱已被使用。',
 
     // -------------------------------------------------------------------------
+    // OAuth login
+    // -------------------------------------------------------------------------
+    'oauth.button_google' => '使用 Google 繼續',
+    'oauth.button_github' => '使用 GitHub 繼續',
+    'oauth.error_provider_error'        => '登入已取消或提供者傳回錯誤。請再試一次。',
+    'oauth.error_state_mismatch'        => '您的登入工作階段已過期或無效。請再試一次。',
+    'oauth.error_token_exchange_failed' => '無法完成與該提供者的登入。請再試一次。',
+    'oauth.error_email_not_verified'    => '您的電子郵件地址尚未在該提供者處驗證，因此我們無法為您登入。請在提供者處驗證您的電子郵件後再試一次。',
+    'oauth.error_login_failed'          => '登入時發生問題。請再試一次。',
+    'oauth.error_account_inactive'      => '您的帳戶尚未啟用。請查看您的電子郵件以取得確認連結。',
+    'oauth.error_not_configured'        => '該登入選項目前無法使用。',
+
+    // -------------------------------------------------------------------------
     // User profile
     // -------------------------------------------------------------------------
     'profile.username'       => '使用者名稱',
