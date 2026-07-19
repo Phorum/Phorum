@@ -53,7 +53,18 @@
         <strong>{{ trans('attachment.label') }}:</strong>
         <ul class="attachment-list">
             {% for f in msg.attachments %}
-            <li><a href="{{ path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) }}">{{ f.filename }}</a> <small>({{ f.filesize|filesizeformat }})</small></li>
+            {% set file_url = path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) %}
+            {% if f.mime_type in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] %}
+                {% set file_meta = f.meta|decode_file_meta %}
+                <li class="attachment-preview-item">
+                    <a class="attachment-preview-link" href="{{ file_url }}" data-lightbox-name="{{ f.filename|e }}">
+                        <img class="attachment-preview" src="{{ file_url }}" alt="{{ f.filename|e }}" loading="lazy"
+                             {% if file_meta.width %}width="{{ file_meta.width }}" height="{{ file_meta.height }}"{% endif %}>
+                    </a>
+                </li>
+            {% else %}
+                <li><a href="{{ file_url }}">{{ f.filename }}</a> <small>({{ f.filesize|filesizeformat }})</small></li>
+            {% endif %}
             {% endfor %}
         </ul>
     </div>

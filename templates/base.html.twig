@@ -92,6 +92,11 @@
             <p><a href="https://www.phorum.org/">{{ trans('nav.powered_by') }}</a></p>
         </footer>
     </div>
+    <div id="attachment-lightbox" class="lightbox-overlay" hidden>
+        <button type="button" class="lightbox-close" aria-label="{{ trans('attachment.lightbox_close') }}">&times;</button>
+        <img src="" alt="">
+    </div>
+
     {{ hook('javascript_filter') }}
     {{ hook('end_output') }}{{ hook('end_output_') }}
     {% block scripts %}
@@ -175,6 +180,44 @@
                 document.addEventListener('keydown', function (event) {
                     if (event.key === 'Escape') {
                         dropdowns.forEach(closeDropdown);
+                    }
+                });
+            })();
+
+            (function () {
+                var lightbox = document.getElementById('attachment-lightbox');
+                if (!lightbox) {
+                    return;
+                }
+                var img   = lightbox.querySelector('img');
+                var close = lightbox.querySelector('.lightbox-close');
+
+                function openLightbox(link) {
+                    img.src = link.getAttribute('href');
+                    img.alt = link.getAttribute('data-lightbox-name') || '';
+                    lightbox.hidden = false;
+                }
+
+                function closeLightbox() {
+                    lightbox.hidden = true;
+                    img.src = '';
+                }
+
+                document.addEventListener('click', function (event) {
+                    var link = event.target.closest('.attachment-preview-link');
+                    if (link) {
+                        event.preventDefault();
+                        openLightbox(link);
+                        return;
+                    }
+                    if (!lightbox.hidden && (event.target === lightbox || event.target === close)) {
+                        closeLightbox();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && !lightbox.hidden) {
+                        closeLightbox();
                     }
                 });
             })();

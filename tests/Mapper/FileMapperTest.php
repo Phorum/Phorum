@@ -29,6 +29,8 @@ class FileMapperTest extends MapperTestCase
             'add_datetime' => 1000,
             'message_id'   => 0,
             'link'         => File::LINK_MESSAGE,
+            'mime_type'    => '',
+            'meta'         => null,
         ], $override));
     }
 
@@ -58,6 +60,24 @@ class FileMapperTest extends MapperTestCase
         $mapper = $this->makeMapper();
         $mapper->delete($id);
         $this->assertNull($mapper->load($id));
+    }
+
+    public function testSaveAndLoadRoundTripsMimeTypeAndMeta(): void
+    {
+        $mapper = $this->makeMapper();
+        $f = new File();
+        $f->user_id      = 1;
+        $f->filename     = 'photo.jpg';
+        $f->filesize     = 1024;
+        $f->add_datetime = 5000;
+        $f->link         = File::LINK_MESSAGE;
+        $f->mime_type    = 'image/jpeg';
+        $f->meta         = '{"width":100,"height":200}';
+        $mapper->save($f);
+
+        $loaded = $mapper->load($f->file_id);
+        $this->assertSame('image/jpeg', $loaded->mime_type);
+        $this->assertSame('{"width":100,"height":200}', $loaded->meta);
     }
 
     // -------------------------------------------------------------------------

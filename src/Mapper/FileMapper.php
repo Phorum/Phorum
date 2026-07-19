@@ -20,6 +20,8 @@ class FileMapper extends AbstractPhorumMapper
         'add_datetime' => [],
         'message_id'   => [],
         'link'         => [],
+        'mime_type'    => [],
+        'meta'         => [],
     ];
 
     /**

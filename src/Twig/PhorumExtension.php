@@ -13,6 +13,7 @@ use Phorum\Core\Config;
 use Phorum\Core\CsrfGuard;
 use Phorum\Core\Lang;
 use Phorum\Hook\HookDispatcher;
+use Phorum\Model\FileMeta;
 use Phorum\Model\MessageMeta;
 use Phorum\Service\Autolinker;
 use Twig\Extension\AbstractExtension;
@@ -72,6 +73,7 @@ class PhorumExtension extends AbstractExtension
             new TwigFilter('datestamp',   [$this, 'formatDatestamp']),
             new TwigFilter('relative_time', [$this, 'relativeTime']),
             new TwigFilter('decode_meta',     static fn($raw) => MessageMeta::decode(is_string($raw) ? $raw : null)),
+            new TwigFilter('decode_file_meta', static fn($raw) => FileMeta::decode(is_string($raw) ? $raw : null)),
             new TwigFilter('filesizeformat',  static fn($bytes) => self::formatFilesize((int) $bytes)),
             new TwigFilter('url_encode',      static fn($s) => rawurlencode((string) $s)),
         ];

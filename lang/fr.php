@@ -450,4 +450,5 @@ return [
     'attachment.hint_count' => 'Up to {n} file(s).',
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Les téléversements de fichiers sont actuellement désactivés.',
+    'attachment.lightbox_close' => 'Fermer',
 ];

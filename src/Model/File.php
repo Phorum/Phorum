@@ -19,4 +19,7 @@ class File
     public int    $add_datetime = 0;
     public int    $message_id   = 0;
     public string $link         = '';
+    public string $mime_type    = '';
+    /** JSON blob decoded via FileMeta — image width/height today. */
+    public ?string $meta        = null;
 }

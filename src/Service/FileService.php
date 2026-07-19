@@ -6,6 +6,7 @@ namespace Phorum\Service;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\FileMapper;
 use Phorum\Model\File;
+use Phorum\Model\FileMeta;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
 
@@ -82,6 +83,8 @@ class FileService
         $file->add_datetime = time();
         $file->message_id   = $messageId;
         $file->link         = File::LINK_MESSAGE;
+        $file->mime_type    = MimeDetector::detect($rawData, $file->filename);
+        $file->meta         = FileMeta::fromImageData($rawData)?->encode();
 
         $this->mapper->save($file);
 

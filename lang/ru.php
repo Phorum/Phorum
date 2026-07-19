@@ -416,4 +416,5 @@ return [
     'attachment.hint_count' => 'Up to {n} file(s).',
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Загрузка файлов в настоящее время отключена.',
+    'attachment.lightbox_close' => 'Закрыть',
 ];

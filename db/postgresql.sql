@@ -271,6 +271,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_files (
     add_datetime             INTEGER         NOT NULL DEFAULT 0,
     message_id               INTEGER         NOT NULL DEFAULT 0,
     link                     VARCHAR(10)     NOT NULL DEFAULT '',
+    mime_type                VARCHAR(100)    NOT NULL DEFAULT '',
+    meta                     TEXT                NULL,
 
     PRIMARY KEY (file_id)
 );

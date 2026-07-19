@@ -600,6 +600,59 @@ article.message.message-unapproved {
     cursor: pointer;
 }
 
+.attachment-list li.attachment-preview-item {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.attachment-preview-link {
+    display: block;
+    line-height: 0;
+}
+
+.attachment-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    object-fit: contain;
+    cursor: pointer;
+}
+
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.lightbox-overlay[hidden] {
+    display: none;
+}
+
+.lightbox-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
 .message-footer {
     background: var(--accent-light);
     border-top: 1px solid var(--border);

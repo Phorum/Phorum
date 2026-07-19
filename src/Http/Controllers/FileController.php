@@ -14,6 +14,7 @@ use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Model\File;
 use Phorum\Service\FileService;
+use Phorum\Service\MimeDetector;
 use Phorum\Service\PermissionService;
 use Twig\Environment;
 
@@ -77,8 +78,10 @@ class FileController extends Controller
 
         $rawData  = $this->fileService->retrieve($file);
 
-        // MIME detection via finfo, falling back to extension map
-        $mimeType = $this->detectMime($rawData, $file->filename);
+        // MIME detection via finfo, falling back to extension map — always
+        // re-sniffed on the actual bytes here (never the stored mime_type
+        // column), since this feeds the security check right below.
+        $mimeType = MimeDetector::detect($rawData, $file->filename);
 
         // Force download for anything that could execute in the browser:
         // HTML/script tags in the first 1 KB, or SVG (which allows inline JS)
@@ -123,7 +126,7 @@ class FileController extends Controller
         }
 
         $rawData  = $this->fileService->retrieve($file);
-        $mimeType = $this->detectMime($rawData, $file->filename);
+        $mimeType = MimeDetector::detect($rawData, $file->filename);
         $safeName = preg_replace('/[\r\n";]/', '_', $file->filename);
 
         return new Response($rawData, 200, [
@@ -135,36 +138,4 @@ class FileController extends Controller
         ]);
     }
 
-    // -------------------------------------------------------------------------
-
-    private function detectMime(string $data, string $filename): string
-    {
-        if (function_exists('finfo_buffer')) {
-            $finfo    = finfo_open(FILEINFO_MIME_TYPE);
-            $detected = finfo_buffer($finfo, $data);
-            if ($detected !== false && $detected !== '') {
-                return $detected;
-            }
-        }
-
-        // Extension fallback
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        return self::MIME_MAP[$ext] ?? 'application/octet-stream';
-    }
-
-    private const MIME_MAP = [
-        'jpg'  => 'image/jpeg',
-        'jpeg' => 'image/jpeg',
-        'png'  => 'image/png',
-        'gif'  => 'image/gif',
-        'webp' => 'image/webp',
-        'svg'  => 'image/svg+xml',
-        'pdf'  => 'application/pdf',
-        'txt'  => 'text/plain',
-        'zip'  => 'application/zip',
-        'gz'   => 'application/gzip',
-        'mp3'  => 'audio/mpeg',
-        'mp4'  => 'video/mp4',
-        'webm' => 'video/webm',
-    ];
 }

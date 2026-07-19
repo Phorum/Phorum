@@ -171,7 +171,9 @@ CREATE TABLE IF NOT EXISTS phorum_files (
     file_data    TEXT    NOT NULL DEFAULT '',
     add_datetime INTEGER NOT NULL DEFAULT 0,
     message_id   INTEGER NOT NULL DEFAULT 0,
-    link         TEXT    NOT NULL DEFAULT ''
+    link         TEXT    NOT NULL DEFAULT '',
+    mime_type    TEXT    NOT NULL DEFAULT '',
+    meta         TEXT            DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS phorum_banlists (

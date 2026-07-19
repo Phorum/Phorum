@@ -259,6 +259,8 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_files (
     add_datetime             int unsigned       NOT NULL DEFAULT 0,
     message_id               int unsigned       NOT NULL DEFAULT 0,
     link                     varchar(10)        NOT NULL DEFAULT '',
+    mime_type                varchar(100)       NOT NULL DEFAULT '',
+    meta                     mediumtext             NULL,
 
     PRIMARY KEY (file_id),
     KEY add_datetime (add_datetime),

@@ -419,4 +419,5 @@ return [
     'attachment.hint_count' => 'Up to {n} file(s).',
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'فائل اپ لوڈز فی الحال غیر فعال ہیں۔',
+    'attachment.lightbox_close' => 'بند کریں',
 ];
