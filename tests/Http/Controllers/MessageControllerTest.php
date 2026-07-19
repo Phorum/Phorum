@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Tests\Http\Controllers;
 
 use Phorum\Core\Auth;
+use Phorum\Core\CsrfGuard;
 use Phorum\Http\Controllers\MessageController;
 use Phorum\Http\Request;
 use Phorum\Mapper\BanMapper;
@@ -511,6 +512,165 @@ class MessageControllerTest extends ControllerTestCase
         ));
         $this->assertSame(302, $response->status);
         $this->assertStringContainsString('/forum/1/thread/5?page=3#msg-42', $response->headers['Location']);
+    }
+
+    /**
+     * Built directly (not via makeController()) since makeController()'s
+     * settings stub returns one fixed value for every getSetting() key
+     * (see the edit_time_limit comment on testThreadResolvesEditPermissions...
+     * above) — these tests need file_uploads to differ per-test.
+     */
+    private function makeControllerWithSettings(SettingMapper $settings, array $deps = []): MessageController
+    {
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+        $perms->method('canReply')->willReturn(true);
+        $perms->method('canNewThread')->willReturn(true);
+        $perms->method('canModerate')->willReturn(false);
+        $perms->method('canEdit')->willReturn(true);
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $floodControl = $this->createMock(FloodControlService::class);
+        $floodControl->method('secondsRemaining')->willReturn(0);
+
+        return new MessageController(
+            config:         $this->makeConfig(),
+            twig:           $this->makeTwig(),
+            forums:         $deps['forums']         ?? $this->createMock(ForumMapper::class),
+            messages:       $deps['messages']       ?? $this->createMock(MessageMapper::class),
+            perms:          $perms,
+            fileService:    $deps['fileService']    ?? $this->createMock(FileService::class),
+            newflags:       $this->createMock(NewflagService::class),
+            banService:     $ban,
+            subscriptions:  $this->createMock(SubscriptionService::class),
+            searchIndex:    $this->createMock(SearchMapper::class),
+            messageService: $deps['messageService'] ?? $this->createMock(MessageService::class),
+            users:          $this->createMock(UserMapper::class),
+            announcements:  $this->createMock(AnnouncementService::class),
+            floodControl:   $floodControl,
+            settings:       $settings,
+        );
+    }
+
+    private function makePostRequestWithFile(array $post, array $tokens = []): Request
+    {
+        return new Request(
+            post:   array_merge([CsrfGuard::fieldName() => CsrfGuard::token()], $post),
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: $tokens,
+            files: [
+                'files' => [
+                    'name'     => ['photo.jpg'],
+                    'type'     => ['image/jpeg'],
+                    'tmp_name' => ['/tmp/phpFAKE'],
+                    'error'    => [UPLOAD_ERR_OK],
+                    'size'     => [1234],
+                ],
+            ],
+        );
+    }
+
+    public function testStoreUploadsBlockedWhenGloballyDisabledForNonAdmin(): void
+    {
+        Auth::setUser($this->makeUser(1, admin: false));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $postedMsg         = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->expects($this->never())->method('store');
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnCallback(fn($k) => $k === 'file_uploads' ? 0 : null);
+
+        $ctrl = $this->makeControllerWithSettings($settings, [
+            'forums'         => $forums,
+            'messageService' => $msgService,
+            'fileService'    => $fileService,
+        ]);
+        $response = $ctrl->post($this->makePostRequestWithFile(
+            ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            ['forum_id' => '1'],
+        ));
+
+        // storeUploads() adds an error, so post() falls through to re-render
+        // the form instead of redirecting, even though the message itself
+        // (created before storeUploads runs) already succeeded.
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testStoreUploadsProceedsWhenGloballyDisabledButUserIsAdmin(): void
+    {
+        Auth::setUser($this->makeUser(1, admin: true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $postedMsg         = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+        $fileService->expects($this->once())->method('store');
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnCallback(fn($k) => $k === 'file_uploads' ? 0 : null);
+
+        $ctrl = $this->makeControllerWithSettings($settings, [
+            'forums'         => $forums,
+            'messageService' => $msgService,
+            'fileService'    => $fileService,
+        ]);
+        $response = $ctrl->post($this->makePostRequestWithFile(
+            ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testStoreUploadsProceedsWhenGloballyEnabled(): void
+    {
+        Auth::setUser($this->makeUser(1, admin: false));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $postedMsg         = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+        $fileService->expects($this->once())->method('store');
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnCallback(fn($k) => $k === 'file_uploads' ? 1 : null);
+
+        $ctrl = $this->makeControllerWithSettings($settings, [
+            'forums'         => $forums,
+            'messageService' => $msgService,
+            'fileService'    => $fileService,
+        ]);
+        $response = $ctrl->post($this->makePostRequestWithFile(
+            ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
     }
 
     public function testPostBlockedByFloodControl(): void

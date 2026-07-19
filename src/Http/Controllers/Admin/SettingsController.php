@@ -83,7 +83,8 @@ class SettingsController extends AdminController
                 $toSave['language'] = $selectedLocale;
             }
 
-            $toSave['enable_rss'] = !empty($request->post['enable_rss']);
+            $toSave['enable_rss']    = !empty($request->post['enable_rss']);
+            $toSave['file_uploads']  = !empty($request->post['file_uploads']);
 
             $this->settings->saveAll($toSave);
             $stored  = array_merge($stored, $toSave);
@@ -97,8 +98,9 @@ class SettingsController extends AdminController
             }
         }
 
-        // enable_rss has no phorum.php config counterpart — it's DB-only, default enabled.
-        $stored['enable_rss'] = $stored['enable_rss'] ?? true;
+        // enable_rss/file_uploads have no phorum.php config counterpart — DB-only, default enabled.
+        $stored['enable_rss']   = $stored['enable_rss']   ?? true;
+        $stored['file_uploads'] = $stored['file_uploads'] ?? true;
 
         return $this->respond($this->renderAdmin('admin/settings.html.twig', [
             'fields'  => self::FIELDS,

@@ -66,7 +66,7 @@
     </div>
     {% endif %}
 
-    {% if forum.max_attachments > 0 %}
+    {% if forum.max_attachments > 0 and uploads_enabled %}
     <div class="form-row">
         <label>{{ trans('attachment.add') }}</label>
         <input type="file" name="files[]" multiple

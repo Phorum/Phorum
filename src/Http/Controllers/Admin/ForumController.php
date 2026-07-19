@@ -286,6 +286,12 @@ class ForumController extends AdminController
             $forum->display_order     = (int) ($request->post['display_order'] ?? 0);
             $selectedTheme            = trim($request->post['template'] ?? '');
             $forum->template          = array_key_exists($selectedTheme, $themes) ? $selectedTheme : '';
+
+            $forum->max_attachments          = max(0, (int) ($request->post['max_attachments'] ?? 0));
+            $forum->allow_attachment_types   = trim($request->post['allow_attachment_types'] ?? '');
+            $forum->max_attachment_size      = max(0, (int) round(((float) ($request->post['max_attachment_size_mb'] ?? 0)) * 1048576));
+            $forum->max_totalattachment_size = max(0, (int) round(((float) ($request->post['max_totalattachment_size_mb'] ?? 0)) * 1048576));
+
             phorum_api_hook('admin_editforum_form_save_after_defaults', $forum);
         }
 

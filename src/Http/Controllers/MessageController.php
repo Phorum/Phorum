@@ -378,7 +378,7 @@ class MessageController extends Controller
                     }
 
                     // Store any uploaded attachments
-                    $this->storeUploads($forum, $msg->message_id, $user->user_id, $errors, $request);
+                    $this->storeUploads($forum, $msg->message_id, $user, $errors, $request);
 
                     if (empty($errors)) {
                         if ($msg->status === 2) {
@@ -428,6 +428,7 @@ class MessageController extends Controller
             'show_preview'      => $showPreview,
             'preview_msg'       => $previewMsg,
             'preview_users_map' => $previewUsersMap,
+            'uploads_enabled'   => $this->uploadsGloballyEnabled() || (bool) $user->admin,
         ]));
     }
 
@@ -498,7 +499,7 @@ class MessageController extends Controller
                 }
 
                 // Store any new uploads
-                $this->storeUploads($forum, $msg->message_id, $currentUser->user_id, $errors, $request);
+                $this->storeUploads($forum, $msg->message_id, $currentUser, $errors, $request);
 
                 if (empty($errors)) {
                     return $this->redirect(Url::thread(
@@ -533,6 +534,7 @@ class MessageController extends Controller
             'show_preview'      => $showPreview,
             'preview_msg'       => $previewMsg,
             'preview_users_map' => $previewUsersMap,
+            'uploads_enabled'   => $this->uploadsGloballyEnabled() || (bool) $currentUser->admin,
         ]));
     }
 
@@ -653,9 +655,14 @@ class MessageController extends Controller
      *
      * @param string[] $errors
      */
-    private function storeUploads(\Phorum\Model\Forum $forum, int $messageId, int $userId, array &$errors, Request $request): void
+    private function storeUploads(\Phorum\Model\Forum $forum, int $messageId, User $user, array &$errors, Request $request): void
     {
         if (empty($request->files['files']['name'])) {
+            return;
+        }
+
+        if (!$this->uploadsGloballyEnabled() && !$user->admin) {
+            $errors[] = Lang::get('attachment.error_uploads_disabled');
             return;
         }
 
@@ -682,11 +689,17 @@ class MessageController extends Controller
                 continue;
             }
 
-            $file = $this->fileService->store($phpFile, $userId, $messageId);
+            $file = $this->fileService->store($phpFile, $user->user_id, $messageId);
             if ($file !== null) {
                 $existingCount++;
                 $existingBytes += $file->filesize;
             }
         }
+    }
+
+    /** The site-wide file_uploads toggle (Admin > Settings), default enabled when unset. */
+    private function uploadsGloballyEnabled(): bool
+    {
+        return (bool) ($this->settings->getSetting('file_uploads') ?? true);
     }
 }

@@ -281,6 +281,71 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(1, $saved->folder_flag);
     }
 
+    public function testEditPostSavesAttachmentSettingsConvertingMbToBytes(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')->willReturnCallback(function ($forum) use (&$saved) {
+            $saved = $forum;
+            return $forum;
+        });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post: [
+                'name'                        => 'Updated Name',
+                'active'                      => '1',
+                'max_attachments'             => '5',
+                'allow_attachment_types'      => 'gif;jpg;png',
+                'max_attachment_size_mb'      => '2',
+                'max_totalattachment_size_mb' => '10',
+            ],
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(5, $saved->max_attachments);
+        $this->assertSame('gif;jpg;png', $saved->allow_attachment_types);
+        $this->assertSame(2097152, $saved->max_attachment_size);
+        $this->assertSame(10485760, $saved->max_totalattachment_size);
+    }
+
+    public function testEditPostClampsNegativeAttachmentValuesToZero(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->method('save')->willReturnCallback(function ($forum) use (&$saved) {
+            $saved = $forum;
+            return $forum;
+        });
+
+        $ctrl = $this->makeController(['forums' => $forums]);
+        $ctrl->edit($this->makePostRequest(
+            post: [
+                'name'                        => 'Updated Name',
+                'active'                      => '1',
+                'max_attachments'             => '-5',
+                'max_attachment_size_mb'      => '-2',
+                'max_totalattachment_size_mb' => '-10',
+            ],
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(0, $saved->max_attachments);
+        $this->assertSame(0, $saved->max_attachment_size);
+        $this->assertSame(0, $saved->max_totalattachment_size);
+    }
+
     public function testEditPostSuccessRedirectsToFolderWhenParentSet(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

@@ -61,7 +61,7 @@
         <textarea id="body" name="body" rows="12">{{ body|e }}</textarea>
     </div>
 
-    {% if forum.max_attachments > 0 %}
+    {% if forum.max_attachments > 0 and uploads_enabled %}
     <div class="form-row">
         <label>{{ trans('attachment.label') }}</label>
         <input type="file" name="files[]" multiple aria-describedby="attachment-hint"

@@ -107,6 +107,36 @@
             </div>
 
             <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem;margin-bottom:4px"><strong>Attachment Settings</strong></p>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="max_attachments" type="number" name="max_attachments" min="0"
+                           value="{{ forum.max_attachments }}">
+                    <label for="max_attachments" class="active">Max attachments per message</label>
+                    <span class="helper-text">0 = disabled</span>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="max_attachment_size_mb" type="number" name="max_attachment_size_mb" min="0" step="0.1"
+                           value="{{ forum.max_attachment_size ? (forum.max_attachment_size / 1048576) : 0 }}">
+                    <label for="max_attachment_size_mb" class="active">Max size per attachment (MB)</label>
+                    <span class="helper-text">0 = unlimited</span>
+                </div>
+                <div class="input-field col s12 m4">
+                    <input id="max_totalattachment_size_mb" type="number" name="max_totalattachment_size_mb" min="0" step="0.1"
+                           value="{{ forum.max_totalattachment_size ? (forum.max_totalattachment_size / 1048576) : 0 }}">
+                    <label for="max_totalattachment_size_mb" class="active">Max total attachment size per message (MB)</label>
+                    <span class="helper-text">0 = unlimited</span>
+                </div>
+                <div class="input-field col s12 m8">
+                    <input id="allow_attachment_types" type="text" name="allow_attachment_types"
+                           value="{{ forum.allow_attachment_types|e }}">
+                    <label for="allow_attachment_types" class="{{ forum.allow_attachment_types ? 'active' : '' }}">Allowed file extensions</label>
+                    <span class="helper-text">Semicolon-separated, e.g. gif;jpg;png. Leave blank to allow any type.</span>
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col s12" style="margin-bottom:8px">
                     <p class="grey-text" style="font-size:.85rem;margin-bottom:0"><strong>Default Permissions</strong></p>
                 </div>
