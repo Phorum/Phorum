@@ -20,8 +20,13 @@ return [
     // Avatar uploads — maximum file size in bytes (default 100 KB)
     'avatar_max_size' => 102400,
 
-    // Outbound mail (leave mail_host empty to disable all email)
-    'mail_host' => '',             // SMTP hostname, e.g. 'smtp.example.com'
-    'mail_port' => 25,
-    'mail_from' => '',             // envelope From address
+    // Outbound mail (leave mail_host empty to disable all email). Not
+    // exposed in the admin settings panel — SMTP credentials are a secret,
+    // same footing as the database password in etc/config.ini.
+    'mail_host'       => '',        // SMTP hostname, e.g. 'smtp.example.com'
+    'mail_port'       => 25,
+    'mail_from'       => '',        // envelope From address
+    'mail_username'   => '',        // leave empty for an unauthenticated relay
+    'mail_password'   => '',
+    'mail_encryption' => '',        // '', 'tls' (STARTTLS, typically port 587), or 'ssl' (implicit TLS, typically port 465)
 ];

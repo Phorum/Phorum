@@ -8,13 +8,25 @@ use Phorum\Core\Config;
 
 class MailService
 {
-    public function __construct(private readonly Config $config)
-    {
+    /**
+     * @param ?\Closure $mailerFactory Returns a fresh PHPMailer instance.
+     *     Overridable for tests so SMTP property assignment can be verified
+     *     without an actual send() network call.
+     */
+    public function __construct(
+        private readonly Config    $config,
+        private readonly ?\Closure $mailerFactory = null,
+    ) {
     }
 
     /**
      * Send a plain-text email. Returns false and stays silent when mail_host
      * is not configured, so callers can proceed without a mail server.
+     *
+     * All outbound-mail settings (host, port, from address, credentials,
+     * encryption) come from etc/phorum.php only — deliberately not exposed
+     * in the admin settings panel, since SMTP credentials are a secret on
+     * the same footing as the DB password in etc/config.ini.
      */
     public function send(
         string $toAddress,
@@ -44,11 +56,19 @@ class MailService
             return false;
         }
 
-        $mailer = new PHPMailer(exceptions: false);
+        $username = (string) $this->config->get('mail_username', '');
+        $password = (string) $this->config->get('mail_password', '');
+
+        $mailer = $this->mailerFactory !== null
+            ? ($this->mailerFactory)()
+            : new PHPMailer(exceptions: false);
         $mailer->isSMTP();
         $mailer->Host       = $host;
         $mailer->Port       = (int) $this->config->get('mail_port', 25);
-        $mailer->SMTPAuth   = false;
+        $mailer->SMTPAuth   = $username !== '';
+        $mailer->Username   = $username;
+        $mailer->Password   = $password;
+        $mailer->SMTPSecure = (string) $this->config->get('mail_encryption', '');
         $mailer->CharSet    = PHPMailer::CHARSET_UTF8;
 
         if ($mailData['from_address'] !== '') {

@@ -186,7 +186,8 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 - **Group-based per-forum permission grants** — See [Permissions](#permissions).
 
 ### Site-Wide Settings
-Configurable from `/admin/settings`: Site Name, Base URL, SMTP Host/Port, Mail From Address, minimum seconds between posts (flood control), edit time limit, minimum account age for auto-approval, karma threshold %, default theme, default language, Enable RSS toggle, Enable File Uploads toggle, Require Moderator Approval for New Registrations toggle (default off). `src/Http/Controllers/Admin/SettingsController.php`
+Configurable from `/admin/settings`: Site Name, Base URL, minimum seconds between posts (flood control), edit time limit, minimum account age for auto-approval, karma threshold %, default theme, default language, Enable RSS toggle, Enable File Uploads toggle, Require Moderator Approval for New Registrations toggle (default off). `src/Http/Controllers/Admin/SettingsController.php`
+- **Outbound mail (SMTP) is configured in `etc/phorum.php`, not the admin panel** — host, port, from address, username/password, and encryption (`''`/`tls`/`ssl`). Deliberately kept out of the database-backed settings: SMTP credentials are a secret on the same footing as the database password in `etc/config.ini`. Supports authenticated SMTP (Gmail, SendGrid, corporate relays, etc.) as well as unauthenticated local relays (leave `mail_username` empty). `src/Service/MailService.php`
 
 ### Custom Profile Fields
 - **Field schema management** — Define custom profile fields (name, max length, HTML-disabled flag, admin-visible flag), with soft-delete/restore and hard-delete (purge, including stored values). `src/Http/Controllers/Admin/CustomFieldController.php`

@@ -11,13 +11,16 @@ use Twig\Environment;
 
 class SettingsController extends AdminController
 {
-    /** Keys we expose in the admin UI, with labels and input type hints. */
+    /**
+     * Keys we expose in the admin UI, with labels and input type hints.
+     * Outbound-mail settings (mail_host/mail_port/mail_from/mail_username/
+     * mail_password/mail_encryption) are deliberately NOT here — SMTP
+     * credentials are a secret on the same footing as the DB password in
+     * etc/config.ini, so all mail configuration lives in etc/phorum.php only.
+     */
     private const FIELDS = [
         'site_name'      => ['label' => 'Site Name',         'type' => 'text'],
         'base_url'       => ['label' => 'Base URL',           'type' => 'text'],
-        'mail_host'      => ['label' => 'SMTP Host',          'type' => 'text'],
-        'mail_port'      => ['label' => 'SMTP Port',          'type' => 'number'],
-        'mail_from'      => ['label' => 'Mail From Address',  'type' => 'email'],
         'flood_interval' => [
             'label' => 'Minimum Seconds Between Posts',
             'type'  => 'number',

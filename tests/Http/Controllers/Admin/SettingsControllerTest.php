@@ -51,9 +51,6 @@ class SettingsControllerTest extends ControllerTestCase
         $response = $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
             'base_url'  => 'http://example.com',
-            'mail_host' => '',
-            'mail_port' => '25',
-            'mail_from' => '',
         ]));
         $this->assertSame(200, $response->status);
     }
@@ -91,9 +88,6 @@ class SettingsControllerTest extends ControllerTestCase
         $response = $ctrl->index($this->makePostRequest([
             'site_name'     => 'My Forum',
             'base_url'      => 'http://example.com',
-            'mail_host'     => '',
-            'mail_port'     => '25',
-            'mail_from'     => '',
             'file_uploads'  => '1',
         ]));
 
@@ -116,9 +110,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
             'base_url'  => 'http://example.com',
-            'mail_host' => '',
-            'mail_port' => '25',
-            'mail_from' => '',
             // file_uploads checkbox omitted entirely, as a browser would when unchecked
         ]));
 
@@ -158,9 +149,6 @@ class SettingsControllerTest extends ControllerTestCase
         $response = $ctrl->index($this->makePostRequest([
             'site_name'            => 'My Forum',
             'base_url'             => 'http://example.com',
-            'mail_host'            => '',
-            'mail_port'            => '25',
-            'mail_from'            => '',
             'require_mod_approval' => '1',
         ]));
 
@@ -183,9 +171,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
             'base_url'  => 'http://example.com',
-            'mail_host' => '',
-            'mail_port' => '25',
-            'mail_from' => '',
             // require_mod_approval checkbox omitted entirely, as a browser would when unchecked
         ]));
 
