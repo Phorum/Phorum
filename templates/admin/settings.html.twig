@@ -65,23 +65,23 @@
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom:0">
+            <div class="row" style="margin-bottom:4px">
                 <div class="col s12 m8">
                     <label>
                         <input type="checkbox" name="file_uploads" value="1" {{ stored.file_uploads ? 'checked' : '' }}>
                         <span>Allow file uploads (attachments)</span>
                     </label>
-                    <span class="helper-text">Site-wide switch. Admins can always upload regardless of this setting. Per-forum attachment limits are set on each forum's edit page.</span>
+                    <p class="grey-text" style="font-size:.85rem;margin:2px 0 0">Site-wide switch. Admins can always upload regardless of this setting. Per-forum attachment limits are set on each forum's edit page.</p>
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom:0">
+            <div class="row" style="margin-bottom:4px">
                 <div class="col s12 m8">
                     <label>
                         <input type="checkbox" name="require_mod_approval" value="1" {{ stored.require_mod_approval ? 'checked' : '' }}>
                         <span>Require moderator approval for new registrations</span>
                     </label>
-                    <span class="helper-text">Independent of email confirmation — both can be enabled together, in which case an account needs email confirmation first and moderator approval second. Approve/reject pending accounts from the "Moderate Users" queue.</span>
+                    <p class="grey-text" style="font-size:.85rem;margin:2px 0 0">Independent of email confirmation — both can be enabled together, in which case an account needs email confirmation first and moderator approval second. Approve/reject pending accounts from the "Moderate Users" queue.</p>
                 </div>
             </div>
 
