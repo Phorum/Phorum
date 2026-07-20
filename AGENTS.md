@@ -4,6 +4,8 @@
 
 Ground-up rewrite of the Phorum forum application, versioned as Phorum 10 to mark the break from the legacy PHP4/5-era codebase — the number reflects that break, not a count of sequential releases. The primary constraint is **schema compatibility with Phorum 6** so existing Phorum 6 installations can upgrade in-place without a data migration. (Phorum 5.x installs must first upgrade to Phorum 6 before moving to Phorum 10.)
 
+See `FEATURES.md` for a categorized inventory of the application's actual implemented features (posting, moderation, permissions, admin, auth, search, feeds, i18n/theming, plugin modules, etc.) — check it before assuming a capability does or doesn't already exist. Keep it up to date: when a change adds, removes, or meaningfully alters a user- or admin-facing capability, update `FEATURES.md` in the same change.
+
 ## Tech Stack
 
 - **Language**: PHP 8.3+
@@ -80,6 +82,7 @@ db/                     Schema files: mysql.sql, postgresql.sql
 
 | File | Purpose |
 |------|---------|
+| `FEATURES.md` | Categorized inventory of the application's implemented features. |
 | `public/index.php` | Web entrypoint. Bootstraps `Config` and `App`. |
 | `src/Core/App.php` | Request lifecycle: Twig init → module loading → routing → auth → lang → dispatch. |
 | `etc/routes.php` | Route table. Routes map to `Phorum\Http\Controllers\{Controller}@{method}`. |
