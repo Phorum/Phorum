@@ -50,7 +50,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['settings' => $settings]);
         $response = $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
-            'base_url'  => 'http://example.com',
         ]));
         $this->assertSame(200, $response->status);
     }
@@ -87,7 +86,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['settings' => $settings]);
         $response = $ctrl->index($this->makePostRequest([
             'site_name'     => 'My Forum',
-            'base_url'      => 'http://example.com',
             'file_uploads'  => '1',
         ]));
 
@@ -109,7 +107,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl = $this->makeController(['settings' => $settings]);
         $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
-            'base_url'  => 'http://example.com',
             // file_uploads checkbox omitted entirely, as a browser would when unchecked
         ]));
 
@@ -148,7 +145,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['settings' => $settings]);
         $response = $ctrl->index($this->makePostRequest([
             'site_name'            => 'My Forum',
-            'base_url'             => 'http://example.com',
             'require_mod_approval' => '1',
         ]));
 
@@ -170,7 +166,6 @@ class SettingsControllerTest extends ControllerTestCase
         $ctrl = $this->makeController(['settings' => $settings]);
         $ctrl->index($this->makePostRequest([
             'site_name' => 'My Forum',
-            'base_url'  => 'http://example.com',
             // require_mod_approval checkbox omitted entirely, as a browser would when unchecked
         ]));
 

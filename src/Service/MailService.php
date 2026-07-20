@@ -5,6 +5,7 @@ namespace Phorum\Service;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 
 class MailService
 {
@@ -40,7 +41,7 @@ class MailService
         }
 
         $fromAddress = (string) $this->config->get('mail_from', '');
-        $fromName    = (string) $this->config->get('site_name', 'Phorum');
+        $fromName    = SiteSettings::name();
 
         $mailData = phorum_api_hook('mail_send', [
             'to_address'   => $toAddress,

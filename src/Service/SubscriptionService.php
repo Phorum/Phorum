@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Service;
 
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Core\Url;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\SubscriberMapper;
@@ -63,7 +64,7 @@ class SubscriptionService
             return;
         }
 
-        $siteName  = (string) $this->config->get('site_name', 'Phorum');
+        $siteName  = SiteSettings::name();
         $baseUrl   = rtrim((string) $this->config->get('base_url', ''), '/');
         $readUrl   = $baseUrl . Url::thread($message->forum_id, $message->thread, $message->message_id);
 
@@ -105,7 +106,7 @@ class SubscriptionService
             return;
         }
 
-        $siteName = (string) $this->config->get('site_name', 'Phorum');
+        $siteName = SiteSettings::name();
         $baseUrl  = rtrim((string) $this->config->get('base_url', ''), '/');
 
         $isModerated = $message->status !== MessageMapper::STATUS_APPROVED;

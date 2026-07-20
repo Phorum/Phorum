@@ -6,6 +6,7 @@ namespace Phorum\Http\Controllers;
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\Lang;
+use Phorum\Core\SiteSettings;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -290,7 +291,7 @@ class MessageController extends Controller
             'users_map'    => $usersMap,
             'theme'        => $this->resolveTheme($forum),
             'announcements' => $this->announcements->getAnnouncementsFor('read', $currentUser?->user_id ?? 0),
-            'json_ld'      => $this->schemaOrg->thread($forum, $root, $threadMessages, (string) $this->config->get('site_name', 'Phorum')),
+            'json_ld'      => $this->schemaOrg->thread($forum, $root, $threadMessages, SiteSettings::name()),
         ]));
     }
 

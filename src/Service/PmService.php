@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Service;
 
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Mapper\PmFolderMapper;
 use Phorum\Mapper\PmMessageMapper;
 use Phorum\Mapper\PmXrefMapper;
@@ -93,7 +94,7 @@ class PmService
             $this->users->incrementNewPmCount($recipient->user_id);
 
             if ($recipient->pm_email_notify) {
-                $siteName = (string) $this->config->get('site_name', 'Phorum');
+                $siteName = SiteSettings::name();
                 $this->mailer->send(
                     toAddress: $recipient->email,
                     toName:    $recipient->display_name !== ''

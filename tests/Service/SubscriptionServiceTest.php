@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Tests\Service;
 
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
@@ -24,6 +25,7 @@ class SubscriptionServiceTest extends TestCase
     protected function tearDown(): void
     {
         HookDispatcher::reset();
+        SiteSettings::clear();
     }
 
     private function makeService(
@@ -32,7 +34,7 @@ class SubscriptionServiceTest extends TestCase
         ?MailService      $mailer      = null,
         ?Config           $config      = null,
     ): SubscriptionService {
-        $config ??= $this->createConfigMock(['site_name' => 'TestForum', 'base_url' => 'http://example.com']);
+        $config ??= $this->createConfigMock(['base_url' => 'http://example.com']);
         return new SubscriptionService(
             $subscribers ?? $this->createMock(SubscriberMapper::class),
             $users       ?? $this->createMock(UserMapper::class),
@@ -115,6 +117,29 @@ class SubscriptionServiceTest extends TestCase
 
         $svc = $this->makeService(subscribers: $mapper, mailer: $mailer);
         $svc->notifySubscribers($msg, $forum, 1);
+    }
+
+    public function testNotifySubscribersSubjectIncludesSiteName(): void
+    {
+        $settings = $this->createMock(\Phorum\Mapper\SettingMapper::class);
+        $settings->method('getSetting')->willReturnMap([['site_name', 'My Test Forum']]);
+        SiteSettings::initialize($settings, 'Phorum');
+
+        $recipients = [
+            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice'],
+        ];
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn($recipients);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->once())->method('send')
+            ->with($this->anything(), $this->anything(), $this->stringContains('[My Test Forum]'), $this->anything());
+
+        $msg = new Message();
+        $msg->forum_id = 10; $msg->thread = 100; $msg->message_id = 200; $msg->subject = 'Test topic';
+
+        $svc = $this->makeService(subscribers: $mapper, mailer: $mailer);
+        $svc->notifySubscribers($msg, new Forum(), 1);
     }
 
     public function testNotifySubscribersDoesNothingWhenNoRecipients(): void

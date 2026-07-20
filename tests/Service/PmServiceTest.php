@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace Phorum\Tests\Service;
 
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Mapper\PmFolderMapper;
 use Phorum\Mapper\PmMessageMapper;
 use Phorum\Mapper\PmXrefMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\MessageMeta;
 use Phorum\Model\PmFolder;
@@ -29,6 +31,7 @@ class PmServiceTest extends TestCase
     protected function tearDown(): void
     {
         HookDispatcher::reset();
+        SiteSettings::clear();
     }
 
     private function makeService(
@@ -39,7 +42,7 @@ class PmServiceTest extends TestCase
         ?MailService     $mailer   = null,
         ?Config          $config   = null,
     ): PmService {
-        $config ??= $this->createConfigMock(['site_name' => 'Forum', 'base_url' => 'http://example.com']);
+        $config ??= $this->createConfigMock(['base_url' => 'http://example.com']);
         return new PmService(
             $messages ?? $this->createMock(PmMessageMapper::class),
             $xrefs    ?? $this->createMock(PmXrefMapper::class),
@@ -135,6 +138,32 @@ class PmServiceTest extends TestCase
         $mailer = $this->createMock(MailService::class);
         $mailer->expects($this->once())->method('send')
             ->with('user2@example.com', 'user2', $this->stringContains('New private message'), $this->anything());
+
+        $svc = $this->makeService(messages: $messages, xrefs: $xrefs, users: $users, mailer: $mailer);
+        $svc->send(1, 'alice', [2], 'Test', 'Body');
+    }
+
+    public function testSendSubjectIncludesSiteName(): void
+    {
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnMap([['site_name', 'My Test Forum']]);
+        SiteSettings::initialize($settings, 'Phorum');
+
+        $recipient = $this->makeUser(2, pmEmailNotify: true);
+
+        $messages = $this->createMock(PmMessageMapper::class);
+        $messages->method('save')->willReturnCallback(function (PmMessage $m) {
+            $m->pm_message_id = 1;
+            return $m;
+        });
+
+        $xrefs = $this->createMock(PmXrefMapper::class);
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($recipient);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->once())->method('send')
+            ->with($this->anything(), $this->anything(), $this->stringContains('[My Test Forum]'), $this->anything());
 
         $svc = $this->makeService(messages: $messages, xrefs: $xrefs, users: $users, mailer: $mailer);
         $svc->send(1, 'alice', [2], 'Test', 'Body');

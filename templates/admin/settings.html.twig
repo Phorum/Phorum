@@ -25,11 +25,20 @@
             </div>
             {% endfor %}
 
-            <div class="row">
+            <div class="row" style="margin-bottom:0">
                 <div class="col s12">
                     <p class="grey-text" style="font-size:.85rem">
                         <i class="material-icons tiny" style="vertical-align:middle">info_outline</i>
                         Outgoing mail (SMTP host, port, from address, credentials, encryption) is configured in <code>etc/phorum.php</code>, not here — SMTP credentials are a secret, same as the database password.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem">
+                        <i class="material-icons tiny" style="vertical-align:middle">info_outline</i>
+                        Base URL is also configured in <code>etc/phorum.php</code>, alongside <code>base_path</code> (the URL prefix for subfolder installs) — the two must stay in sync, so both live in the same place.
                     </p>
                 </div>
             </div>

@@ -13,14 +13,19 @@ class SettingsController extends AdminController
 {
     /**
      * Keys we expose in the admin UI, with labels and input type hints.
-     * Outbound-mail settings (mail_host/mail_port/mail_from/mail_username/
-     * mail_password/mail_encryption) are deliberately NOT here — SMTP
-     * credentials are a secret on the same footing as the DB password in
-     * etc/config.ini, so all mail configuration lives in etc/phorum.php only.
+     * Two categories deliberately NOT here:
+     *  - Outbound-mail settings (mail_host/mail_port/mail_from/mail_username/
+     *    mail_password/mail_encryption) — SMTP credentials are a secret on
+     *    the same footing as the DB password in etc/config.ini.
+     *  - base_url — tightly coupled to base_path (URL prefix for subfolder
+     *    installs), which is read at request-dispatch time in App::run()
+     *    before any DB connection exists. Keeping both in etc/phorum.php
+     *    only avoids the two ever drifting out of sync.
+     * site_name has no such constraint, so it's genuinely DB-backed (see
+     * Phorum\Core\SiteSettings) — this FIELDS entry is real, unlike before.
      */
     private const FIELDS = [
         'site_name'      => ['label' => 'Site Name',         'type' => 'text'],
-        'base_url'       => ['label' => 'Base URL',           'type' => 'text'],
         'flood_interval' => [
             'label' => 'Minimum Seconds Between Posts',
             'type'  => 'number',

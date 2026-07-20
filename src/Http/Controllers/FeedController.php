@@ -6,6 +6,7 @@ namespace Phorum\Http\Controllers;
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\FeedStatus;
+use Phorum\Core\SiteSettings;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -139,7 +140,7 @@ class FeedController extends Controller
 
     private function siteName(): string
     {
-        return (string) $this->config->get('site_name', 'Phorum');
+        return SiteSettings::name();
     }
 
     private function feedResponse(string $body, string $format): Response

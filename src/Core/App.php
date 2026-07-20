@@ -62,6 +62,7 @@ class App
             Impersonation::initialize($this->config);
             SiteStatus::initialize(new SiteStatusService());
             FeedStatus::initialize(new SettingMapper());
+            SiteSettings::initialize(new SettingMapper(), (string) $this->config->get('site_name', 'Phorum'));
             $this->initLang();
             phorum_api_hook('common_post_user', Auth::user());
         } else {
@@ -192,8 +193,10 @@ class App
 
     private function respondSiteStatus(string $titleKey, string $messageKey, int $status): void
     {
+        // Only reached via routeGates(), which only runs when $installed —
+        // SiteSettings is already initialized by that point (see run()).
         $this->respond($this->twig->render('error/site_status.html.twig', [
-            'site_name' => $this->config->get('site_name', 'Phorum'),
+            'site_name' => SiteSettings::name(),
             'theme'     => (string) $this->config->get('template', 'emerald'),
             'user'      => Auth::user(),
             'title'     => Lang::get($titleKey),

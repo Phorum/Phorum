@@ -9,6 +9,7 @@ use Phorum\Core\CsrfGuard;
 use Phorum\Core\FeedStatus;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
+use Phorum\Core\SiteSettings;
 use Phorum\Core\SiteStatus;
 use Phorum\Model\Forum;
 use Twig\Environment;
@@ -54,7 +55,7 @@ abstract class Controller
     protected function baseData(): array
     {
         return [
-            'site_name'      => $this->config->get('site_name', 'Phorum'),
+            'site_name'      => SiteSettings::name(),
             'user'           => Auth::user(),
             'theme'          => $this->config->get('template', 'emerald'),
             'lang_locale'    => Lang::locale(),

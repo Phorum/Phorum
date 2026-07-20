@@ -5,6 +5,7 @@ namespace Phorum\Service;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\User;
 use Phorum\Service\MailService;
@@ -216,7 +217,7 @@ class AuthService
             $mail    = new MailService($this->config);
             $link    = rtrim($baseUrl, '/') . '/reset-password?token=' . urlencode($token);
             $name    = $user->display_name ?: $user->username;
-            $site    = (string) $this->config->get('site_name', 'Phorum');
+            $site    = SiteSettings::name();
             $mail->send(
                 toAddress: $user->email,
                 toName:    $name,
@@ -289,7 +290,7 @@ class AuthService
             $mail = new MailService($this->config);
             $link = rtrim($baseUrl, '/') . '/confirm-email?token=' . urlencode($token);
             $name = $user->display_name ?: $user->username;
-            $site = (string) $this->config->get('site_name', 'Phorum');
+            $site = SiteSettings::name();
             $mail->send(
                 toAddress: $user->email,
                 toName:    $name,

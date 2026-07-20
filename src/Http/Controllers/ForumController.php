@@ -5,6 +5,7 @@ namespace Phorum\Http\Controllers;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\SiteSettings;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
@@ -74,7 +75,7 @@ class ForumController extends Controller
             'can_moderate'       => $this->perms->canModerateMessagesAnywhere($currentUser),
             'can_moderate_users' => $this->perms->canModerateUsersAnywhere($currentUser),
             'announcements'      => $this->announcements->getAnnouncementsFor('index', $currentUser?->user_id ?? 0),
-            'json_ld'            => $this->schemaOrg->forumIndex($flatForums, (string) $this->config->get('site_name', 'Phorum')),
+            'json_ld'            => $this->schemaOrg->forumIndex($flatForums, SiteSettings::name()),
         ]));
     }
 
@@ -126,7 +127,7 @@ class ForumController extends Controller
             'can_moderate_users' => $this->perms->canModerateUsers($forum, $currentUser),
             'theme'             => $this->resolveTheme($forum),
             'announcements'     => $this->announcements->getAnnouncementsFor('list', $currentUser?->user_id ?? 0),
-            'json_ld'           => $this->schemaOrg->forumShow($forum, $threads ?? [], (string) $this->config->get('site_name', 'Phorum')),
+            'json_ld'           => $this->schemaOrg->forumShow($forum, $threads ?? [], SiteSettings::name()),
         ]));
     }
 
@@ -147,7 +148,7 @@ class ForumController extends Controller
             'tree'          => $tree,
             'theme'         => $this->resolveTheme($folder),
             'announcements' => $this->announcements->getAnnouncementsFor('index', Auth::user()?->user_id ?? 0),
-            'json_ld'       => $this->schemaOrg->folderShow($folder, $flatForums, (string) $this->config->get('site_name', 'Phorum')),
+            'json_ld'       => $this->schemaOrg->folderShow($folder, $flatForums, SiteSettings::name()),
         ]));
     }
 

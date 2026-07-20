@@ -2,14 +2,18 @@
 declare(strict_types=1);
 
 return [
-    'site_name'            => 'My Phorum',
+    'site_name'            => 'My Phorum', // fallback only — overridden once an admin sets one in Settings
     'template'             => 'emerald', // theme directory under public/assets/themes/
     'debug'                => false,
     'twig_cache'           => false,
     'db_name'              => 'phorum',  // must match the section key in etc/config.ini
     'db_prefix'            => 'phorum',  // table prefix: phorum_messages, phorum_users, etc.
+    // base_url and base_path (URL prefix for subfolder installs, e.g.
+    // '/community') must stay consistent with each other, and base_path is
+    // needed before any DB connection exists — both live here only, not in
+    // the admin settings panel.
     'base_url'             => 'https://example.com', // used in notification email links
-    'base_path'            => '', // URL prefix for subfolder installs, e.g. '/community'
+    'base_path'            => '',
     'session_secure'       => false,  // set true in production (requires HTTPS)
     'require_confirmation' => false,  // set true to require email confirmation on register
     'track_edits'          => false,  // set true to record full edit history for messages
