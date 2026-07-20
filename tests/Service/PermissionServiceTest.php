@@ -191,4 +191,43 @@ class PermissionServiceTest extends TestCase
         $forum = $this->makeForum(pubPerms: 0);
         $this->assertFalse($svc->canEdit($forum, null));
     }
+
+    // -------------------------------------------------------------------------
+    // canViewAttachments()
+    // -------------------------------------------------------------------------
+
+    public function testCanViewAttachmentsTrueForAnonymousWhenPubPermsAllows(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: PermissionService::ALLOW_VIEW_ATTACHMENTS);
+        $this->assertTrue($svc->canViewAttachments($forum, null));
+    }
+
+    public function testCanViewAttachmentsFalseForAnonymousWhenPubPermsDenies(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: PermissionService::ALLOW_READ);
+        $this->assertFalse($svc->canViewAttachments($forum, null));
+    }
+
+    public function testCanViewAttachmentsUsesRegPermsForRegisteredUser(): void
+    {
+        $svc   = $this->makeService(direct: null, group: 0);
+        $forum = $this->makeForum(regPerms: PermissionService::ALLOW_READ | PermissionService::ALLOW_VIEW_ATTACHMENTS);
+        $this->assertTrue($svc->canViewAttachments($forum, $this->makeUser()));
+    }
+
+    public function testCanViewAttachmentsDirectPermissionOverridesRegPerms(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_VIEW_ATTACHMENTS);
+        $forum = $this->makeForum(regPerms: 0);
+        $this->assertTrue($svc->canViewAttachments($forum, $this->makeUser()));
+    }
+
+    public function testCanViewAttachmentsTrueForAdminRegardlessOfForumPerms(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: 0, regPerms: 0);
+        $this->assertTrue($svc->canViewAttachments($forum, $this->makeUser(admin: true)));
+    }
 }

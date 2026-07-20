@@ -14,6 +14,7 @@ class PermissionService
     public const ALLOW_REPLY              = 2;
     public const ALLOW_EDIT               = 4;
     public const ALLOW_NEW_TOPIC          = 8;
+    public const ALLOW_VIEW_ATTACHMENTS   = 16;
     public const ALLOW_ATTACH             = 32;
     public const ALLOW_MODERATE_MESSAGES  = 64;
     public const ALLOW_MODERATE_USERS     = 128;
@@ -53,6 +54,12 @@ class PermissionService
     public function canModerate(Forum $forum, ?User $user): bool
     {
         return $this->check($forum, $user, self::ALLOW_MODERATE_MESSAGES);
+    }
+
+    /** True if the user can view/download this forum's message attachments. */
+    public function canViewAttachments(Forum $forum, ?User $user): bool
+    {
+        return $this->check($forum, $user, self::ALLOW_VIEW_ATTACHMENTS);
     }
 
     /** Check an arbitrary permission bit (or OR-combined bits). */

@@ -48,7 +48,7 @@
         {% endif %}
     {% endif %}
 
-    {% if msg.attachments|default([])|length > 0 %}
+    {% if can_view_attachments|default(false) and msg.attachments|default([])|length > 0 %}
     <div class="message-attachments">
         <strong>{{ trans('attachment.label') }}:</strong>
         <ul class="attachment-list">

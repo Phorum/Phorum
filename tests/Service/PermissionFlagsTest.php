@@ -39,4 +39,9 @@ class PermissionFlagsTest extends TestCase
         $combined = PermissionFlags::combine($bits);
         $this->assertSame($bits, PermissionFlags::decode($combined));
     }
+
+    public function testFlagsIncludesViewAttachments(): void
+    {
+        $this->assertSame('View attachments', PermissionFlags::FLAGS[16]);
+    }
 }

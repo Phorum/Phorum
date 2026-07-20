@@ -8,10 +8,13 @@ use Phorum\Core\Concerns\SplitsSqlStatements;
 use Phorum\Mapper\SettingMapper;
 
 /**
- * Applies numbered ALTER-only patch files under db/patches/ against the
- * configured database — for changes to *existing* tables (new columns,
- * default changes) that SchemaInstaller's `CREATE TABLE IF NOT EXISTS`
- * can't reach.
+ * Applies numbered patch files under db/patches/ against the configured
+ * database — for changes to *existing* tables (new columns, default
+ * changes, or occasionally a one-time data backfill) that SchemaInstaller's
+ * `CREATE TABLE IF NOT EXISTS` can't reach. Patches are typically ALTER-only,
+ * but a plain data-migration statement (e.g. backfilling a new permission
+ * bit) works the same way — this class just executes whatever SQL is in
+ * the file.
  *
  * Unlike SchemaInstaller, ALTER TABLE isn't naturally idempotent, so applied
  * patches are tracked via the 'schema_patch_level' setting (the highest

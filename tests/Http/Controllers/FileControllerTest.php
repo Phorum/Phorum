@@ -55,6 +55,7 @@ class FileControllerTest extends ControllerTestCase
         $forums->method('load')->with(1)->willReturn($forum);
         $perms = $this->createMock(PermissionService::class);
         $perms->method('canRead')->willReturn(true);
+        $perms->method('canViewAttachments')->willReturn(true);
 
         $fileService = $this->createMock(FileService::class);
         $fileService->method('retrieve')->willReturn($bytes);
@@ -153,6 +154,7 @@ class FileControllerTest extends ControllerTestCase
         $forums->method('load')->with(1)->willReturn($forum);
         $perms = $this->createMock(PermissionService::class);
         $perms->method('canRead')->willReturn(true);
+        $perms->method('canViewAttachments')->willReturn(true);
 
         $fileService = $this->createMock(FileService::class);
         $fileService->expects($this->never())->method('retrieve');
@@ -185,6 +187,7 @@ class FileControllerTest extends ControllerTestCase
         $forums->method('load')->with(1)->willReturn($forum);
         $perms = $this->createMock(PermissionService::class);
         $perms->method('canRead')->willReturn(true);
+        $perms->method('canViewAttachments')->willReturn(true);
 
         $fileService = $this->createMock(FileService::class);
         $fileService->expects($this->once())->method('retrieve')->willReturn('the bytes');
@@ -226,6 +229,41 @@ class FileControllerTest extends ControllerTestCase
         $ctrl = $this->makeController([
             'fileMapper' => $fileMapper, 'messages' => $messages,
             'forums' => $forums, 'perms' => $perms,
+        ]);
+        $response = $ctrl->serve(new Request(tokens: ['file_id' => '1']));
+
+        $this->assertSame(403, $response->status);
+        $this->assertFalse($hookFired);
+    }
+
+    public function testServeReturns403WhenCannotViewAttachmentsEvenIfCanRead(): void
+    {
+        $file  = $this->makeAttachmentFile();
+        $msg   = $this->makeMessage(1, 1);
+        $forum = $this->makeForum(1);
+
+        $fileMapper = $this->createMock(FileMapper::class);
+        $fileMapper->method('load')->with(1)->willReturn($file);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->with(1)->willReturn($msg);
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->with(1)->willReturn($forum);
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+        $perms->method('canViewAttachments')->willReturn(false);
+
+        $hookFired = false;
+        HookDispatcher::getInstance()->register('file_serve_url', function () use (&$hookFired) {
+            $hookFired = true;
+            return 'https://example.com/should-not-be-used';
+        });
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->expects($this->never())->method('retrieve');
+
+        $ctrl = $this->makeController([
+            'fileMapper' => $fileMapper, 'messages' => $messages,
+            'forums' => $forums, 'perms' => $perms, 'fileService' => $fileService,
         ]);
         $response = $ctrl->serve(new Request(tokens: ['file_id' => '1']));
 

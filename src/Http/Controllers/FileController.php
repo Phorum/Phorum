@@ -71,6 +71,10 @@ class FileController extends Controller
             return $this->forbidden();
         }
 
+        if (!$this->perms->canViewAttachments($forum, Auth::user())) {
+            return $this->forbidden();
+        }
+
         $redirectUrl = phorum_api_hook('file_serve_url', $file, 'attachment');
         if (is_string($redirectUrl) && $redirectUrl !== '') {
             return $this->redirect($redirectUrl);

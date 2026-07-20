@@ -219,8 +219,9 @@ class MessageController extends Controller
             }
         }
 
-        $canReply    = !$root->closed && $this->perms->canReply($forum, $currentUser);
-        $canModerate = $this->perms->canModerate($forum, $currentUser);
+        $canReply           = !$root->closed && $this->perms->canReply($forum, $currentUser);
+        $canModerate        = $this->perms->canModerate($forum, $currentUser);
+        $canViewAttachments = $this->perms->canViewAttachments($forum, $currentUser);
 
         $currentSub = SubscriberMapper::SUB_NONE;
         if ($currentUser !== null) {
@@ -278,6 +279,7 @@ class MessageController extends Controller
             'base_url'     => Url::thread($forumId, $threadId),
             'can_reply'    => $canReply,
             'can_moderate' => $canModerate,
+            'can_view_attachments' => $canViewAttachments,
             'can_edit_ids' => $canEditIds,
             'current_sub'  => $currentSub,
             'SUB_NONE'     => SubscriberMapper::SUB_NONE,

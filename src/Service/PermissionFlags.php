@@ -15,6 +15,7 @@ final class PermissionFlags
         2   => 'Reply',
         4   => 'Edit own posts',
         8   => 'Start new threads',
+        16  => 'View attachments',
         32  => 'Attach files',
         64  => 'Moderate messages',
         128 => 'Moderate users',
