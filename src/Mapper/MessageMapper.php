@@ -70,7 +70,9 @@ class MessageMapper extends AbstractPhorumMapper
                 . ' WHERE forum_id = :forum_id'
                 . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
                 . '   AND parent_id = 0'
-                . ' ORDER BY sort DESC, modifystamp DESC'
+                // sort ASC: SORT_ANNOUNCE (0) and SORT_STICKY (1) rank above
+                // SORT_DEFAULT (2) — ascending puts pinned threads first.
+                . ' ORDER BY sort ASC, modifystamp DESC'
                 . " LIMIT {$limit} OFFSET {$offset}";
         $params = [
             ':forum_id'     => $forumId,

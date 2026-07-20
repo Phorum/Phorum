@@ -60,6 +60,8 @@ return [
     'thread.following' => 'অনুসরণ করছেন',
     'thread.reopen'    => 'পুনরায় খুলুন',
     'thread.close'     => 'বন্ধ করুন',
+    'thread.sticky'    => 'স্টিকি করুন',
+    'thread.unsticky'  => 'স্টিকি সরান',
     'thread.move'      => 'সরান',
     'thread.merge'     => 'একীভূত করুন',
     'thread.delete'    => 'থ্রেড মুছুন',
@@ -297,10 +299,18 @@ return [
         '"{subject}" থ্রেড বন্ধ করবেন? বন্ধ হলে আর নতুন উত্তর দেওয়া যাবে না।',
     'mod.open_confirm'           =>
         '"{subject}" থ্রেড পুনরায় খুলবেন যাতে সদস্যরা নতুন উত্তর দিতে পারেন?',
+    'mod.sticky_thread'          => 'থ্রেড স্টিকি করুন',
+    'mod.unsticky_thread'        => 'থ্রেড স্টিকি সরান',
+    'mod.sticky_confirm'         =>
+        '"{subject}" থ্রেডটি স্টিকি করবেন? এটি ফোরাম তালিকার উপরে পিন করা থাকবে।',
+    'mod.unsticky_confirm'       =>
+        '"{subject}" থ্রেড থেকে স্টিকি সরাবেন? এটি স্বাভাবিক ক্রমে ফিরে যাবে।',
     'mod.yes_delete'             => 'হ্যাঁ, মুছুন',
     'mod.approve'                => 'অনুমোদন করুন',
     'mod.close'                  => 'থ্রেড বন্ধ করুন',
     'mod.reopen'                 => 'থ্রেড পুনরায় খুলুন',
+    'mod.sticky'                 => 'স্টিকি করুন',
+    'mod.unsticky'               => 'স্টিকি সরান',
     'mod.cancel'                 => 'বাতিল করুন',
     'mod.move_title'             => 'থ্রেড সরান',
     'mod.move_prompt'            => '"{subject}" অন্য ফোরামে সরান:',

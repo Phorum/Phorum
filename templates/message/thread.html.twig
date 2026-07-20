@@ -57,6 +57,11 @@
                     {% else %}
                         <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/close') }}">{{ trans('thread.close') }}</a>
                     {% endif %}
+                    {% if root.sort == 1 %}
+                        <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/unsticky') }}">{{ trans('thread.unsticky') }}</a>
+                    {% else %}
+                        <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/sticky') }}">{{ trans('thread.sticky') }}</a>
+                    {% endif %}
                     <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/move') }}">{{ trans('thread.move') }}</a>
                     <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/merge') }}">{{ trans('thread.merge') }}</a>
                     <a href="{{ path('/moderate/thread/' ~ root.message_id ~ '/delete') }}" class="mod-dropdown-danger">{{ trans('thread.delete') }}</a>

@@ -88,6 +88,7 @@ It was built by surveying the code directly (controllers, services, templates, r
 - **Thread delete/close/reopen** — Deleting a thread's root deletes the whole thread; threads can also be closed (blocking replies) and reopened.
 - **Thread move** — Move an entire thread to a different forum (recalculates stats on both sides, updates search index and subscriptions).
 - **Thread merge** — Fold one thread into another, reconciling closed-state, unread flags, stats, and search index.
+- **Sticky/unsticky a thread** — Pin a thread to the top of the forum listing, or remove the pin, from the same moderation dropdown as close/move/merge. `ModerationService::stickyThread()`
 - **Content reports queue** — Moderators see open user-submitted reports with the reported content and reason, and can resolve/dismiss each. `src/Http/Controllers/ReportController.php`, `ModerationController::reports()`
 - **Moderator forum scoping** — Every moderation action is restricted to forums the acting user actually moderates (`ALLOW_MODERATE_MESSAGES`); merge/move targets are checked too. `ModerationController::moderatableForums()`
 
@@ -251,6 +252,5 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end:
 
 - **`ALLOW_MODERATE_USERS` (permission bit 128)** — Present in the admin permission-checkbox UI and the bit constants, but no code path currently checks it.
-- **Sticky/pin thread** — `ModerationService::stickyThread()` exists and works, but no controller route currently exposes it to moderators.
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
 - **`email_notify` user setting** — Stored and editable in account settings, but not currently consulted by any notification code path (only `pm_email_notify` is actually wired up, for private messages).

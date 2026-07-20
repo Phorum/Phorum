@@ -4,7 +4,7 @@
 {% set is_thread = msg is not defined %}
 
 {% block title %}
-    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% endif %}
+    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% elseif action == 'sticky' %}{{ trans('mod.sticky_thread') }}{% elseif action == 'unsticky' %}{{ trans('mod.unsticky_thread') }}{% endif %}
     &mdash; {{ forum.name }} &mdash; {{ site_name }}
 {% endblock %}
 
@@ -15,7 +15,7 @@
     {% if not is_thread %}
         <a href="{{ path('/forum/' ~ forum.forum_id ~ '/thread/' ~ item.thread) }}">{{ item.subject }}</a> &rsaquo;
     {% endif %}
-    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% endif %}
+    {% if action == 'delete' %}{{ trans('mod.delete_thread') }}{% elseif action == 'approve' %}{{ trans('mod.approve_message') }}{% elseif action == 'close' %}{{ trans('mod.close_thread') }}{% elseif action == 'open' %}{{ trans('mod.reopen_thread') }}{% elseif action == 'sticky' %}{{ trans('mod.sticky_thread') }}{% elseif action == 'unsticky' %}{{ trans('mod.unsticky_thread') }}{% endif %}
 </nav>
 
 <div class="moderation-confirm">
@@ -41,12 +41,20 @@
     {% elseif action == 'open' %}
         <h1>{{ trans('mod.reopen_thread') }}</h1>
         <p>{{ trans('mod.open_confirm', {subject: item.subject}) }}</p>
+
+    {% elseif action == 'sticky' %}
+        <h1>{{ trans('mod.sticky_thread') }}</h1>
+        <p>{{ trans('mod.sticky_confirm', {subject: item.subject}) }}</p>
+
+    {% elseif action == 'unsticky' %}
+        <h1>{{ trans('mod.unsticky_thread') }}</h1>
+        <p>{{ trans('mod.unsticky_confirm', {subject: item.subject}) }}</p>
     {% endif %}
 
     <form method="post">
         {{ csrf_field() }}
         <button type="submit" class="btn-danger">
-            {% if action == 'delete' %}{{ trans('mod.yes_delete') }}{% elseif action == 'approve' %}{{ trans('mod.approve') }}{% elseif action == 'close' %}{{ trans('mod.close') }}{% elseif action == 'open' %}{{ trans('mod.reopen') }}{% endif %}
+            {% if action == 'delete' %}{{ trans('mod.yes_delete') }}{% elseif action == 'approve' %}{{ trans('mod.approve') }}{% elseif action == 'close' %}{{ trans('mod.close') }}{% elseif action == 'open' %}{{ trans('mod.reopen') }}{% elseif action == 'sticky' %}{{ trans('mod.sticky') }}{% elseif action == 'unsticky' %}{{ trans('mod.unsticky') }}{% endif %}
         </button>
         <button type="button" class="btn-cancel" onclick="history.back()">{{ trans('mod.cancel') }}</button>
     </form>

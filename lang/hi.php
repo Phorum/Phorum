@@ -60,6 +60,8 @@ return [
     'thread.following' => 'फ़ॉलो हो रहे हैं',
     'thread.reopen'    => 'पुनः खोलें',
     'thread.close'     => 'बंद करें',
+    'thread.sticky'    => 'स्टिकी करें',
+    'thread.unsticky'  => 'स्टिकी हटाएं',
     'thread.move'      => 'स्थानांतरित करें',
     'thread.merge'     => 'मर्ज करें',
     'thread.delete'    => 'थ्रेड हटाएं',
@@ -306,10 +308,18 @@ return [
         '"{subject}" थ्रेड बंद करें? बंद होने के बाद कोई नया उत्तर नहीं जोड़ा जा सकेगा।',
     'mod.open_confirm'           =>
         '"{subject}" थ्रेड पुनः खोलें ताकि सदस्य नए उत्तर दे सकें?',
+    'mod.sticky_thread'          => 'थ्रेड स्टिकी करें',
+    'mod.unsticky_thread'        => 'थ्रेड स्टिकी हटाएं',
+    'mod.sticky_confirm'         =>
+        '"{subject}" थ्रेड को स्टिकी बनाएं? यह फ़ोरम सूची के शीर्ष पर पिन हो जाएगा।',
+    'mod.unsticky_confirm'       =>
+        '"{subject}" से स्टिकी हटाएं? यह सामान्य क्रम में वापस आ जाएगा।',
     'mod.yes_delete'             => 'हाँ, हटाएं',
     'mod.approve'                => 'स्वीकृत करें',
     'mod.close'                  => 'थ्रेड बंद करें',
     'mod.reopen'                 => 'थ्रेड पुनः खोलें',
+    'mod.sticky'                 => 'स्टिकी करें',
+    'mod.unsticky'               => 'स्टिकी हटाएं',
     'mod.cancel'                 => 'रद्द करें',
     'mod.move_title'             => 'थ्रेड स्थानांतरित करें',
     'mod.move_prompt'            => '"{subject}" को किसी अन्य फ़ोरम में ले जाएं:',

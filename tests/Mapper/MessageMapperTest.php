@@ -87,8 +87,20 @@ class MessageMapperTest extends MapperTestCase
         $mapper  = $this->makeMapper();
         $results = $mapper->findThreadsInForum(1);
         $this->assertCount(2, $results);
-        // ordered by sort DESC, modifystamp DESC
+        // ordered by sort ASC, modifystamp DESC
         $this->assertSame(2000, $results[0]->modifystamp);
+    }
+
+    public function testFindThreadsInForumRanksStickyThreadsFirst(): void
+    {
+        $this->seedMessage(['forum_id' => 6, 'parent_id' => 0, 'datestamp' => 2000, 'modifystamp' => 2000, 'sort' => MessageMapper::SORT_DEFAULT, 'status' => MessageMapper::STATUS_APPROVED]);
+        $stickyId = $this->seedMessage(['forum_id' => 6, 'parent_id' => 0, 'datestamp' => 1000, 'modifystamp' => 1000, 'sort' => MessageMapper::SORT_STICKY, 'status' => MessageMapper::STATUS_APPROVED]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->findThreadsInForum(6);
+        $this->assertCount(2, $results);
+        // Sticky thread ranks first despite its older modifystamp.
+        $this->assertSame($stickyId, $results[0]->message_id);
     }
 
     public function testFindThreadsInForumExcludesUnapproved(): void

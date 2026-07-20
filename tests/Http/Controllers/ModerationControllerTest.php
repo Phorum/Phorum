@@ -256,6 +256,66 @@ class ModerationControllerTest extends ControllerTestCase
         $this->assertSame(302, $response->status);
     }
 
+    public function testThreadStickyLogsAction(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root = $this->makeMessage(22, 3, 22);
+        $root->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($root);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(3));
+
+        $modService = $this->createMock(ModerationService::class);
+        $modService->expects($this->once())->method('stickyThread')->with(22, true);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with($this->anything(), 'sticky', 'thread', 22, 3, $root->subject);
+
+        $ctrl     = $this->makeController([
+            'messages'          => $messages,
+            'forums'            => $forums,
+            'moderationService' => $modService,
+            'modLog'            => $modLog,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(tokens: ['thread_id' => '22', 'action' => 'sticky']));
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testThreadUnstickyLogsAction(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $root = $this->makeMessage(23, 3, 23);
+        $root->parent_id = 0;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($root);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(3));
+
+        $modService = $this->createMock(ModerationService::class);
+        $modService->expects($this->once())->method('stickyThread')->with(23, false);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with($this->anything(), 'unsticky', 'thread', 23, 3, $root->subject);
+
+        $ctrl     = $this->makeController([
+            'messages'          => $messages,
+            'forums'            => $forums,
+            'moderationService' => $modService,
+            'modLog'            => $modLog,
+        ]);
+        $response = $ctrl->thread($this->makePostRequest(tokens: ['thread_id' => '23', 'action' => 'unsticky']));
+        $this->assertSame(302, $response->status);
+    }
+
     public function testThreadMoveLogsDestinationForum(): void
     {
         Auth::setUser($this->makeUser());

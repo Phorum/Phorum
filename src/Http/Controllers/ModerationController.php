@@ -256,7 +256,7 @@ class ModerationController extends Controller
         $threadId = (int) ($request->tokens['thread_id'] ?? 0);
         $action   = $request->tokens['action'] ?? '';
 
-        if (!in_array($action, ['delete', 'close', 'open', 'move', 'merge'], strict: true)) {
+        if (!in_array($action, ['delete', 'close', 'open', 'move', 'merge', 'sticky', 'unsticky'], strict: true)) {
             return $this->notFound();
         }
 
@@ -288,10 +288,12 @@ class ModerationController extends Controller
             $toForumId = (int) ($request->post['to_forum_id'] ?? 0);
 
             match ($action) {
-                'delete' => $this->moderationService->deleteThread($threadId),
-                'close'  => $this->moderationService->closeThread($threadId),
-                'open'   => $this->moderationService->openThread($threadId),
-                'move'   => $this->moderationService->moveThread($threadId, $toForumId),
+                'delete'   => $this->moderationService->deleteThread($threadId),
+                'close'    => $this->moderationService->closeThread($threadId),
+                'open'     => $this->moderationService->openThread($threadId),
+                'move'     => $this->moderationService->moveThread($threadId, $toForumId),
+                'sticky'   => $this->moderationService->stickyThread($threadId, true),
+                'unsticky' => $this->moderationService->stickyThread($threadId, false),
             };
 
             $details = $action === 'move' && $toForumId > 0
