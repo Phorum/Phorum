@@ -451,4 +451,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => '檔案上傳目前已停用。',
     'attachment.lightbox_close' => '關閉',
+    'attachment.play_video' => '播放影片',
 ];

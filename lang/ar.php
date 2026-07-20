@@ -420,4 +420,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'تحميل الملفات معطل حاليًا.',
     'attachment.lightbox_close' => 'إغلاق',
+    'attachment.play_video' => 'تشغيل الفيديو',
 ];

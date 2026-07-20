@@ -454,4 +454,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'फ़ाइल अपलोड फ़िलहाल अक्षम हैं।',
     'attachment.lightbox_close' => 'बंद करें',
+    'attachment.play_video' => 'वीडियो चलाएं',
 ];

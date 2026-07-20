@@ -57,9 +57,19 @@
             {% if f.mime_type in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] %}
                 {% set file_meta = f.meta|decode_file_meta %}
                 <li class="attachment-preview-item">
-                    <a class="attachment-preview-link" href="{{ file_url }}" data-lightbox-name="{{ f.filename|e }}">
+                    <a class="attachment-preview-link" href="{{ file_url }}" data-lightbox-type="image" data-lightbox-name="{{ f.filename|e }}">
                         <img class="attachment-preview" src="{{ file_url }}" alt="{{ f.filename|e }}" loading="lazy"
                              {% if file_meta.width %}width="{{ file_meta.width }}" height="{{ file_meta.height }}"{% endif %}>
+                    </a>
+                </li>
+            {% elseif f.mime_type in ['video/mp4', 'video/webm'] %}
+                <li class="attachment-preview-item attachment-video-item">
+                    <a class="attachment-preview-link" href="{{ file_url }}" data-lightbox-type="video"
+                       data-lightbox-name="{{ f.filename|e }}" aria-label="{{ trans('attachment.play_video') }}">
+                        <span class="attachment-video-placeholder">
+                            <i class="fa fa-play-circle" aria-hidden="true"></i>
+                            <span class="attachment-video-filename">{{ f.filename }}</span>
+                        </span>
                     </a>
                 </li>
             {% else %}

@@ -620,6 +620,34 @@ article.message.message-unapproved {
     cursor: pointer;
 }
 
+.attachment-video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 200px;
+    height: 140px;
+    background: var(--accent-dark);
+    color: var(--white);
+    border-radius: 6px;
+    line-height: normal;
+    cursor: pointer;
+}
+
+.attachment-video-placeholder .fa-play-circle {
+    font-size: 2.5rem;
+}
+
+.attachment-video-filename {
+    max-width: 180px;
+    padding: 0 8px;
+    font-size: var(--fs-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .lightbox-overlay {
     position: fixed;
     inset: 0;
@@ -634,7 +662,8 @@ article.message.message-unapproved {
     display: none;
 }
 
-.lightbox-overlay img {
+.lightbox-overlay img,
+.lightbox-overlay video {
     max-width: 90vw;
     max-height: 90vh;
     object-fit: contain;

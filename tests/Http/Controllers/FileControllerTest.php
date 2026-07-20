@@ -39,6 +39,102 @@ class FileControllerTest extends ControllerTestCase
         return $file;
     }
 
+    /** A controller wired to serve $bytes for file_id=1, with read permission granted. */
+    private function makeControllerForServe(string $bytes, string $filename = 'video.mp4'): FileController
+    {
+        $file = $this->makeAttachmentFile();
+        $file->filename = $filename;
+        $msg   = $this->makeMessage(1, 1);
+        $forum = $this->makeForum(1);
+
+        $fileMapper = $this->createMock(FileMapper::class);
+        $fileMapper->method('load')->with(1)->willReturn($file);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->with(1)->willReturn($msg);
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->with(1)->willReturn($forum);
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('retrieve')->willReturn($bytes);
+
+        return $this->makeController([
+            'fileMapper' => $fileMapper, 'messages' => $messages,
+            'forums' => $forums, 'perms' => $perms, 'fileService' => $fileService,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // serve() — Range requests (video seeking)
+    // -------------------------------------------------------------------------
+
+    public function testServeReturns206ForValidRangeRequest(): void
+    {
+        $ctrl     = $this->makeControllerForServe('the quick brown fox');
+        $response = $ctrl->serve(new Request(
+            server: ['HTTP_RANGE' => 'bytes=4-8'],
+            tokens: ['file_id' => '1'],
+        ));
+
+        $this->assertSame(206, $response->status);
+        $this->assertSame('quick', $response->body);
+        $this->assertSame('bytes 4-8/19', $response->headers['Content-Range']);
+        $this->assertSame('5', $response->headers['Content-Length']);
+        $this->assertSame('bytes', $response->headers['Accept-Ranges']);
+    }
+
+    public function testServeReturns206ForOpenEndedRange(): void
+    {
+        $ctrl     = $this->makeControllerForServe('the quick brown fox'); // 19 bytes
+        $response = $ctrl->serve(new Request(
+            server: ['HTTP_RANGE' => 'bytes=16-'],
+            tokens: ['file_id' => '1'],
+        ));
+
+        $this->assertSame(206, $response->status);
+        $this->assertSame('fox', $response->body);
+        $this->assertSame('bytes 16-18/19', $response->headers['Content-Range']);
+    }
+
+    public function testServeReturns416ForOutOfBoundsRange(): void
+    {
+        $ctrl     = $this->makeControllerForServe('short');
+        $response = $ctrl->serve(new Request(
+            server: ['HTTP_RANGE' => 'bytes=99999-'],
+            tokens: ['file_id' => '1'],
+        ));
+
+        $this->assertSame(416, $response->status);
+        $this->assertSame('bytes */5', $response->headers['Content-Range']);
+    }
+
+    public function testServeReturns200WithAcceptRangesWhenNoRangeHeader(): void
+    {
+        $ctrl     = $this->makeControllerForServe('the quick brown fox');
+        $response = $ctrl->serve(new Request(tokens: ['file_id' => '1']));
+
+        $this->assertSame(200, $response->status);
+        $this->assertSame('the quick brown fox', $response->body);
+        $this->assertSame('bytes', $response->headers['Accept-Ranges']);
+    }
+
+    public function testServeIgnoresRangeHeaderForForceDownloadContent(): void
+    {
+        // Content that trips the HTML-signature security check must still be
+        // forced to attachment/octet-stream — a crafted Range header must not
+        // be able to bypass that by taking the 206 path instead.
+        $ctrl     = $this->makeControllerForServe('<html><script>alert(1)</script></html>', 'evil.svg');
+        $response = $ctrl->serve(new Request(
+            server: ['HTTP_RANGE' => 'bytes=0-4'],
+            tokens: ['file_id' => '1'],
+        ));
+
+        $this->assertSame(200, $response->status);
+        $this->assertSame('application/octet-stream', $response->headers['Content-Type']);
+        $this->assertStringStartsWith('attachment', $response->headers['Content-Disposition']);
+    }
+
     // -------------------------------------------------------------------------
     // serve() — file_serve_url hook
     // -------------------------------------------------------------------------

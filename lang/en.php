@@ -458,4 +458,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'File uploads are currently disabled.',
     'attachment.lightbox_close' => 'Close',
+    'attachment.play_video' => 'Play video',
 ];

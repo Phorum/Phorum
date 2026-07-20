@@ -457,4 +457,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'ফাইল আপলোড বর্তমানে নিষ্ক্রিয় করা আছে।',
     'attachment.lightbox_close' => 'বন্ধ করুন',
+    'attachment.play_video' => 'ভিডিও চালান',
 ];

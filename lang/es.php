@@ -451,4 +451,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Las subidas de archivos están actualmente deshabilitadas.',
     'attachment.lightbox_close' => 'Cerrar',
+    'attachment.play_video' => 'Reproducir vídeo',
 ];

@@ -97,11 +97,22 @@ class FileController extends Controller
         // Strip characters that would break the Content-Disposition header
         $safeName = preg_replace('/[\r\n";]/', '_', $file->filename);
 
+        // Range support (video seeking/scrubbing) — only for content already
+        // cleared as safe to serve inline; the dangerous-content path above
+        // always wins regardless of any Range header on the request.
+        if (!$forceDownload) {
+            $rangeResponse = $this->rangeResponse($request, $rawData, $mimeType, $safeName);
+            if ($rangeResponse !== null) {
+                return $rangeResponse;
+            }
+        }
+
         return new Response($rawData, 200, [
             'Content-Type'           => $mimeType,
             'Content-Disposition'    => ($forceDownload ? 'attachment' : 'inline')
                                         . '; filename="' . $safeName . '"',
             'Content-Length'         => (string) strlen($rawData),
+            'Accept-Ranges'          => 'bytes',
             'Cache-Control'          => 'private, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
@@ -134,6 +145,46 @@ class FileController extends Controller
             'Content-Disposition'    => 'inline; filename="' . $safeName . '"',
             'Content-Length'         => (string) strlen($rawData),
             'Cache-Control'          => 'public, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * Build a 206 Partial Content (or 416) response for a Range request,
+     * or null when there's no Range header to honor — the caller falls
+     * back to its normal full-body 200 response in that case.
+     *
+     * Native <video> playback relies on Range requests for seeking, since
+     * FileService::retrieve() already materializes the full byte string in
+     * memory, slicing it here is a small, self-contained addition.
+     */
+    private function rangeResponse(Request $request, string $rawData, string $mimeType, string $safeName): ?Response
+    {
+        $rangeHeader = $request->server['HTTP_RANGE'] ?? '';
+        if ($rangeHeader === '' || !preg_match('/^bytes=(\d*)-(\d*)$/', $rangeHeader, $m)) {
+            return null;
+        }
+
+        $totalLength = strlen($rawData);
+        $start       = $m[1] === '' ? 0 : (int) $m[1];
+        $end         = $m[2] === '' ? $totalLength - 1 : (int) $m[2];
+        $end         = min($end, $totalLength - 1);
+
+        if ($totalLength === 0 || $start > $end || $start >= $totalLength) {
+            return new Response('', 416, [
+                'Content-Range' => "bytes */{$totalLength}",
+            ]);
+        }
+
+        $chunk = substr($rawData, $start, $end - $start + 1);
+
+        return new Response($chunk, 206, [
+            'Content-Type'           => $mimeType,
+            'Content-Disposition'    => 'inline; filename="' . $safeName . '"',
+            'Content-Range'          => "bytes {$start}-{$end}/{$totalLength}",
+            'Accept-Ranges'          => 'bytes',
+            'Content-Length'         => (string) strlen($chunk),
+            'Cache-Control'          => 'private, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

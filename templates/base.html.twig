@@ -95,6 +95,7 @@
     <div id="attachment-lightbox" class="lightbox-overlay" hidden>
         <button type="button" class="lightbox-close" aria-label="{{ trans('attachment.lightbox_close') }}">&times;</button>
         <img src="" alt="">
+        <video controls></video>
     </div>
 
     {{ hook('javascript_filter') }}
@@ -190,17 +191,38 @@
                     return;
                 }
                 var img   = lightbox.querySelector('img');
+                var video = lightbox.querySelector('video');
                 var close = lightbox.querySelector('.lightbox-close');
 
+                function resetVideo() {
+                    video.pause();
+                    video.removeAttribute('src');
+                    video.load();
+                    video.hidden = true;
+                }
+
                 function openLightbox(link) {
-                    img.src = link.getAttribute('href');
-                    img.alt = link.getAttribute('data-lightbox-name') || '';
+                    var url = link.getAttribute('href');
+
+                    if (link.getAttribute('data-lightbox-type') === 'video') {
+                        img.hidden = true;
+                        img.src = '';
+                        video.hidden = false;
+                        video.src = url;
+                    } else {
+                        resetVideo();
+                        img.hidden = false;
+                        img.src = url;
+                        img.alt = link.getAttribute('data-lightbox-name') || '';
+                    }
+
                     lightbox.hidden = false;
                 }
 
                 function closeLightbox() {
                     lightbox.hidden = true;
                     img.src = '';
+                    resetVideo();
                 }
 
                 document.addEventListener('click', function (event) {

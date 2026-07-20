@@ -451,4 +451,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Les téléversements de fichiers sont actuellement désactivés.',
     'attachment.lightbox_close' => 'Fermer',
+    'attachment.play_video' => 'Lire la vidéo',
 ];

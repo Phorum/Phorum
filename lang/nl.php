@@ -458,4 +458,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Bestand uploaden is momenteel uitgeschakeld.',
     'attachment.lightbox_close' => 'Sluiten',
+    'attachment.play_video' => 'Video afspelen',
 ];

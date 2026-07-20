@@ -417,4 +417,5 @@ return [
     'attachment.hint_size'  => 'Max {size} per file.',
     'attachment.error_uploads_disabled' => 'Загрузка файлов в настоящее время отключена.',
     'attachment.lightbox_close' => 'Закрыть',
+    'attachment.play_video' => 'Воспроизвести видео',
 ];
