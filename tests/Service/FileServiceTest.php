@@ -239,4 +239,35 @@ class FileServiceTest extends TestCase
         $svc = new FileService($mapper);
         $svc->deleteForMessage(7);
     }
+
+    // -------------------------------------------------------------------------
+    // deleteForMessages — bulk variant used on thread delete
+    // -------------------------------------------------------------------------
+
+    public function testDeleteForMessagesDeletesAttachmentsAcrossAllMessages(): void
+    {
+        $f1 = new File(); $f1->file_id = 1; $f1->message_id = 10;
+        $f2 = new File(); $f2->file_id = 2; $f2->message_id = 10;
+        $f3 = new File(); $f3->file_id = 3; $f3->message_id = 20;
+
+        $mapper = $this->createMock(FileMapper::class);
+        $mapper->method('findByMessages')->with([10, 20])->willReturn([
+            10 => [$f1, $f2],
+            20 => [$f3],
+        ]);
+        $mapper->expects($this->exactly(3))->method('delete');
+
+        $svc = new FileService($mapper);
+        $svc->deleteForMessages([10, 20]);
+    }
+
+    public function testDeleteForMessagesDoesNothingWhenNoAttachmentsFound(): void
+    {
+        $mapper = $this->createMock(FileMapper::class);
+        $mapper->method('findByMessages')->willReturn([]);
+        $mapper->expects($this->never())->method('delete');
+
+        $svc = new FileService($mapper);
+        $svc->deleteForMessages([10, 20]);
+    }
 }

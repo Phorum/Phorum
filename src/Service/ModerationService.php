@@ -18,12 +18,14 @@ class ModerationService
         private readonly ?UserMapper       $users       = null,
         private readonly ?SubscriberMapper $subscribers = null,
         private readonly ?NewflagMapper    $newflags    = null,
+        private readonly ?FileService      $files       = null,
     ) {}
 
     /**
-     * Soft-delete a single message.
+     * Soft-delete a single message, along with its attachments.
      * If the message is a thread root, the entire thread is deleted instead.
-     * Children of a deleted non-root message are re-parented to its parent.
+     * Children of a deleted non-root message are re-parented to its parent
+     * and keep their own attachments.
      */
     public function deleteMessage(int $messageId): void
     {
@@ -42,10 +44,11 @@ class ModerationService
         $this->messages->recalcThreadStats($msg->thread);
         $this->forums->recalcStats($msg->forum_id);
         $this->users?->incrementDeletedCount($msg->user_id);
+        $this->files?->deleteForMessage($messageId);
         phorum_api_hook('delete', [$msg->message_id]);
     }
 
-    /** Soft-delete an entire thread (all messages where thread = $threadId). */
+    /** Soft-delete an entire thread (all messages where thread = $threadId) and all of its attachments. */
     public function deleteThread(int $threadId): void
     {
         $root = $this->loadThreadRoot($threadId);
@@ -58,6 +61,7 @@ class ModerationService
         $this->messages->setStatusForThread($threadId, MessageMapper::STATUS_DELETED);
         $this->forums->recalcStats($forumId);
         $this->incrementDeletedCountForAuthors($messageIds);
+        $this->files?->deleteForMessages($messageIds);
         phorum_api_hook('delete', $messageIds);
     }
 

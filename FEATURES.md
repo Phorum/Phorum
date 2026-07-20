@@ -85,8 +85,8 @@ It was built by surveying the code directly (controllers, services, templates, r
 
 ### Moderation Actions
 - **Pending-post review queue** — Moderators see all unapproved posts across every forum they moderate, with one-click approve/delete. `src/Http/Controllers/ModerationController.php::queue()`
-- **Message approve/delete** — Approve a held post, or soft-delete any post (re-parenting replies, recalculating stats, removing from search). `src/Service/ModerationService.php`
-- **Thread delete/close/reopen** — Deleting a thread's root deletes the whole thread; threads can also be closed (blocking replies) and reopened.
+- **Message approve/delete** — Approve a held post, or soft-delete any post (re-parenting replies, recalculating stats, removing from search, and deleting its attachments). `src/Service/ModerationService.php`
+- **Thread delete/close/reopen** — Deleting a thread's root deletes the whole thread, including every message's attachments; threads can also be closed (blocking replies) and reopened.
 - **Thread move** — Move an entire thread to a different forum (recalculates stats on both sides, updates search index and subscriptions).
 - **Thread merge** — Fold one thread into another, reconciling closed-state, unread flags, stats, and search index.
 - **Sticky/unsticky a thread** — Pin a thread to the top of the forum listing, or remove the pin, from the same moderation dropdown as close/move/merge. `ModerationService::stickyThread()`

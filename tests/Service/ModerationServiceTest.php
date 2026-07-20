@@ -10,6 +10,7 @@ use Phorum\Mapper\NewflagMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\Message;
+use Phorum\Service\FileService;
 use Phorum\Service\ModerationService;
 use PHPUnit\Framework\TestCase;
 
@@ -105,6 +106,35 @@ class ModerationServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function testDeleteMessageDeletesItsAttachments(): void
+    {
+        $reply = $this->makeMessage(2, 1, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->with(2)->willReturn($reply);
+
+        $files = $this->createMock(FileService::class);
+        $files->expects($this->once())->method('deleteForMessage')->with(2);
+
+        $svc = new ModerationService(
+            $msgMapper, $this->createMock(ForumMapper::class),
+            files: $files,
+        );
+        $svc->deleteMessage(2);
+    }
+
+    public function testDeleteMessageDoesNotErrorWithoutFileService(): void
+    {
+        $reply = $this->makeMessage(2, 1, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->with(2)->willReturn($reply);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->deleteMessage(2); // no FileService injected — must not throw
+        $this->assertTrue(true);
+    }
+
     // -------------------------------------------------------------------------
     // deleteThread()
     // -------------------------------------------------------------------------
@@ -179,6 +209,37 @@ class ModerationServiceTest extends TestCase
 
         $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
         $svc->deleteThread(1); // no UserMapper injected — must not throw
+        $this->assertTrue(true);
+    }
+
+    public function testDeleteThreadDeletesAttachmentsForEveryMessage(): void
+    {
+        $root = $this->makeMessage(1, 0, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn($root);
+        $msgMapper->method('findIdsByThread')->willReturn([1, 2, 3]);
+
+        $files = $this->createMock(FileService::class);
+        $files->expects($this->once())->method('deleteForMessages')->with([1, 2, 3]);
+
+        $svc = new ModerationService(
+            $msgMapper, $this->createMock(ForumMapper::class),
+            files: $files,
+        );
+        $svc->deleteThread(1);
+    }
+
+    public function testDeleteThreadDoesNotErrorWithoutFileService(): void
+    {
+        $root = $this->makeMessage(1, 0, thread: 1);
+
+        $msgMapper = $this->createMock(MessageMapper::class);
+        $msgMapper->method('load')->willReturn($root);
+        $msgMapper->method('findIdsByThread')->willReturn([1]);
+
+        $svc = new ModerationService($msgMapper, $this->createMock(ForumMapper::class));
+        $svc->deleteThread(1); // no FileService injected — must not throw
         $this->assertTrue(true);
     }
 

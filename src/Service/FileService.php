@@ -179,12 +179,29 @@ class FileService
     }
 
     /**
-     * Delete all attachments for a message (used on message/thread delete).
+     * Delete all attachments for a message (used on message delete).
      */
     public function deleteForMessage(int $messageId): void
     {
         foreach ($this->mapper->findByMessage($messageId) as $file) {
             $this->delete($file);
+        }
+    }
+
+    /**
+     * Delete all attachments for a set of messages in one query (used on
+     * thread delete). Goes through delete() per file, not a bulk SQL
+     * statement, so the file_delete hook still fires for each one — required
+     * for the S3 storage module to clean up its objects.
+     *
+     * @param int[] $messageIds
+     */
+    public function deleteForMessages(array $messageIds): void
+    {
+        foreach ($this->mapper->findByMessages($messageIds) as $files) {
+            foreach ($files as $file) {
+                $this->delete($file);
+            }
         }
     }
 
