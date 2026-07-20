@@ -202,7 +202,10 @@ return [
     'settings.show_signature'    => '在我的帖子中显示签名',
     'settings.preferences'       => '偏好设置',
     'settings.threaded_read'     => '阅读主题时使用树形视图',
-    'settings.email_notify'      => '当我订阅的版块有新帖子时发送邮件通知',
+    'settings.email_notify'          => '当我发表新主题或回复时',
+    'settings.email_notify_none'     => '不自动关注',
+    'settings.email_notify_bookmark' => '静默关注（不发送邮件）',
+    'settings.email_notify_message'  => '关注并在有回复时通知我',
     'settings.pm_email_notify'   => '收到私信时发送邮件通知',
     'settings.tz_offset'         => '时区偏移（小时，-12 至 +14；-99 = 服务器时间）',
     'settings.save'              => '保存设置',
@@ -219,6 +222,7 @@ return [
     'settings.error_password_min_length'   => '新密码至少需要 6 个字符。',
     'settings.error_passwords_mismatch'    => '两次输入的密码不一致。',
     'settings.error_tz_offset'             => '时区偏移必须在 -12 至 +14 之间，或使用 -99 表示服务器时间。',
+    'settings.error_email_notify'          => '请选择一个有效的关注选项。',
 
     // -------------------------------------------------------------------------
     // Forced password change

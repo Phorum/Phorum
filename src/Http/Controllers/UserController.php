@@ -111,7 +111,7 @@ class UserController extends Controller
             $showSig      = !empty($request->post['show_signature']);
             $hideEmail    = !empty($request->post['hide_email']);
             $threadedRead = !empty($request->post['threaded_read']);
-            $emailNotify  = !empty($request->post['email_notify']);
+            $emailNotify  = (int) ($request->post['email_notify'] ?? 0);
             $pmNotify     = !empty($request->post['pm_email_notify']);
             $tzOffset     = (float) ($request->post['tz_offset']  ?? -99);
             $deleteAvatar = !empty($request->post['delete_avatar']);
@@ -156,6 +156,10 @@ class UserController extends Controller
                 $errors[] = Lang::get('settings.error_tz_offset');
             }
 
+            if (!in_array($emailNotify, [0, 1, 2], true)) {
+                $errors[] = Lang::get('settings.error_email_notify');
+            }
+
             if (empty($errors)) {
                 $currentUser->display_name    = $displayName;
                 $currentUser->email           = $email;
@@ -163,7 +167,7 @@ class UserController extends Controller
                 $currentUser->show_signature  = $showSig ? 1 : 0;
                 $currentUser->hide_email      = $hideEmail ? 1 : 0;
                 $currentUser->threaded_read   = $threadedRead ? 1 : 0;
-                $currentUser->email_notify    = $emailNotify ? 1 : 0;
+                $currentUser->email_notify    = $emailNotify;
                 $currentUser->pm_email_notify = $pmNotify ? 1 : 0;
                 $currentUser->tz_offset       = $tzOffset;
 

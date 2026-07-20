@@ -202,7 +202,10 @@ return [
     'settings.show_signature'    => 'Mostrar firma en mis mensajes',
     'settings.preferences'       => 'Preferencias',
     'settings.threaded_read'     => 'Usar vista en árbol al leer hilos',
-    'settings.email_notify'      => 'Enviarme un correo cuando se publiquen mensajes nuevos en los foros a los que estoy suscrito',
+    'settings.email_notify'          => 'Cuando publico un nuevo hilo o respondo',
+    'settings.email_notify_none'     => 'No seguir automáticamente',
+    'settings.email_notify_bookmark' => 'Seguir en silencio (sin correos)',
+    'settings.email_notify_message'  => 'Seguir y avisarme por correo de las respuestas',
     'settings.pm_email_notify'   => 'Enviarme un correo cuando reciba un mensaje privado',
     'settings.tz_offset'         => 'Desfase horario (horas, -12 a +14; -99 = hora del servidor)',
     'settings.save'              => 'Guardar configuración',
@@ -219,6 +222,7 @@ return [
     'settings.error_password_min_length'   => 'La nueva contraseña debe tener al menos 6 caracteres.',
     'settings.error_passwords_mismatch'    => 'Las contraseñas no coinciden.',
     'settings.error_tz_offset'             => 'El desfase horario debe estar entre -12 y +14, o -99 para la hora del servidor.',
+    'settings.error_email_notify'          => 'Selecciona una opción de seguimiento válida.',
 
     // -------------------------------------------------------------------------
     // Forced password change

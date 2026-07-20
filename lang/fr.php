@@ -202,7 +202,10 @@ return [
     'settings.show_signature'    => 'Afficher la signature sur mes messages',
     'settings.preferences'       => 'Préférences',
     'settings.threaded_read'     => 'Utiliser la vue par fils lors de la lecture des fils',
-    'settings.email_notify'      => 'M\'envoyer un e-mail lorsque de nouveaux messages sont publiés dans les forums auxquels je suis abonné',
+    'settings.email_notify'          => 'Quand je publie un nouveau sujet ou une réponse',
+    'settings.email_notify_none'     => 'Ne pas suivre automatiquement',
+    'settings.email_notify_bookmark' => 'Suivre silencieusement (sans e-mails)',
+    'settings.email_notify_message'  => 'Suivre et m\'envoyer un e-mail pour les réponses',
     'settings.pm_email_notify'   => 'M\'envoyer un e-mail lorsque je reçois un message privé',
     'settings.tz_offset'         => 'Décalage horaire (heures, -12 à +14 ; -99 = heure du serveur)',
     'settings.save'              => 'Enregistrer les paramètres',
@@ -219,6 +222,7 @@ return [
     'settings.error_password_min_length'   => 'Le nouveau mot de passe doit comporter au moins 6 caractères.',
     'settings.error_passwords_mismatch'    => 'Les mots de passe ne correspondent pas.',
     'settings.error_tz_offset'             => 'Le décalage horaire doit être compris entre -12 et +14, ou -99 pour l\'heure du serveur.',
+    'settings.error_email_notify'          => 'Veuillez choisir une option de suivi valide.',
 
     // -------------------------------------------------------------------------
     // Forced password change

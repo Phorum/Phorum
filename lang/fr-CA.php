@@ -37,8 +37,8 @@ return [
     // fr.php: 'Masquer mon adresse e-mail sur mon profil'
     'settings.hide_email' => 'Masquer mon adresse courriel sur mon profil',
 
-    // fr.php: 'M\'envoyer un e-mail lorsque de nouveaux messages sont publiés dans les forums auxquels je suis abonné'
-    'settings.email_notify' => 'M\'envoyer un courriel lorsque de nouveaux messages sont publiés dans les forums auxquels je suis abonné',
+    // fr.php: 'Suivre et m\'envoyer un e-mail pour les réponses'
+    'settings.email_notify_message' => 'Suivre et m\'envoyer un courriel pour les réponses',
 
     // fr.php: 'M\'envoyer un e-mail lorsque je reçois un message privé'
     'settings.pm_email_notify' => 'M\'envoyer un courriel lorsque je reçois un message privé',

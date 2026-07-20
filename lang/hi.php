@@ -200,7 +200,10 @@ return [
     'settings.show_signature'    => 'मेरी पोस्ट पर हस्ताक्षर दिखाएं',
     'settings.preferences'       => 'प्राथमिकताएं',
     'settings.threaded_read'     => 'थ्रेड पढ़ते समय थ्रेडेड व्यू उपयोग करें',
-    'settings.email_notify'      => 'जब मैं सब्सक्राइब किए फ़ोरम में नई पोस्ट आएं तो मुझे ईमेल करें',
+    'settings.email_notify'          => 'जब मैं नया थ्रेड पोस्ट करूं या उत्तर दूं',
+    'settings.email_notify_none'     => 'स्वचालित रूप से फ़ॉलो न करें',
+    'settings.email_notify_bookmark' => 'चुपचाप फ़ॉलो करें (कोई ईमेल नहीं)',
+    'settings.email_notify_message'  => 'फ़ॉलो करें और उत्तरों पर मुझे ईमेल करें',
     'settings.pm_email_notify'   => 'जब मुझे निजी संदेश मिले तो ईमेल करें',
     'settings.tz_offset'         => 'समय क्षेत्र ऑफ़सेट (घंटे, -12 से +14; -99 = सर्वर समय)',
     'settings.save'              => 'सेटिंग सहेजें',
@@ -217,6 +220,7 @@ return [
     'settings.error_password_min_length'   => 'नया पासवर्ड कम से कम 6 अक्षर का होना चाहिए।',
     'settings.error_passwords_mismatch'    => 'पासवर्ड मेल नहीं खाते।',
     'settings.error_tz_offset'             => 'समय क्षेत्र ऑफ़सेट -12 से +14 के बीच होना चाहिए, या सर्वर समय के लिए -99।',
+    'settings.error_email_notify'          => 'कृपया एक मान्य फ़ॉलो-ऑन-पोस्ट विकल्प चुनें।',
 
     // -------------------------------------------------------------------------
     // Forced password change

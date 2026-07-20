@@ -231,6 +231,47 @@ class UserControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testSettingsPostSavesValidEmailNotifyValue(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->settings($this->makePostRequest([
+            'display_name' => 'New Name',
+            'email'        => 'user1@example.com',
+            'email_notify' => '2',
+        ]));
+        $this->assertSame(200, $response->status);
+        $this->assertSame(2, $saved->email_notify);
+    }
+
+    public function testSettingsPostRejectsInvalidEmailNotifyValue(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->settings($this->makePostRequest([
+            'display_name' => 'New Name',
+            'email'        => 'user1@example.com',
+            'email_notify' => '99',
+        ]));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testSettingsPostReturns403WithBadCsrf(): void
     {
         Auth::setUser($this->makeUser());

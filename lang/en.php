@@ -209,7 +209,10 @@ return [
     'settings.show_signature'    => 'Show signature on my posts',
     'settings.preferences'       => 'Preferences',
     'settings.threaded_read'     => 'Use threaded view when reading threads',
-    'settings.email_notify'      => 'Email me when new posts are made in forums I subscribe to',
+    'settings.email_notify'          => 'When I post a new thread or reply',
+    'settings.email_notify_none'     => "Don't follow automatically",
+    'settings.email_notify_bookmark' => 'Follow silently (no emails)',
+    'settings.email_notify_message'  => 'Follow and email me on replies',
     'settings.pm_email_notify'   => 'Email me when I receive a private message',
     'settings.tz_offset'         => 'Timezone Offset (hours, -12 to +14; -99 = server time)',
     'settings.save'              => 'Save Settings',
@@ -226,6 +229,7 @@ return [
     'settings.error_password_min_length'   => 'New password must be at least 6 characters.',
     'settings.error_passwords_mismatch'    => 'Passwords do not match.',
     'settings.error_tz_offset'             => 'Timezone offset must be between -12 and +14, or -99 for server time.',
+    'settings.error_email_notify'          => 'Please choose a valid follow-on-post option.',
 
     // -------------------------------------------------------------------------
     // Forced password change

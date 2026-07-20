@@ -209,7 +209,10 @@ return [
     'settings.show_signature'    => 'Handtekening weergeven onder mijn berichten',
     'settings.preferences'       => 'Voorkeuren',
     'settings.threaded_read'     => 'Gebruik de discussieweergave bij het lezen van threads',
-    'settings.email_notify'      => 'Stuur mij een e-mail bij nieuwe berichten in forums waarop ik ben geabonneerd',
+    'settings.email_notify'          => 'Wanneer ik een nieuwe discussie start of reageer',
+    'settings.email_notify_none'     => 'Niet automatisch volgen',
+    'settings.email_notify_bookmark' => 'Stil volgen (geen e-mails)',
+    'settings.email_notify_message'  => 'Volgen en mij e-mailen bij reacties',
     'settings.pm_email_notify'   => 'Stuur mij een e-mail wanneer ik een privébericht ontvang',
     'settings.tz_offset'         => 'Tijdzoneverschuiving (uren, -12 t/m +14; -99 = servertijd)',
     'settings.save'              => 'Instellingen opslaan',
@@ -226,6 +229,7 @@ return [
     'settings.error_password_min_length'   => 'Nieuw wachtwoord moet minimaal 6 tekens bevatten.',
     'settings.error_passwords_mismatch'    => 'Wachtwoorden komen niet overeen.',
     'settings.error_tz_offset'             => 'Tijdzoneverschuiving moet tussen -12 en +14 liggen, of -99 voor servertijd.',
+    'settings.error_email_notify'          => 'Kies een geldige volg-optie.',
 
     // -------------------------------------------------------------------------
     // Forced password change

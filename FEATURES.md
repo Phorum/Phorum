@@ -72,6 +72,7 @@ It was built by surveying the code directly (controllers, services, templates, r
 - **Reply notification emails** — Subscribers (except the post's author) get an email on new approved posts, with unsubscribe and "keep as bookmark" one-click links.
 - **Moderator notification emails** — Forum moderators can be emailed about new posts in forums they moderate (per-forum `email_moderators` toggle).
 - **Unread/"new" post tracking** — Tracks which messages a user has/hasn't read per forum, with a "mark all read" action and an automatic 1000-flag-per-forum cap/pruning. `src/Service/NewflagService.php`
+- **Default follow-on-post preference** — A per-user setting (`email_notify`: don't auto-follow / follow silently / follow and email me) that auto-subscribes the user to a thread the moment they start it or reply to it, unless they're already subscribed (an existing subscription is left untouched). `MessageController::applyDefaultSubscription()`, `templates/user/settings.html.twig`
 
 ### Profiles & Buddies
 - **Public profile page** — Display name, real name (if set), email (unless hidden), join date, post count, last-active time (unless hidden), signature, avatar, and the user's 15 most recent posts. `src/Http/Controllers/UserController.php::profile()`
@@ -259,4 +260,3 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end:
 
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
-- **`email_notify` user setting** — Stored and editable in account settings, but not currently consulted by any notification code path (only `pm_email_notify` is actually wired up, for private messages).

@@ -375,6 +375,8 @@ class MessageController extends Controller
                 if (empty($errors)) {
                     $msg = $this->messageService->post($forum, $user, $subject, $body, $parentId);
 
+                    $this->applyDefaultSubscription($user, $forumId, $msg->thread);
+
                     if ($msg->status === 2) {
                         $this->searchIndex->indexMessage(
                             $msg->message_id, $msg->forum_id, $msg->author, $msg->subject, $msg->body
@@ -651,6 +653,34 @@ class MessageController extends Controller
         $position = $this->messages->findMessagePosition($threadId, $messageId, $viewerUserId);
 
         return $position !== null ? max(1, (int) ceil($position / $perPage)) : null;
+    }
+
+    /**
+     * Auto-follow a thread the user just started or replied to, according to
+     * their `email_notify` preference (0 = don't, 1 = silently, 2 = with
+     * email) — but only if they aren't already subscribed, so replying to a
+     * thread you already follow (in whatever mode) never overrides that.
+     * Matches Phorum 6's request_first.php behavior for new posts/replies;
+     * intentionally not applied on edits.
+     */
+    private function applyDefaultSubscription(User $user, int $forumId, int $thread): void
+    {
+        // email_notify's own scale (0=none, 1=bookmark, 2=message+email) does
+        // NOT line up numerically with SubscriberMapper's sub_type constants
+        // (SUB_NONE=-1, SUB_MESSAGE=0, SUB_BOOKMARK=2) — map explicitly.
+        $subType = match ($user->email_notify) {
+            2       => SubscriberMapper::SUB_MESSAGE,
+            1       => SubscriberMapper::SUB_BOOKMARK,
+            default => null,
+        };
+        if ($subType === null) {
+            return;
+        }
+
+        $current = $this->subscriptions->getSubscription($user->user_id, $forumId, $thread);
+        if ($current === SubscriberMapper::SUB_NONE) {
+            $this->subscriptions->subscribe($user->user_id, $forumId, $thread, $subType);
+        }
     }
 
     /**

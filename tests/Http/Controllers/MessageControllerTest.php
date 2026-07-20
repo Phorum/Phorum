@@ -477,6 +477,100 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertStringContainsString('/forum/1/thread/42', $response->headers['Location']);
     }
 
+    private function assertPostAppliesDefaultSubscription(int $emailNotify, ?int $expectedSubType): void
+    {
+        $user               = $this->makeUser();
+        $user->email_notify = $emailNotify;
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $postedMsg        = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+        if ($expectedSubType === null) {
+            $subs->expects($this->never())->method('subscribe');
+        } else {
+            $subs->expects($this->once())->method('subscribe')
+                ->with($user->user_id, 1, 42, $expectedSubType);
+        }
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'banService'    => $ban,
+            'messageService'=> $msgService,
+            'subscriptions' => $subs,
+        ]);
+        $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+    }
+
+    public function testPostWithEmailNotifyNoneDoesNotSubscribe(): void
+    {
+        $this->assertPostAppliesDefaultSubscription(0, null);
+    }
+
+    public function testPostWithEmailNotifyBookmarkSubscribesSilently(): void
+    {
+        $this->assertPostAppliesDefaultSubscription(1, SubscriberMapper::SUB_BOOKMARK);
+    }
+
+    public function testPostWithEmailNotifyMessageSubscribesWithEmail(): void
+    {
+        $this->assertPostAppliesDefaultSubscription(2, SubscriberMapper::SUB_MESSAGE);
+    }
+
+    public function testPostDoesNotOverrideAnExistingSubscription(): void
+    {
+        $user               = $this->makeUser();
+        $user->email_notify = 2;
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $postedMsg        = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_BOOKMARK);
+        $subs->expects($this->never())->method('subscribe');
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'banService'    => $ban,
+            'messageService'=> $msgService,
+            'subscriptions' => $subs,
+        ]);
+        $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+    }
+
     public function testPostReplyRedirectsToResolvedPageWhenForumIsPaginatedFlat(): void
     {
         $user = $this->makeUser();

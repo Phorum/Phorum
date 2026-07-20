@@ -180,7 +180,10 @@ return [
     'settings.show_signature'    => 'Показывать подпись в моих сообщениях',
     'settings.preferences'       => 'Предпочтения',
     'settings.threaded_read'     => 'Использовать древовидный вид при чтении тем',
-    'settings.email_notify'      => 'Уведомлять меня по электронной почте о новых сообщениях в форумах, на которые я подписан',
+    'settings.email_notify'          => 'Когда я создаю новую тему или отвечаю',
+    'settings.email_notify_none'     => 'Не подписываться автоматически',
+    'settings.email_notify_bookmark' => 'Подписываться без уведомлений (без писем)',
+    'settings.email_notify_message'  => 'Подписываться и уведомлять меня по почте об ответах',
     'settings.pm_email_notify'   => 'Уведомлять меня по электронной почте при получении личного сообщения',
     'settings.tz_offset'         => 'Временная зона (часы, от −12 до +14; −99 = серверное время)',
     'settings.save'              => 'Сохранить настройки',
@@ -197,6 +200,7 @@ return [
     'settings.error_password_min_length'   => 'Новый пароль должен содержать не менее 6 символов.',
     'settings.error_passwords_mismatch'    => 'Пароли не совпадают.',
     'settings.error_tz_offset'             => 'Смещение временной зоны должно быть от −12 до +14, либо −99 для серверного времени.',
+    'settings.error_email_notify'          => 'Пожалуйста, выберите допустимый вариант подписки.',
 
     // Forced password change
     'force_password_change.title'     => 'Смена пароля',

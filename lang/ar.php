@@ -181,7 +181,10 @@ return [
     'settings.show_signature'    => 'عرض التوقيع في مشاركاتي',
     'settings.preferences'       => 'التفضيلات',
     'settings.threaded_read'     => 'استخدام العرض المتشعّب عند قراءة الموضوعات',
-    'settings.email_notify'      => 'إرسال بريد إلكتروني إليّ عند نشر مشاركات جديدة في المنتديات التي أتابعها',
+    'settings.email_notify'          => 'عند نشر موضوع جديد أو الرد',
+    'settings.email_notify_none'     => 'عدم المتابعة تلقائيًا',
+    'settings.email_notify_bookmark' => 'المتابعة بصمت (بدون بريد إلكتروني)',
+    'settings.email_notify_message'  => 'المتابعة وإرسال بريد إلكتروني عند الردود',
     'settings.pm_email_notify'   => 'إرسال بريد إلكتروني إليّ عند استلام رسالة خاصة',
     'settings.tz_offset'         => 'فارق التوقيت (بالساعات، من -12 إلى +14؛ -99 = توقيت الخادم)',
     'settings.save'              => 'حفظ الإعدادات',
@@ -198,6 +201,7 @@ return [
     'settings.error_password_min_length'   => 'يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.',
     'settings.error_passwords_mismatch'    => 'كلمتا المرور غير متطابقتين.',
     'settings.error_tz_offset'             => 'يجب أن يكون فارق التوقيت بين -12 و+14، أو -99 لتوقيت الخادم.',
+    'settings.error_email_notify'          => 'يرجى اختيار خيار متابعة صالح.',
 
     // -------------------------------------------------------------------------
     // Forced password change

@@ -181,7 +181,10 @@ return [
     'settings.show_signature'    => 'میری پوسٹس میں دستخط دکھائیں',
     'settings.preferences'       => 'ترجیحات',
     'settings.threaded_read'     => 'دھاگے پڑھتے وقت تھریڈڈ ویو استعمال کریں',
-    'settings.email_notify'      => 'جن فورمز کو میں فالو کرتا ہوں ان میں نئی پوسٹس پر مجھے ای میل کریں',
+    'settings.email_notify'          => 'جب میں نیا موضوع پوسٹ کروں یا جواب دوں',
+    'settings.email_notify_none'     => 'خودکار طور پر فالو نہ کریں',
+    'settings.email_notify_bookmark' => 'خاموشی سے فالو کریں (کوئی ای میل نہیں)',
+    'settings.email_notify_message'  => 'فالو کریں اور جوابات پر مجھے ای میل کریں',
     'settings.pm_email_notify'   => 'نجی پیغام موصول ہونے پر مجھے ای میل کریں',
     'settings.tz_offset'         => 'ٹائم زون آفسیٹ (گھنٹے، -12 سے +14؛ -99 = سرور وقت)',
     'settings.save'              => 'ترتیبات محفوظ کریں',
@@ -198,6 +201,7 @@ return [
     'settings.error_password_min_length'   => 'نیا پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
     'settings.error_passwords_mismatch'    => 'پاس ورڈز مماثل نہیں ہیں۔',
     'settings.error_tz_offset'             => 'ٹائم زون آفسیٹ -12 اور +14 کے درمیان ہونا چاہیے، یا سرور وقت کے لیے -99۔',
+    'settings.error_email_notify'          => 'براہ کرم ایک درست فالو کا اختیار منتخب کریں۔',
 
     // Private messages
     'pm.private_messages'    => 'نجی پیغامات',

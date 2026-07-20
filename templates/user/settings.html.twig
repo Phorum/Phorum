@@ -88,11 +88,12 @@
         </div>
 
         <div class="form-row">
-            <label>
-                <input type="checkbox" name="email_notify" value="1"
-                       {{ profile.email_notify ? 'checked' : '' }}>
-                {{ trans('settings.email_notify') }}
-            </label>
+            <label for="email_notify">{{ trans('settings.email_notify') }}</label>
+            <select id="email_notify" name="email_notify">
+                <option value="0" {{ profile.email_notify == 0 ? 'selected' : '' }}>{{ trans('settings.email_notify_none') }}</option>
+                <option value="1" {{ profile.email_notify == 1 ? 'selected' : '' }}>{{ trans('settings.email_notify_bookmark') }}</option>
+                <option value="2" {{ profile.email_notify == 2 ? 'selected' : '' }}>{{ trans('settings.email_notify_message') }}</option>
+            </select>
         </div>
 
         <div class="form-row">

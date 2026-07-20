@@ -180,7 +180,10 @@ return [
     'settings.show_signature'    => 'Signatur in meinen Beiträgen anzeigen',
     'settings.preferences'       => 'Einstellungen',
     'settings.threaded_read'     => 'Thread-Ansicht beim Lesen von Threads verwenden',
-    'settings.email_notify'      => 'E-Mail-Benachrichtigung bei neuen Beiträgen in abonnierten Foren',
+    'settings.email_notify'          => 'Wenn ich einen neuen Thread erstelle oder antworte',
+    'settings.email_notify_none'     => 'Nicht automatisch folgen',
+    'settings.email_notify_bookmark' => 'Still folgen (keine E-Mails)',
+    'settings.email_notify_message'  => 'Folgen und mich bei Antworten per E-Mail benachrichtigen',
     'settings.pm_email_notify'   => 'E-Mail-Benachrichtigung beim Empfang einer privaten Nachricht',
     'settings.tz_offset'         => 'Zeitzonenversatz (Stunden, -12 bis +14; -99 = Serverzeit)',
     'settings.save'              => 'Einstellungen speichern',
@@ -197,6 +200,7 @@ return [
     'settings.error_password_min_length'   => 'Das neue Passwort muss mindestens 6 Zeichen lang sein.',
     'settings.error_passwords_mismatch'    => 'Die Passwörter stimmen nicht überein.',
     'settings.error_tz_offset'             => 'Der Zeitzonenversatz muss zwischen -12 und +14 liegen, oder -99 für Serverzeit.',
+    'settings.error_email_notify'          => 'Bitte wählen Sie eine gültige Option für die Folgeeinstellung.',
 
     // Forced password change
     'force_password_change.title'     => 'Passwort ändern',

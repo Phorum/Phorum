@@ -202,7 +202,10 @@ return [
     'settings.show_signature'    => 'Tampilkan tanda tangan pada postingan saya',
     'settings.preferences'       => 'Preferensi',
     'settings.threaded_read'     => 'Gunakan tampilan berulir saat membaca utas',
-    'settings.email_notify'      => 'Kirimkan email ketika ada postingan baru di forum yang saya ikuti',
+    'settings.email_notify'          => 'Saat saya membuat utas baru atau membalas',
+    'settings.email_notify_none'     => 'Jangan ikuti secara otomatis',
+    'settings.email_notify_bookmark' => 'Ikuti secara diam-diam (tanpa email)',
+    'settings.email_notify_message'  => 'Ikuti dan kirimi saya email saat ada balasan',
     'settings.pm_email_notify'   => 'Kirimkan email ketika saya menerima pesan pribadi',
     'settings.tz_offset'         => 'Selisih Zona Waktu (jam, -12 hingga +14; -99 = waktu server)',
     'settings.save'              => 'Simpan Pengaturan',
@@ -219,6 +222,7 @@ return [
     'settings.error_password_min_length'   => 'Kata sandi baru harus terdiri dari minimal 6 karakter.',
     'settings.error_passwords_mismatch'    => 'Kata sandi tidak cocok.',
     'settings.error_tz_offset'             => 'Selisih zona waktu harus antara -12 dan +14, atau -99 untuk waktu server.',
+    'settings.error_email_notify'          => 'Pilih opsi mengikuti yang valid.',
 
     // -------------------------------------------------------------------------
     // Forced password change

@@ -200,7 +200,10 @@ return [
     'settings.show_signature'    => 'আমার পোস্টে স্বাক্ষর দেখান',
     'settings.preferences'       => 'পছন্দসমূহ',
     'settings.threaded_read'     => 'থ্রেড পড়ার সময় থ্রেডেড ভিউ ব্যবহার করুন',
-    'settings.email_notify'      => 'আমি সদস্যতা নেওয়া ফোরামে নতুন পোস্ট হলে ইমেইল পাঠান',
+    'settings.email_notify'          => 'আমি নতুন থ্রেড পোস্ট করলে বা উত্তর দিলে',
+    'settings.email_notify_none'     => 'স্বয়ংক্রিয়ভাবে ফলো করবেন না',
+    'settings.email_notify_bookmark' => 'নীরবে ফলো করুন (কোনো ইমেইল নয়)',
+    'settings.email_notify_message'  => 'ফলো করুন এবং উত্তরে ইমেইল করুন',
     'settings.pm_email_notify'   => 'ব্যক্তিগত বার্তা পেলে ইমেইল পাঠান',
     'settings.tz_offset'         => 'টাইমজোন অফসেট (ঘণ্টা, -12 থেকে +14; -99 = সার্ভার সময়)',
     'settings.save'              => 'সেটিংস সংরক্ষণ করুন',
@@ -217,6 +220,7 @@ return [
     'settings.error_password_min_length'   => 'নতুন পাসওয়ার্ড কমপক্ষে ৬টি অক্ষরের হতে হবে।',
     'settings.error_passwords_mismatch'    => 'পাসওয়ার্ড দুটি মিলছে না।',
     'settings.error_tz_offset'             => 'টাইমজোন অফসেট অবশ্যই -12 থেকে +14-এর মধ্যে, অথবা সার্ভার সময়ের জন্য -99 হতে হবে।',
+    'settings.error_email_notify'          => 'অনুগ্রহ করে একটি বৈধ ফলো-অন-পোস্ট বিকল্প নির্বাচন করুন।',
 
     // -------------------------------------------------------------------------
     // Private messages

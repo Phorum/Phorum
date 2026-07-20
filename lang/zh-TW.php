@@ -202,7 +202,10 @@ return [
     'settings.show_signature'    => '在我的文章中顯示簽名檔',
     'settings.preferences'       => '偏好設定',
     'settings.threaded_read'     => '閱讀主題時使用樹狀檢視',
-    'settings.email_notify'      => '當我訂閱的討論區有新文章時寄送電子郵件通知',
+    'settings.email_notify'          => '當我發表新主題或回覆時',
+    'settings.email_notify_none'     => '不自動關注',
+    'settings.email_notify_bookmark' => '靜默關注（不寄送郵件）',
+    'settings.email_notify_message'  => '關注並在有回覆時通知我',
     'settings.pm_email_notify'   => '收到私訊時寄送電子郵件通知',
     'settings.tz_offset'         => '時區偏移（小時，-12 至 +14；-99 = 伺服器時間）',
     'settings.save'              => '儲存設定',
@@ -219,6 +222,7 @@ return [
     'settings.error_password_min_length'   => '新密碼至少須為 6 個字元。',
     'settings.error_passwords_mismatch'    => '兩次輸入的密碼不一致。',
     'settings.error_tz_offset'             => '時區偏移必須介於 -12 至 +14 之間，或為 -99（伺服器時間）。',
+    'settings.error_email_notify'          => '請選擇一個有效的關注選項。',
 
     // -------------------------------------------------------------------------
     // Forced password change
