@@ -554,6 +554,11 @@ article.message.message-unapproved {
     overflow: hidden;
 }
 
+.message-body img {
+    max-width: 100%;
+    height: auto;
+}
+
 .message-signature {
     padding: 6px 12px;
     background: var(--white);

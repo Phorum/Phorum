@@ -7,6 +7,8 @@ use DealNews\SchemaOrg\JsonLdNode;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
+use League\CommonMark\Extension\DefaultAttributes\DefaultAttributesExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\MarkdownConverter;
 use Phorum\Core\Config;
@@ -45,10 +47,19 @@ class PhorumExtension extends AbstractExtension
                 'noopener'           => 'external',
                 'noreferrer'         => 'external',
             ],
+            // Belt-and-suspenders alongside the site CSS's `.message-body img`
+            // rule: RSS/Atom/JSON feed readers render this HTML without the
+            // site's stylesheet, so images need an inline size cap too.
+            'default_attributes' => [
+                Image::class => [
+                    'style' => 'max-width:100%;height:auto;',
+                ],
+            ],
         ]);
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new ExternalLinkExtension());
         $environment->addExtension(new AutolinkExtension());
+        $environment->addExtension(new DefaultAttributesExtension());
 
         $this->markdown = new MarkdownConverter($environment);
 
