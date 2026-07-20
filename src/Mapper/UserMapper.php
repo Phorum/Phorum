@@ -12,6 +12,15 @@ class UserMapper extends AbstractPhorumMapper
     public const PRIMARY_KEY  = 'user_id';
     public const TABLE_BASE   = 'users';
 
+    // `active` states — matches the Phorum 6.x schema values exactly, so an
+    // in-place upgrade from a real Phorum 6 database is interpreted correctly
+    // without any data migration.
+    public const ACTIVE        = 1;
+    public const INACTIVE      = 0;
+    public const PENDING_MOD   = -1; // needs moderator approval only
+    public const PENDING_EMAIL = -2; // needs email confirmation only
+    public const PENDING_BOTH  = -3; // needs both email confirmation and moderator approval
+
     public const MAPPING = [
         'user_id'           => ['read_only' => true],
         'username'          => [],
@@ -49,6 +58,7 @@ class UserMapper extends AbstractPhorumMapper
         'force_password_change' => [],
         'shadow_banned'     => [],
         'deleted_count'     => [],
+        'reg_ip'            => [],
     ];
 
     /**
@@ -125,6 +135,26 @@ class UserMapper extends AbstractPhorumMapper
             . ' SET pm_new_count = GREATEST(0, pm_new_count - 1) WHERE user_id = :id',
             [':id' => $userId]
         );
+    }
+
+    /**
+     * Return accounts awaiting moderator approval (PENDING_MOD or
+     * PENDING_BOTH — not PENDING_EMAIL, since a moderator can't act on those
+     * until the user confirms their email first), oldest-name-first for a
+     * stable queue order. Site-wide, not forum-scoped — matches legacy
+     * Phorum 6's phorum_db_user_get_unapproved().
+     */
+    public function findPendingModeration(): ?array
+    {
+        $sql = 'SELECT * FROM ' . $this->table()
+             . ' WHERE active IN (:pending_both, :pending_mod)'
+             . ' ORDER BY username ASC';
+
+        $rows = $this->crud()->runFetch($sql, [
+            ':pending_both' => self::PENDING_BOTH,
+            ':pending_mod'  => self::PENDING_MOD,
+        ]);
+        return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
     }
 
     /**

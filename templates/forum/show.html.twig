@@ -40,14 +40,19 @@
         {% if feeds_enabled %}
             <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>
         {% endif %}
-        {% if can_moderate %}
+        {% if can_moderate or can_moderate_users %}
             <div class="mod-dropdown">
                 <button type="button" class="btn-mod mod-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
                     <i class="fa fa-gavel"></i>{{ trans('mod.moderate') }} <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="mod-dropdown-menu">
-                    <a href="{{ path('/moderate/queue') }}">{{ trans('mod.queue') }}</a>
-                    <a href="{{ path('/moderate/reports') }}">{{ trans('mod.reports_title') }}</a>
+                    {% if can_moderate %}
+                        <a href="{{ path('/moderate/queue') }}">{{ trans('mod.queue') }}</a>
+                        <a href="{{ path('/moderate/reports') }}">{{ trans('mod.reports_title') }}</a>
+                    {% endif %}
+                    {% if can_moderate_users %}
+                        <a href="{{ path('/moderate/users') }}">{{ trans('mod.users_queue') }}</a>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}

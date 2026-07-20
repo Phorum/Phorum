@@ -175,6 +175,28 @@ class PmControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `!$toUser->active` check would
+     * incorrectly let a message be sent to a pending (unapproved) recipient.
+     */
+    public function testComposePostValidationErrorForPendingRecipient(): void
+    {
+        Auth::setUser($this->makeUser());
+        $recipient         = $this->makeUser(2);
+        $recipient->active = UserMapper::PENDING_MOD;
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByUsername')->willReturn($recipient);
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->compose($this->makePostRequest(
+            post:   ['to_username' => 'user2', 'subject' => 'Hi', 'body' => 'Hey'],
+            server: ['REQUEST_URI' => '/pm/compose'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testComposePostSuccessRedirects(): void
     {
         $sender = $this->makeUser(1);
@@ -409,5 +431,55 @@ class PmControllerTest extends ControllerTestCase
             server: ['REQUEST_URI' => '/pm/folders'],
         ));
         $this->assertSame(200, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // addBuddy()
+    // -------------------------------------------------------------------------
+
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `$buddyUser->active` check would
+     * incorrectly let a pending (unapproved) account be added as a buddy.
+     */
+    public function testAddBuddySilentlyNoOpsForPendingUser(): void
+    {
+        Auth::setUser($this->makeUser(1));
+
+        $buddyUser         = $this->makeUser(2);
+        $buddyUser->active = UserMapper::PENDING_MOD;
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($buddyUser);
+
+        $buddies = $this->createMock(PmBuddyMapper::class);
+        $buddies->expects($this->never())->method('add');
+
+        $ctrl     = $this->makeController(['users' => $users, 'buddies' => $buddies]);
+        $response = $ctrl->addBuddy($this->makePostRequest(
+            tokens: ['buddy_user_id' => '2'],
+            server: ['REQUEST_URI' => '/pm/buddies'],
+        ));
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testAddBuddyAddsActiveUser(): void
+    {
+        Auth::setUser($this->makeUser(1));
+
+        $buddyUser = $this->makeUser(2);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($buddyUser);
+
+        $buddies = $this->createMock(PmBuddyMapper::class);
+        $buddies->expects($this->once())->method('add')->with(1, 2);
+
+        $ctrl     = $this->makeController(['users' => $users, 'buddies' => $buddies]);
+        $response = $ctrl->addBuddy($this->makePostRequest(
+            tokens: ['buddy_user_id' => '2'],
+            server: ['REQUEST_URI' => '/pm/buddies'],
+        ));
+        $this->assertSame(302, $response->status);
     }
 }

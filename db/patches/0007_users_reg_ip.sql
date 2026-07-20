@@ -1,0 +1,11 @@
+-- -------------------------------------------------------------------------
+-- Adds reg_ip, a Phorum 10 addition recording the IP address a user
+-- registered from — requested to help moderators spot abusive signups in
+-- the pending-registration approval queue (see ModerationController::users(),
+-- AuthService::register()). Phorum 6 never captured this on the user record
+-- (only per-message, in `messages.ip`), so there is no historical data to
+-- backfill — existing accounts simply keep the default empty string. Applied
+-- by SchemaPatcher against databases that already have the {PREFIX}_users
+-- table — a fresh install gets this column directly from db/mysql.sql instead.
+-- -------------------------------------------------------------------------
+ALTER TABLE {PREFIX}_users ADD COLUMN reg_ip varchar(255) NOT NULL DEFAULT '';

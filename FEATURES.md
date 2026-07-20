@@ -112,7 +112,7 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 | 16 | `ALLOW_VIEW_ATTACHMENTS` | View/download message attachments |
 | 32 | `ALLOW_ATTACH` | Attach files when posting |
 | 64 | `ALLOW_MODERATE_MESSAGES` | Moderator rights over messages/threads in that forum |
-| 128 | `ALLOW_MODERATE_USERS` | Defined but not yet checked anywhere — see [Known Gaps](#known-gaps--stubbed-features) |
+| 128 | `ALLOW_MODERATE_USERS` | Site-wide pending-registration approval queue access, plus profile privacy bypass (see below) |
 
 - **Resolution order**: site admin (unrestricted) → inactive user (none) → direct per-user override (`user_permissions`) → group grants (OR-combined across all the user's groups on that forum) → forum default (`reg_perms` for logged-in users, `pub_perms` for anonymous). `PermissionService::resolve()`
 - **Groups with per-forum permission grants** — Named groups (with active/moderator membership status) get a permission bitmask on specific forums — the mechanism for forum-specific moderator roles without per-user overrides. `src/Http/Controllers/Admin/GroupController.php`
@@ -122,14 +122,21 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 - **Admin/moderator action log** — Read-only trail (last 200 shown) of moderation and admin actions — report resolve/dismiss, message approve/delete, thread delete/close/open/move/merge, ban CRUD, group CRUD/membership changes, shadow-ban toggles, and impersonation start/stop — with actor, action, object, forum, and timestamp. `src/Http/Controllers/Admin/AuditLogController.php`, `src/Mapper/ModLogMapper.php`
   - Not logged: individual per-user/per-group permission-grant edits.
 
+### Pending-Registration Approval (front-end user moderation)
+- **Pending-user approval queue** — A site-wide (not forum-scoped) queue of accounts awaiting moderator approval, reachable from the same "Moderate" dropdown as message moderation whenever a user holds `ALLOW_MODERATE_USERS` on at least one forum — approve or reject each with one click. Shows the IP address the account registered from (see below) to help spot abusive signups. `ModerationController::users()`/`userAction()`, `templates/moderation/users.html.twig`
+- **Five-state account model, matching Phorum 6's schema exactly** — `users.active` now distinguishes `ACTIVE` (1), `INACTIVE` (0), `PENDING_MOD` (-1, awaiting moderator approval only), `PENDING_EMAIL` (-2, awaiting email confirmation only), and `PENDING_BOTH` (-3, awaiting both — email confirmation first, then moderator approval). No schema change — the column already supported these values. `src/Mapper/UserMapper.php`
+- **Profile privacy bypass** — Site admins and `ALLOW_MODERATE_USERS` holders (on any forum) see a user's hidden email and hidden last-active time on their public profile, where other viewers see them hidden. `UserController::profile()`
+
 ---
 
 ## Authentication & Account
 
 ### Registration & Login
 - **Username/password registration** — With uniqueness and format validation. `src/Http/Controllers/AuthController.php`, `src/Service/AuthService.php`
+- **Registration IP capture** — The IP address a user registered from is recorded (`users.reg_ip`, a Phorum 10 addition — legacy Phorum 6 never captured this) for both password and OAuth registration, visible to admins on the user edit page and in the pending-approval queue. Not shown anywhere public-facing.
 - **Registration abuse blocking** — Silently blocked if the submitter's IP, username, or email is banned.
 - **Email confirmation on signup (optional)** — When enabled, new accounts start inactive until a 48-hour-expiry emailed link is clicked.
+- **Moderator approval on signup (optional)** — Independent of email confirmation and can be combined with it; new accounts wait in the pending-registration queue (see [Pending-Registration Approval](#pending-registration-approval-front-end-user-moderation)) until a moderator approves or rejects them. When both are enabled, email confirmation must happen first.
 - **Resend confirmation email** — Enumeration-safe (same response whether or not the address is registered).
 - **Username/password login** — Supports legacy MD5 password hashes from old Phorum installs, transparently upgraded to bcrypt on successful login.
 - **"Remember me" persistent login** — Long-lived (1-year) session cookie option, in addition to the normal short-term session. OAuth logins always set this.
@@ -171,14 +178,14 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 
 ### User & Group Management
 - **User directory & search** — Paginated admin list, searchable by username/display name/email. `src/Http/Controllers/Admin/UserController.php`
-- **Edit user account** — Display name, email, active flag, admin flag, forced-password-change flag, direct password reset.
+- **Edit user account** — Display name, email, account status (Active/Inactive/Pending Moderator Approval/Pending Email Confirmation/Pending Both), admin flag, forced-password-change flag, direct password reset.
 - **Custom profile field editing (admin)** — Renders and saves any admin-visible custom fields for that user.
 - **User groups** — Create/edit/delete named groups, each with an "open" (self-joinable) flag. `src/Http/Controllers/Admin/GroupController.php`
 - **Group membership management** — Add/remove members by username, change membership status.
 - **Group-based per-forum permission grants** — See [Permissions](#permissions).
 
 ### Site-Wide Settings
-Configurable from `/admin/settings`: Site Name, Base URL, SMTP Host/Port, Mail From Address, minimum seconds between posts (flood control), edit time limit, minimum account age for auto-approval, karma threshold %, default theme, default language, Enable RSS toggle, Enable File Uploads toggle. `src/Http/Controllers/Admin/SettingsController.php`
+Configurable from `/admin/settings`: Site Name, Base URL, SMTP Host/Port, Mail From Address, minimum seconds between posts (flood control), edit time limit, minimum account age for auto-approval, karma threshold %, default theme, default language, Enable RSS toggle, Enable File Uploads toggle, Require Moderator Approval for New Registrations toggle (default off). `src/Http/Controllers/Admin/SettingsController.php`
 
 ### Custom Profile Fields
 - **Field schema management** — Define custom profile fields (name, max length, HTML-disabled flag, admin-visible flag), with soft-delete/restore and hard-delete (purge, including stored values). `src/Http/Controllers/Admin/CustomFieldController.php`
@@ -251,6 +258,5 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 
 Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end:
 
-- **`ALLOW_MODERATE_USERS` (permission bit 128)** — Present in the admin permission-checkbox UI and the bit constants, but no code path currently checks it.
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
 - **`email_notify` user setting** — Stored and editable in account settings, but not currently consulted by any notification code path (only `pm_email_notify` is actually wired up, for private messages).

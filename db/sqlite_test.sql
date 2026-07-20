@@ -131,7 +131,8 @@ CREATE TABLE IF NOT EXISTS phorum_users (
     moderator_data    TEXT    NOT NULL DEFAULT '',
     force_password_change INTEGER NOT NULL DEFAULT 0,
     shadow_banned     INTEGER NOT NULL DEFAULT 0,
-    deleted_count     INTEGER NOT NULL DEFAULT 0
+    deleted_count     INTEGER NOT NULL DEFAULT 0,
+    reg_ip            TEXT    NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS phorum_user_newflags (

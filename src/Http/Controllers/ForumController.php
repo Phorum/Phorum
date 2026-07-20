@@ -67,10 +67,14 @@ class ForumController extends Controller
             $tree = $hookResult;
         }
 
+        $currentUser = Auth::user();
+
         return $this->respond($this->render('forum/index.html.twig', [
-            'tree'          => $tree,
-            'announcements' => $this->announcements->getAnnouncementsFor('index', Auth::user()?->user_id ?? 0),
-            'json_ld'       => $this->schemaOrg->forumIndex($flatForums, (string) $this->config->get('site_name', 'Phorum')),
+            'tree'               => $tree,
+            'can_moderate'       => $this->perms->canModerateMessagesAnywhere($currentUser),
+            'can_moderate_users' => $this->perms->canModerateUsersAnywhere($currentUser),
+            'announcements'      => $this->announcements->getAnnouncementsFor('index', $currentUser?->user_id ?? 0),
+            'json_ld'            => $this->schemaOrg->forumIndex($flatForums, (string) $this->config->get('site_name', 'Phorum')),
         ]));
     }
 
@@ -119,6 +123,7 @@ class ForumController extends Controller
             'base_url'          => Url::forum($forumId),
             'can_post'          => $this->perms->canPost($forum, $currentUser),
             'can_moderate'      => $this->perms->canModerate($forum, $currentUser),
+            'can_moderate_users' => $this->perms->canModerateUsers($forum, $currentUser),
             'theme'             => $this->resolveTheme($forum),
             'announcements'     => $this->announcements->getAnnouncementsFor('list', $currentUser?->user_id ?? 0),
             'json_ld'           => $this->schemaOrg->forumShow($forum, $threads ?? [], (string) $this->config->get('site_name', 'Phorum')),

@@ -49,6 +49,37 @@ class ForumControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    /** Site-wide index page needs its own any-forum moderation checks — there's no single forum in scope here. */
+    public function testIndexPassesCanModerateFlagsToTemplate(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([]);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateMessagesAnywhere')->willReturn(true);
+        $perms->method('canModerateUsersAnywhere')->willReturn(false);
+
+        $announcements = $this->createMock(AnnouncementService::class);
+        $announcements->method('getAnnouncementsFor')->willReturn([]);
+
+        $twig = $this->createMock(\Twig\Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(\Twig\Loader\LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'forum/index.html.twig',
+            $this->callback(fn(array $data) => ($data['can_moderate'] ?? null) === true
+                && ($data['can_moderate_users'] ?? null) === false),
+        )->willReturn('<html>ok</html>');
+
+        $ctrl = new ForumController(
+            config:        $this->makeConfig(),
+            twig:          $twig,
+            forums:        $forums,
+            perms:         $perms,
+            announcements: $announcements,
+        );
+        $ctrl->index(new Request());
+    }
+
     public function testShowReturns404ForUnknownForum(): void
     {
         $forums = $this->createMock(ForumMapper::class);
@@ -111,6 +142,42 @@ class ForumControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
         $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
         $this->assertSame(200, $response->status);
+    }
+
+    /** can_moderate_users must be independently gated from can_moderate — a "user moderator" with no message-moderation rights still needs to see the "Moderate Users" link. */
+    public function testShowPassesCanModerateUsersToTemplate(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findThreadsInForum')->willReturn([]);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(true);
+        $perms->method('canModerate')->willReturn(false);
+        $perms->method('canModerateUsers')->willReturn(true);
+
+        $announcements = $this->createMock(AnnouncementService::class);
+        $announcements->method('getAnnouncementsFor')->willReturn([]);
+
+        $twig = $this->createMock(\Twig\Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(\Twig\Loader\LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'forum/show.html.twig',
+            $this->callback(fn(array $data) => ($data['can_moderate_users'] ?? null) === true
+                && ($data['can_moderate'] ?? null) === false),
+        )->willReturn('<html>ok</html>');
+
+        $ctrl = new ForumController(
+            config:        $this->makeConfig(),
+            twig:          $twig,
+            forums:        $forums,
+            messages:      $messages,
+            perms:         $perms,
+            announcements: $announcements,
+        );
+        $ctrl->show(new Request(tokens: ['forum_id' => '1']));
     }
 
     public function testMarkForumReadReturns404ForUnknownForum(): void

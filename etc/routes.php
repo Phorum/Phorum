@@ -193,6 +193,19 @@ return [
         'tokens'  => ['thread_id', 'action'],
     ],
 
+    // Moderation — pending-registration approval queue
+    [
+        'type'    => 'exact',
+        'pattern' => '/moderate/users',
+        'action'  => 'ModerationController@users',
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/moderate/users/(\d+)/(\w+)$!',
+        'action'  => 'ModerationController@userAction',
+        'tokens'  => ['user_id', 'action'],
+    ],
+
     // Follow / subscribe to a thread
     [
         'type'    => 'regex',

@@ -38,13 +38,13 @@ class ImpersonationTest extends TestCase
         unset($_COOKIE['phorum_impersonate']);
     }
 
-    private function makeUser(int $id, bool $admin = false, bool $active = true): User
+    private function makeUser(int $id, bool $admin = false, bool $active = true, ?int $activeState = null): User
     {
         $user           = new User();
         $user->user_id  = $id;
         $user->username = "user{$id}";
         $user->admin    = $admin ? 1 : 0;
-        $user->active   = $active ? 1 : 0;
+        $user->active   = $activeState ?? ($active ? 1 : 0);
         return $user;
     }
 
@@ -84,6 +84,20 @@ class ImpersonationTest extends TestCase
     {
         $admin  = $this->makeUser(1, admin: true);
         $target = $this->makeUser(2, active: false);
+
+        $this->assertFalse(Impersonation::start($admin, $target, $this->config));
+        $this->assertFalse(Impersonation::isActive());
+    }
+
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `!$target->active` check would
+     * incorrectly allow impersonating a pending (unapproved) account.
+     */
+    public function testStartRejectsPendingTarget(): void
+    {
+        $admin  = $this->makeUser(1, admin: true);
+        $target = $this->makeUser(2, activeState: UserMapper::PENDING_MOD);
 
         $this->assertFalse(Impersonation::start($admin, $target, $this->config));
         $this->assertFalse(Impersonation::isActive());
@@ -206,6 +220,26 @@ class ImpersonationTest extends TestCase
 
         $mapper = $this->createMock(UserMapper::class);
         $mapper->method('load')->with($targetId)->willReturn($this->makeUser($targetId, admin: true));
+
+        Impersonation::initialize($this->config, $mapper);
+
+        $this->assertFalse(Impersonation::isActive());
+    }
+
+    /** Regression test — see testStartRejectsPendingTarget for why. */
+    public function testInitializeRejectsTargetThatIsNowPending(): void
+    {
+        $adminId   = 1;
+        $targetId  = 2;
+        $timestamp = time();
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
+
+        AdminAuth::login($this->makeUser($adminId, admin: true), $this->config);
+
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('load')->with($targetId)
+            ->willReturn($this->makeUser($targetId, activeState: UserMapper::PENDING_MOD));
 
         Impersonation::initialize($this->config, $mapper);
 

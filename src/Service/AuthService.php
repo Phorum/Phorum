@@ -35,7 +35,7 @@ class AuthService
         ]);
         if (is_array($authData) && ($authData['user_id'] ?? 0) > 0) {
             $pluginUser = $this->users->load((int) $authData['user_id']);
-            if ($pluginUser instanceof User && $pluginUser->active) {
+            if ($pluginUser instanceof User && $pluginUser->active === UserMapper::ACTIVE) {
                 $this->createSession($pluginUser, $remember);
                 phorum_api_hook('after_login', $pluginUser);
                 return $pluginUser;
@@ -44,7 +44,7 @@ class AuthService
 
         $user = $this->users->findByUsername($username);
 
-        if ($user === null || !$user->active) {
+        if ($user === null || $user->active !== UserMapper::ACTIVE) {
             phorum_api_hook('failed_login', $username);
             return null;
         }
@@ -92,14 +92,17 @@ class AuthService
      * Create a new user account. Returns the saved User.
      * The caller is responsible for validation before calling this.
      *
-     * When $requireConfirmation is true the account is created inactive and a
-     * confirmation email is sent; the caller must NOT auto-login afterward.
+     * When $requireConfirmation is true the account starts needing email
+     * confirmation; when $requireModApproval is true it starts needing
+     * moderator approval. Either, both, or neither may be set — the caller
+     * must NOT auto-login afterward unless both are false.
      */
     public function register(
         string $username,
         string $email,
         string $password,
         bool   $requireConfirmation = false,
+        bool   $requireModApproval  = false,
         string $baseUrl             = '',
     ): User {
         phorum_api_hook('before_register', ['username' => $username, 'email' => $email]);
@@ -109,9 +112,15 @@ class AuthService
         $user->display_name     = $username;
         $user->email            = $email;
         $user->password         = password_hash($password, PASSWORD_BCRYPT);
-        $user->active           = $requireConfirmation ? 0 : 1;
+        $user->active           = match (true) {
+            $requireConfirmation && $requireModApproval => UserMapper::PENDING_BOTH,
+            $requireConfirmation                        => UserMapper::PENDING_EMAIL,
+            $requireModApproval                         => UserMapper::PENDING_MOD,
+            default                                      => UserMapper::ACTIVE,
+        };
         $user->date_added       = time();
         $user->date_last_active = time();
+        $user->reg_ip           = $_SERVER['REMOTE_ADDR'] ?? '';
 
         $this->users->save($user);
         phorum_api_hook('after_register', $user);
@@ -125,7 +134,13 @@ class AuthService
 
     /**
      * Activate an account via its confirmation token.
-     * Returns the logged-in User on success, null if the token is invalid or expired.
+     *
+     * Returns the User on success, null if the token is invalid or expired.
+     * If the account was only pending email confirmation, it becomes fully
+     * ACTIVE and a session is created (as before). If it was PENDING_BOTH,
+     * it moves to PENDING_MOD instead — still not allowed to log in — so
+     * callers must check the returned user's `active` value rather than
+     * assuming a non-null return means the caller is now logged in.
      */
     public function confirmEmail(string $token): ?User
     {
@@ -135,7 +150,7 @@ class AuthService
 
         $user = $this->users->findByPasswordTemp($token);
 
-        if ($user === null || $user->active !== 0) {
+        if ($user === null || !in_array($user->active, [UserMapper::PENDING_EMAIL, UserMapper::PENDING_BOTH], true)) {
             return null;
         }
 
@@ -144,17 +159,21 @@ class AuthService
             return null;
         }
 
-        $user->active        = 1;
-        $user->password_temp = '';
-        $user->email_temp    = '';
+        $stillNeedsModApproval = $user->active === UserMapper::PENDING_BOTH;
+        $user->active          = $stillNeedsModApproval ? UserMapper::PENDING_MOD : UserMapper::ACTIVE;
+        $user->password_temp   = '';
+        $user->email_temp      = '';
         $this->users->save($user);
 
-        $this->createSession($user, remember: false);
+        if (!$stillNeedsModApproval) {
+            $this->createSession($user, remember: false);
+        }
         return $user;
     }
 
     /**
-     * Re-send a confirmation email for an unconfirmed account.
+     * Re-send a confirmation email for an account still awaiting email
+     * confirmation (PENDING_EMAIL or PENDING_BOTH).
      * Returns true whether or not the address is registered, so callers
      * cannot enumerate accounts via timing.
      */
@@ -162,7 +181,7 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
 
-        if ($user === null || $user->active !== 0) {
+        if ($user === null || !in_array($user->active, [UserMapper::PENDING_EMAIL, UserMapper::PENDING_BOTH], true)) {
             return true; // silent
         }
 
@@ -183,7 +202,7 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
 
-        if ($user === null || !$user->active) {
+        if ($user === null || $user->active !== UserMapper::ACTIVE) {
             return true; // silent — don't reveal whether the address is registered
         }
 
@@ -226,9 +245,9 @@ class AuthService
 
         $user = $this->users->findByPasswordTemp($token);
 
-        // Require active account — inactive accounts use password_temp for
-        // email confirmation tokens, not password reset.
-        if ($user === null || !$user->active) {
+        // Require a fully active account — non-active accounts use
+        // password_temp for email confirmation tokens, not password reset.
+        if ($user === null || $user->active !== UserMapper::ACTIVE) {
             return null;
         }
 

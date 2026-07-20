@@ -7,6 +7,7 @@ use Phorum\Core\Auth;
 use Phorum\Http\Controllers\AuthController;
 use Phorum\Http\Request;
 use Phorum\Mapper\BanMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\AuthService;
 use Phorum\Service\BanService;
@@ -22,6 +23,7 @@ class AuthControllerTest extends ControllerTestCase
             authService: $deps['authService'] ?? $this->createMock(AuthService::class),
             banService:  $deps['banService']  ?? $this->createMock(BanService::class),
             users:       $deps['users']       ?? $this->createMock(UserMapper::class),
+            settings:    $deps['settings']    ?? $this->createMock(SettingMapper::class),
         );
     }
 
@@ -241,6 +243,39 @@ class AuthControllerTest extends ControllerTestCase
         $this->assertSame('/', $response->headers['Location']);
     }
 
+    public function testRegisterShowsPendingApprovalPageWhenModApprovalRequired(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByUsername')->willReturn(null);
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getSetting')->willReturnMap([
+            ['require_mod_approval', true],
+        ]);
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('login');
+
+        $ctrl     = $this->makeController([
+            'users'       => $users,
+            'banService'  => $ban,
+            'settings'    => $settings,
+            'authService' => $authService,
+        ]);
+        $response = $ctrl->register($this->makePostRequest([
+            'username'  => 'newuser',
+            'email'     => 'new@example.com',
+            'password'  => 'secret1',
+            'password2' => 'secret1',
+        ]));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testRegisterBannedReturns200WithError(): void
     {
         $users = $this->createMock(UserMapper::class);
@@ -274,6 +309,19 @@ class AuthControllerTest extends ControllerTestCase
         $response = $ctrl->confirmEmail(new Request(query: ['token' => 'validtoken']));
         $this->assertSame(302, $response->status);
         $this->assertSame('/', $response->headers['Location']);
+    }
+
+    public function testConfirmEmailShowsPendingApprovalPageWhenStillPendingModApproval(): void
+    {
+        $user         = $this->makeUser();
+        $user->active = UserMapper::PENDING_MOD;
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('confirmEmail')->willReturn($user);
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->confirmEmail(new Request(query: ['token' => 'validtoken']));
+        $this->assertSame(200, $response->status);
     }
 
     public function testConfirmEmailReturns200OnInvalidToken(): void

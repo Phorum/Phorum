@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('mod.users_queue_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    {{ trans('mod.users_queue_title') }}
+</nav>
+
+<h1>{{ trans('mod.users_queue_title') }}</h1>
+
+{% if pending is empty %}
+    <p>{{ trans('mod.users_queue_empty') }}</p>
+{% else %}
+    <table class="tbl-boxed users-queue-list">
+        <thead>
+            <tr>
+                <th>{{ trans('mod.users_queue_username') }}</th>
+                <th>{{ trans('mod.users_queue_email') }}</th>
+                <th>{{ trans('mod.users_queue_ip') }}</th>
+                <th>{{ trans('mod.users_queue_registered') }}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in pending %}
+            <tr>
+                <td>{{ item.username }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.reg_ip|default('') != '' ? item.reg_ip : '—' }}</td>
+                <td>{{ item.date_added|relative_time }}</td>
+                <td class="mod-actions">
+                    <form method="post" action="{{ path('/moderate/users/' ~ item.user_id ~ '/approve') }}" class="form-inline">
+                        {{ csrf_field() }}
+                        <button type="submit">{{ trans('mod.users_queue_approve') }}</button>
+                    </form>
+                    <form method="post" action="{{ path('/moderate/users/' ~ item.user_id ~ '/reject') }}" class="form-inline">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn-danger">{{ trans('mod.users_queue_reject') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

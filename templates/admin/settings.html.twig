@@ -66,6 +66,16 @@
                 </div>
             </div>
 
+            <div class="row" style="margin-bottom:0">
+                <div class="col s12 m8">
+                    <label>
+                        <input type="checkbox" name="require_mod_approval" value="1" {{ stored.require_mod_approval ? 'checked' : '' }}>
+                        <span>Require moderator approval for new registrations</span>
+                    </label>
+                    <span class="helper-text">Independent of email confirmation — both can be enabled together, in which case an account needs email confirmation first and moderator approval second. Approve/reject pending accounts from the "Moderate Users" queue.</span>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col s12 right-align">
                     <button type="submit" class="btn green darken-3 waves-effect waves-light">

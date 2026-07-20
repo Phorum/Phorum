@@ -129,6 +129,55 @@ class AdminUserControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testEditPostSavesSelectedActiveState(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $saved  = null;
+        $target = $this->makeUser(2);
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   [
+                'display_name' => 'User Two',
+                'email'        => 'user2@example.com',
+                'active'       => (string) UserMapper::PENDING_MOD,
+            ],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+        $this->assertSame(UserMapper::PENDING_MOD, $saved->active);
+    }
+
+    public function testEditPostRejectsInvalidActiveState(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $target = $this->makeUser(2);
+        $users  = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->method('findByEmail')->willReturn(null);
+        $users->expects($this->never())->method('save');
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   [
+                'display_name' => 'User Two',
+                'email'        => 'user2@example.com',
+                'active'       => '99',
+            ],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testEditPostSetsForcePasswordChangeFlag(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

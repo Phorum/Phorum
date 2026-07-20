@@ -11,6 +11,7 @@ use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\BanMapper;
+use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\AuthService;
 use Phorum\Service\BanService;
@@ -18,16 +19,18 @@ use Twig\Environment;
 
 class AuthController extends Controller
 {
-    private readonly AuthService $authService;
-    private readonly BanService  $banService;
-    private readonly UserMapper  $users;
+    private readonly AuthService  $authService;
+    private readonly BanService   $banService;
+    private readonly UserMapper   $users;
+    private readonly SettingMapper $settings;
 
     public function __construct(
-        Config       $config,
-        Environment  $twig,
-        ?AuthService $authService = null,
-        ?BanService  $banService  = null,
-        ?UserMapper  $users       = null,
+        Config         $config,
+        Environment    $twig,
+        ?AuthService   $authService = null,
+        ?BanService    $banService  = null,
+        ?UserMapper    $users       = null,
+        ?SettingMapper $settings    = null,
     ) {
         parent::__construct($config, $twig);
         $this->authService = $authService ?? new AuthService(
@@ -37,6 +40,7 @@ class AuthController extends Controller
         );
         $this->banService  = $banService  ?? new BanService(new BanMapper());
         $this->users       = $users       ?? new UserMapper();
+        $this->settings    = $settings    ?? new SettingMapper();
     }
 
     // -------------------------------------------------------------------------
@@ -143,13 +147,20 @@ class AuthController extends Controller
 
             if ($error === null) {
                 $requireConfirmation = (bool) $this->config->get('require_confirmation', false);
+                $requireModApproval  = (bool) ($this->settings->getSetting('require_mod_approval') ?? false);
                 $baseUrl             = (string) $this->config->get('base_url', '');
-                $this->authService->register($username, $email, $password, $requireConfirmation, $baseUrl);
+                $this->authService->register(
+                    $username, $email, $password, $requireConfirmation, $requireModApproval, $baseUrl
+                );
 
                 if ($requireConfirmation) {
                     return $this->respond($this->render('auth/confirm_pending.html.twig', [
                         'email' => $email,
                     ]));
+                }
+
+                if ($requireModApproval) {
+                    return $this->respond($this->render('auth/pending_approval.html.twig', []));
                 }
 
                 $this->authService->login($username, $password);
@@ -171,8 +182,13 @@ class AuthController extends Controller
         $token = trim($request->query['token'] ?? '');
         $user  = $this->authService->confirmEmail($token);
 
-        if ($user !== null) {
+        if ($user !== null && $user->active === UserMapper::ACTIVE) {
             return $this->redirect('/');
+        }
+
+        if ($user !== null) {
+            // Email confirmed, but the account still needs moderator approval.
+            return $this->respond($this->render('auth/pending_approval.html.twig', []));
         }
 
         return $this->respond($this->render('auth/confirm_email.html.twig', [

@@ -61,7 +61,7 @@ class Impersonation
 
         $mapper = $mapper ?? new UserMapper();
         $target = $mapper->load($targetId);
-        if ($target === null || !$target->active || $target->admin) {
+        if ($target === null || $target->active !== 1 || $target->admin) {
             self::clearCookie($config);
             return;
         }
@@ -78,7 +78,7 @@ class Impersonation
      */
     public static function start(User $admin, User $target, Config $config): bool
     {
-        if (!$target->active || $target->admin || $target->user_id === $admin->user_id) {
+        if ($target->active !== 1 || $target->admin || $target->user_id === $admin->user_id) {
             return false;
         }
 

@@ -1172,6 +1172,31 @@ p.error {
     font-size: var(--fs-sm);
 }
 
+/* --- Moderation queue tables (users, etc.) — skin for .tbl-boxed --------- */
+
+table.users-queue-list {
+    border: 1px solid var(--border);
+}
+
+table.users-queue-list th,
+table.users-queue-list td {
+    padding: .4rem .6rem;
+    border-bottom: 1px solid var(--border-light);
+    text-align: left;
+}
+
+table.users-queue-list tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+table.users-queue-list th {
+    font-size: var(--fs-xs);
+}
+
+table.users-queue-list tr:hover td {
+    background: var(--accent-highlight);
+}
+
 /* --- Information / warning boxes ----------------------------------------- */
 
 div.info-box {
@@ -1219,7 +1244,8 @@ table.thread-list th,
 table.announcements-list th,
 table.pm-list th,
 table.pm-folder-table th,
-table.search-results th {
+table.search-results th,
+table.users-queue-list th {
     background: var(--accent);
     color: var(--header-text);
 }

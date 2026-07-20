@@ -38,6 +38,7 @@ class ModerationController extends Controller
     private readonly ModerationService  $moderationService;
     private readonly ModLogMapper       $modLog;
     private readonly ReportMapper       $reports;
+    private readonly UserMapper         $users;
 
     public function __construct(
         Config                $config,
@@ -50,6 +51,7 @@ class ModerationController extends Controller
         ?ModerationService    $moderationService = null,
         ?ModLogMapper         $modLog            = null,
         ?ReportMapper         $reports           = null,
+        ?UserMapper           $users             = null,
     ) {
         parent::__construct($config, $twig);
         $this->messages          = $messages          ?? new MessageMapper();
@@ -60,6 +62,7 @@ class ModerationController extends Controller
         $this->moderationService = $moderationService ?? new ModerationService($this->messages, $this->forums, new UserMapper(), new SubscriberMapper(), new NewflagMapper());
         $this->modLog            = $modLog            ?? new ModLogMapper();
         $this->reports           = $reports           ?? new ReportMapper();
+        $this->users             = $users             ?? new UserMapper();
     }
 
     /** Forums the given user has moderate rights on. */
@@ -389,5 +392,81 @@ class ModerationController extends Controller
         }
 
         return $this->redirect(Url::thread($targetRoot->forum_id, $targetThreadId));
+    }
+
+    // -------------------------------------------------------------------------
+    // Pending-user (registration approval) review queue
+    // -------------------------------------------------------------------------
+
+    /** Site-wide, not forum-scoped — matches the pending-message/reports queues' access pattern. */
+    public function users(Request $request): Response
+    {
+        $user = Auth::user();
+        if ($user === null) {
+            return $this->redirect('/login');
+        }
+
+        if (!$this->perms->canModerateUsersAnywhere($user)) {
+            return $this->forbidden();
+        }
+
+        $pending = $this->users->findPendingModeration() ?? [];
+
+        return $this->respond($this->render('moderation/users.html.twig', [
+            'pending' => $pending,
+        ]));
+    }
+
+    /**
+     * Approve or reject an account awaiting moderator approval.
+     * Approve: PENDING_BOTH -> PENDING_EMAIL (still needs email confirmation),
+     * PENDING_MOD -> ACTIVE. Reject: either -> INACTIVE.
+     *
+     * POST-only, like report() — the queue page itself has one-click
+     * approve/reject buttons, no separate confirm step.
+     */
+    public function userAction(Request $request): Response
+    {
+        $targetId = (int) ($request->tokens['user_id'] ?? 0);
+        $action   = $request->tokens['action'] ?? '';
+
+        if (!in_array($action, ['approve', 'reject'], strict: true)) {
+            return $this->notFound();
+        }
+
+        $target = $this->users->load($targetId);
+        if (
+            $target === null
+            || !in_array($target->active, [UserMapper::PENDING_MOD, UserMapper::PENDING_BOTH], true)
+        ) {
+            return $this->notFound();
+        }
+
+        $moderator = Auth::user();
+        if ($moderator === null) {
+            return $this->redirect('/login');
+        }
+
+        if (!$this->perms->canModerateUsersAnywhere($moderator)) {
+            return $this->forbidden();
+        }
+
+        if (!$request->isPost()) {
+            return $this->notFound();
+        }
+
+        if ($r = $this->checkCsrf($request)) { return $r; }
+
+        if ($action === 'approve') {
+            $target->active = $target->active === UserMapper::PENDING_BOTH
+                ? UserMapper::PENDING_EMAIL
+                : UserMapper::ACTIVE;
+        } else {
+            $target->active = UserMapper::INACTIVE;
+        }
+        $this->users->save($target);
+        $this->modLog->record($moderator->user_id, $action, 'user', $target->user_id, 0, $target->username);
+
+        return $this->redirect('/moderate/users');
     }
 }

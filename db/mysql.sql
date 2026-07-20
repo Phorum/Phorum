@@ -184,6 +184,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     force_password_change    tinyint(1)         NOT NULL DEFAULT 0,
     shadow_banned            tinyint(1)         NOT NULL DEFAULT 0,
     deleted_count            int unsigned       NOT NULL DEFAULT 0,
+    reg_ip                   varchar(255)       NOT NULL DEFAULT '',
 
     PRIMARY KEY (user_id),
     UNIQUE KEY username (username),

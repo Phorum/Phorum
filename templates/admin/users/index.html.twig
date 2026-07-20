@@ -50,7 +50,15 @@
                         <td style="font-size:.85rem">{{ u.date_added|datestamp }}</td>
                         <td>
                             {% if u.admin %}    <span class="badge-admin">admin</span>{% endif %}
-                            {% if not u.active %}<span class="badge-inactive">inactive</span>{% endif %}
+                            {% if u.active == 0 %}
+                                <span class="badge-inactive">inactive</span>
+                            {% elseif u.active == -1 %}
+                                <span class="badge-inactive">pending mod approval</span>
+                            {% elseif u.active == -2 %}
+                                <span class="badge-inactive">pending email confirmation</span>
+                            {% elseif u.active == -3 %}
+                                <span class="badge-inactive">pending email &amp; mod approval</span>
+                            {% endif %}
                         </td>
                         <td>
                             <a href="{{ path('/admin/users/' ~ u.user_id ~ '/edit') }}" class="btn-small waves-effect green lighten-1">

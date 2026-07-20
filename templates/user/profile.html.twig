@@ -28,7 +28,7 @@
             <td>{{ profile.real_name }}</td>
         </tr>
         {% endif %}
-        {% if not profile.hide_email and profile.email %}
+        {% if (not profile.hide_email or can_view_hidden) and profile.email %}
         <tr>
             <th scope="row">{{ trans('profile.email') }}</th>
             <td><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></td>
@@ -42,7 +42,7 @@
             <th scope="row">{{ trans('profile.posts') }}</th>
             <td>{{ profile.posts }}</td>
         </tr>
-        {% if not profile.hide_activity %}
+        {% if not profile.hide_activity or can_view_hidden %}
         <tr>
             <th scope="row">{{ trans('profile.last_active') }}</th>
             <td>{{ profile.date_last_active|relative_time }}</td>

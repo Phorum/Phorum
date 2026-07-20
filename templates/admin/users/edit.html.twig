@@ -34,11 +34,13 @@
             </div>
 
             <div class="row">
-                <div class="col s12 m4">
-                    <label>
-                        <input type="checkbox" name="active" value="1" {{ profile.active ? 'checked' : '' }}>
-                        <span>Active</span>
-                    </label>
+                <div class="input-field col s12 m4">
+                    <select name="active" id="field_active">
+                        {% for value, label in active_states %}
+                            <option value="{{ value }}" {{ profile.active == value ? 'selected' : '' }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="field_active">Account Status</label>
                 </div>
                 <div class="col s12 m4">
                     <label>
@@ -89,7 +91,8 @@
                     User ID: {{ profile.user_id }} &nbsp;|&nbsp;
                     Joined: {{ profile.date_added|datestamp }} &nbsp;|&nbsp;
                     Posts: {{ profile.posts }} &nbsp;|&nbsp;
-                    Last active: {{ profile.date_last_active|datestamp }}
+                    Last active: {{ profile.date_last_active|datestamp }} &nbsp;|&nbsp;
+                    Registration IP: {{ profile.reg_ip|default('') != '' ? profile.reg_ip : '—' }}
                 </div>
             </div>
 

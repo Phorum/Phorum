@@ -84,6 +84,28 @@ class LoginControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `$user->active` check would
+     * incorrectly let a pending admin account log in.
+     */
+    public function testLoginPostReturns200ForPendingAdminUser(): void
+    {
+        $adminUser           = $this->makeUser(1, true);
+        $adminUser->password = password_hash('secret', PASSWORD_BCRYPT);
+        $adminUser->active   = UserMapper::PENDING_MOD;
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByUsername')->willReturn($adminUser);
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->login($this->makePostRequest([
+            'username' => 'user1',
+            'password' => 'secret',
+        ]));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testLoginPostSuccessRedirectsToDashboard(): void
     {
         $adminUser           = $this->makeUser(1, true);

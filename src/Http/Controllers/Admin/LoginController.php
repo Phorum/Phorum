@@ -40,12 +40,12 @@ class LoginController extends AdminController
             $user  = $this->users->findByUsername($username);
 
             $valid = $user !== null
-                && $user->active
+                && $user->active === 1
                 && $user->admin
                 && password_verify($password, $user->password);
 
             // Legacy MD5 fallback (same as AuthService)
-            if (!$valid && $user !== null && $user->admin && $user->active) {
+            if (!$valid && $user !== null && $user->admin && $user->active === 1) {
                 if (hash_equals($user->password, md5($password))) {
                     $valid = true;
                     $user->password = password_hash($password, PASSWORD_BCRYPT);

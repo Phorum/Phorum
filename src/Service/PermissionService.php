@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Service;
 
+use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\User;
@@ -19,7 +20,10 @@ class PermissionService
     public const ALLOW_MODERATE_MESSAGES  = 64;
     public const ALLOW_MODERATE_USERS     = 128;
 
-    public function __construct(private readonly UserPermissionMapper $perms) {}
+    public function __construct(
+        private readonly UserPermissionMapper $perms,
+        private readonly ?ForumMapper         $forums = null,
+    ) {}
 
     public function canRead(Forum $forum, ?User $user): bool
     {
@@ -62,6 +66,52 @@ class PermissionService
         return $this->check($forum, $user, self::ALLOW_VIEW_ATTACHMENTS);
     }
 
+    /** True if the user can moderate users' accounts in the context of this forum. */
+    public function canModerateUsers(Forum $forum, ?User $user): bool
+    {
+        return $this->check($forum, $user, self::ALLOW_MODERATE_USERS);
+    }
+
+    /**
+     * True if the user has ALLOW_MODERATE_USERS on at least one active
+     * forum, or is a site admin. User-moderation isn't tied to a specific
+     * forum's content (e.g. the pending-registration queue is site-wide),
+     * so this is the gate for accessing that queue at all.
+     */
+    public function canModerateUsersAnywhere(?User $user): bool
+    {
+        return $this->anyForumGrants($user, self::ALLOW_MODERATE_USERS);
+    }
+
+    /**
+     * True if the user has ALLOW_MODERATE_MESSAGES on at least one active
+     * forum, or is a site admin — the gate for showing message-moderation
+     * entry points (Review Queue, Reported Content) on pages that aren't
+     * scoped to one specific forum (e.g. the site-wide forum index).
+     */
+    public function canModerateMessagesAnywhere(?User $user): bool
+    {
+        return $this->anyForumGrants($user, self::ALLOW_MODERATE_MESSAGES);
+    }
+
+    private function anyForumGrants(?User $user, int $flag): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+        if ($user->admin) {
+            return true;
+        }
+
+        $forums = ($this->forums ?? new ForumMapper())->find(filter: ['active' => 1]) ?? [];
+        foreach ($forums as $forum) {
+            if ($this->check($forum, $user, $flag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Check an arbitrary permission bit (or OR-combined bits). */
     public function check(Forum $forum, ?User $user, int $flag): bool
     {
@@ -84,7 +134,11 @@ class PermissionService
             if ($user->admin) {
                 return PHP_INT_MAX;
             }
-            if (!$user->active) {
+            // Only a fully ACTIVE (1) account gets permissions — pending
+            // (negative) and explicitly inactive (0) states get none. Must
+            // be a strict comparison: PHP treats any non-zero int, including
+            // negative pending states, as truthy.
+            if ($user->active !== 1) {
                 return 0;
             }
 

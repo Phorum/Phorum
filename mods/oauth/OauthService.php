@@ -220,6 +220,7 @@ class OauthService
         $user->active           = 1;
         $user->date_added       = time();
         $user->date_last_active = time();
+        $user->reg_ip           = $_SERVER['REMOTE_ADDR'] ?? '';
 
         phorum_api_hook('before_register', ['username' => $user->username, 'email' => $user->email]);
         $this->users->save($user);

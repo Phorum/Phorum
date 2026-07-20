@@ -26,15 +26,16 @@ class AuthServiceTest extends TestCase
     }
 
     private function makeUser(
-        string $password = '',
-        bool $active     = true,
-        bool $admin      = false,
+        string $password   = '',
+        bool   $active     = true,
+        bool   $admin      = false,
+        ?int   $activeState = null,
     ): User {
         $u           = new User();
         $u->user_id  = 1;
         $u->username = 'alice';
         $u->email    = 'alice@example.com';
-        $u->active   = $active ? 1 : 0;
+        $u->active   = $activeState ?? ($active ? 1 : 0);
         $u->admin    = $admin  ? 1 : 0;
         $u->password = $password ?: password_hash('secret', PASSWORD_BCRYPT);
         return $u;
@@ -68,6 +69,21 @@ class AuthServiceTest extends TestCase
     public function testLoginReturnsNullForInactiveUser(): void
     {
         $user   = $this->makeUser(active: false);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByUsername')->willReturn($user);
+
+        $result = (new AuthService($mapper))->login('alice', 'secret');
+        $this->assertNull($result);
+    }
+
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `!$user->active` check would
+     * incorrectly let a pending account log in. Must be a strict comparison.
+     */
+    public function testLoginReturnsNullForPendingModUser(): void
+    {
+        $user   = $this->makeUser(activeState: UserMapper::PENDING_MOD);
         $mapper = $this->createMock(UserMapper::class);
         $mapper->method('findByUsername')->willReturn($user);
 
@@ -169,6 +185,25 @@ class AuthServiceTest extends TestCase
         $this->assertTrue(password_verify('pass123', $user->password));
     }
 
+    public function testRegisterCapturesRemoteAddrAsRegIp(): void
+    {
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        $previous = $_SERVER['REMOTE_ADDR'] ?? null;
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.5';
+
+        $user = (new AuthService($mapper))->register('bob', 'bob@example.com', 'pass123');
+
+        if ($previous === null) {
+            unset($_SERVER['REMOTE_ADDR']);
+        } else {
+            $_SERVER['REMOTE_ADDR'] = $previous;
+        }
+
+        $this->assertSame('203.0.113.5', $user->reg_ip);
+    }
+
     public function testRegisterCreatesInactiveUserWithConfirmation(): void
     {
         $mapper = $this->createMock(UserMapper::class);
@@ -178,7 +213,31 @@ class AuthServiceTest extends TestCase
             'bob', 'bob@example.com', 'pass123', requireConfirmation: true
         );
 
-        $this->assertSame(0, $user->active);
+        $this->assertSame(UserMapper::PENDING_EMAIL, $user->active);
+    }
+
+    public function testRegisterCreatesPendingModUserWithModApprovalOnly(): void
+    {
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        $user = (new AuthService($mapper))->register(
+            'bob', 'bob@example.com', 'pass123', requireModApproval: true
+        );
+
+        $this->assertSame(UserMapper::PENDING_MOD, $user->active);
+    }
+
+    public function testRegisterCreatesPendingBothUserWhenBothRequired(): void
+    {
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('save')->willReturnArgument(0);
+
+        $user = (new AuthService($mapper))->register(
+            'bob', 'bob@example.com', 'pass123', requireConfirmation: true, requireModApproval: true
+        );
+
+        $this->assertSame(UserMapper::PENDING_BOTH, $user->active);
     }
 
     // -------------------------------------------------------------------------
@@ -237,6 +296,100 @@ class AuthServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * Regression test: a pending account's password_temp holds an email-
+     * confirmation token, not a reset token — a naive truthy check would
+     * otherwise let a PENDING_MOD/PENDING_BOTH account "reset" via that token.
+     */
+    public function testValidateResetTokenReturnsNullForPendingModUser(): void
+    {
+        $user             = $this->makeUser(activeState: UserMapper::PENDING_MOD);
+        $user->email_temp = (string) (time() + 3600);
+
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByPasswordTemp')->willReturn($user);
+
+        $result = (new AuthService($mapper))->validateResetToken('some-token');
+        $this->assertNull($result);
+    }
+
+    // -------------------------------------------------------------------------
+    // requestPasswordReset()
+    // -------------------------------------------------------------------------
+
+    public function testRequestPasswordResetSilentlyNoOpsForPendingModUser(): void
+    {
+        $user   = $this->makeUser(activeState: UserMapper::PENDING_MOD);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->never())->method('save');
+
+        $result = (new AuthService($mapper))->requestPasswordReset('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+        $this->assertSame('', $user->password_temp);
+    }
+
+    public function testRequestPasswordResetSetsTokenForActiveUser(): void
+    {
+        $user   = $this->makeUser(active: true);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->once())->method('save');
+
+        $result = (new AuthService($mapper))->requestPasswordReset('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+        $this->assertNotSame('', $user->password_temp);
+    }
+
+    // -------------------------------------------------------------------------
+    // resendConfirmation()
+    // -------------------------------------------------------------------------
+
+    public function testResendConfirmationSendsForPendingEmailUser(): void
+    {
+        $user   = $this->makeUser(activeState: UserMapper::PENDING_EMAIL);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->once())->method('save');
+
+        $result = (new AuthService($mapper))->resendConfirmation('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+        $this->assertNotSame('', $user->password_temp);
+    }
+
+    public function testResendConfirmationSendsForPendingBothUser(): void
+    {
+        $user   = $this->makeUser(activeState: UserMapper::PENDING_BOTH);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->once())->method('save');
+
+        $result = (new AuthService($mapper))->resendConfirmation('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+    }
+
+    public function testResendConfirmationSilentlyNoOpsForActiveUser(): void
+    {
+        $user   = $this->makeUser(active: true);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->never())->method('save');
+
+        $result = (new AuthService($mapper))->resendConfirmation('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+    }
+
+    public function testResendConfirmationSilentlyNoOpsForPendingModUser(): void
+    {
+        $user   = $this->makeUser(activeState: UserMapper::PENDING_MOD);
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByEmail')->willReturn($user);
+        $mapper->expects($this->never())->method('save');
+
+        $result = (new AuthService($mapper))->resendConfirmation('alice@example.com', 'https://example.com');
+        $this->assertTrue($result);
+    }
+
     // -------------------------------------------------------------------------
     // confirmEmail()
     // -------------------------------------------------------------------------
@@ -262,7 +415,7 @@ class AuthServiceTest extends TestCase
 
     public function testConfirmEmailReturnsNullForExpiredToken(): void
     {
-        $user           = $this->makeUser(active: false);
+        $user           = $this->makeUser(activeState: UserMapper::PENDING_EMAIL);
         $user->email_temp = (string) (time() - 10);
 
         $mapper = $this->createMock(UserMapper::class);
@@ -274,7 +427,7 @@ class AuthServiceTest extends TestCase
 
     public function testConfirmEmailActivatesUserOnValidToken(): void
     {
-        $user             = $this->makeUser(active: false);
+        $user             = $this->makeUser(activeState: UserMapper::PENDING_EMAIL);
         $user->email_temp = (string) (time() + 3600);
 
         $saved  = null;
@@ -288,8 +441,25 @@ class AuthServiceTest extends TestCase
         $result = (new AuthService($mapper))->confirmEmail('good-token');
 
         $this->assertNotNull($result);
-        $this->assertSame(1, $result->active);
+        $this->assertSame(UserMapper::ACTIVE, $result->active);
         $this->assertSame('', $result->password_temp);
+        $this->assertSame($user, Auth::user(), 'a fully-activated account should be logged in');
+    }
+
+    public function testConfirmEmailPendingBothTransitionsToPendingModWithoutLoggingIn(): void
+    {
+        $user             = $this->makeUser(activeState: UserMapper::PENDING_BOTH);
+        $user->email_temp = (string) (time() + 3600);
+
+        $mapper = $this->createMock(UserMapper::class);
+        $mapper->method('findByPasswordTemp')->willReturn($user);
+        $mapper->method('save')->willReturnArgument(0);
+
+        $result = (new AuthService($mapper))->confirmEmail('good-token');
+
+        $this->assertNotNull($result);
+        $this->assertSame(UserMapper::PENDING_MOD, $result->active);
+        $this->assertNull(Auth::user(), 'still needs moderator approval — must not be logged in yet');
     }
 
     // -------------------------------------------------------------------------

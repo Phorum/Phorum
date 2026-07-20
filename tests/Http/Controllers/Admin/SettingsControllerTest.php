@@ -125,6 +125,73 @@ class SettingsControllerTest extends ControllerTestCase
         $this->assertFalse($saved['file_uploads']);
     }
 
+    public function testIndexDefaultsRequireModApprovalToDisabledWhenNotStored(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $twig = $this->createMock(\Twig\Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(\Twig\Loader\LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'admin/settings.html.twig',
+            $this->callback(fn(array $data) => ($data['stored']['require_mod_approval'] ?? null) === false),
+        )->willReturn('<html>ok</html>');
+
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getAll')->willReturn([]);
+
+        $ctrl = new SettingsController(config: $this->makeConfig(), twig: $twig, settings: $settings);
+        $ctrl->index($this->makeGetRequest());
+    }
+
+    public function testIndexPostSavesRequireModApprovalToggle(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $saved    = [];
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getAll')->willReturn([]);
+        $settings->method('saveAll')->willReturnCallback(function (array $toSave) use (&$saved) {
+            $saved = $toSave;
+        });
+
+        $ctrl     = $this->makeController(['settings' => $settings]);
+        $response = $ctrl->index($this->makePostRequest([
+            'site_name'            => 'My Forum',
+            'base_url'             => 'http://example.com',
+            'mail_host'            => '',
+            'mail_port'            => '25',
+            'mail_from'            => '',
+            'require_mod_approval' => '1',
+        ]));
+
+        $this->assertSame(200, $response->status);
+        $this->assertTrue($saved['require_mod_approval']);
+    }
+
+    public function testIndexPostOmittedRequireModApprovalSavesFalse(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $saved    = [];
+        $settings = $this->createMock(SettingMapper::class);
+        $settings->method('getAll')->willReturn([]);
+        $settings->method('saveAll')->willReturnCallback(function (array $toSave) use (&$saved) {
+            $saved = $toSave;
+        });
+
+        $ctrl = $this->makeController(['settings' => $settings]);
+        $ctrl->index($this->makePostRequest([
+            'site_name' => 'My Forum',
+            'base_url'  => 'http://example.com',
+            'mail_host' => '',
+            'mail_port' => '25',
+            'mail_from' => '',
+            // require_mod_approval checkbox omitted entirely, as a browser would when unchecked
+        ]));
+
+        $this->assertFalse($saved['require_mod_approval']);
+    }
+
     public function testIndexPostReturns403WithBadCsrf(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

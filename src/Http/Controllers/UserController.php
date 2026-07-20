@@ -14,25 +14,29 @@ use Phorum\Mapper\FileMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Service\FileService;
+use Phorum\Service\PermissionService;
 use Twig\Environment;
 
 class UserController extends Controller
 {
-    private readonly UserMapper    $users;
-    private readonly MessageMapper $messages;
-    private readonly FileService   $fileService;
-    private readonly FileMapper    $fileMapper;
-    private readonly PmBuddyMapper $buddies;
+    private readonly UserMapper       $users;
+    private readonly MessageMapper    $messages;
+    private readonly FileService      $fileService;
+    private readonly FileMapper       $fileMapper;
+    private readonly PmBuddyMapper    $buddies;
+    private readonly PermissionService $perms;
 
     public function __construct(
-        Config          $config,
-        Environment     $twig,
-        ?UserMapper     $users       = null,
-        ?MessageMapper  $messages    = null,
-        ?FileService    $fileService = null,
-        ?FileMapper     $fileMapper  = null,
-        ?PmBuddyMapper  $buddies     = null,
+        Config              $config,
+        Environment         $twig,
+        ?UserMapper         $users       = null,
+        ?MessageMapper      $messages    = null,
+        ?FileService        $fileService = null,
+        ?FileMapper         $fileMapper  = null,
+        ?PmBuddyMapper      $buddies     = null,
+        ?PermissionService  $perms       = null,
     ) {
         parent::__construct($config, $twig);
         $this->fileMapper  = $fileMapper  ?? new FileMapper();
@@ -40,6 +44,7 @@ class UserController extends Controller
         $this->messages    = $messages    ?? new MessageMapper();
         $this->fileService = $fileService ?? new FileService($this->fileMapper);
         $this->buddies     = $buddies     ?? new PmBuddyMapper();
+        $this->perms       = $perms       ?? new PermissionService(new UserPermissionMapper());
     }
 
     // -------------------------------------------------------------------------
@@ -52,6 +57,11 @@ class UserController extends Controller
 
         $profile = $this->users->load($userId);
 
+        // Deliberately a loose falsy check, not `!== 1`: only literal 0
+        // (INACTIVE) hides a profile entirely — pending accounts (negative
+        // active values) still have a viewable profile, matching legacy
+        // Phorum 6's `active == 0` check in profile.php. PHP only treats
+        // exactly 0 as falsy among ints, so this already implements that.
         if ($profile === null || !$profile->active) {
             return $this->notFound();
         }
@@ -64,11 +74,15 @@ class UserController extends Controller
             ? $this->buddies->isBuddy($viewer->user_id, $userId)
             : false;
 
+        // Site admins and ALLOW_MODERATE_USERS holders bypass hide_email/hide_activity.
+        $canViewHidden = ($viewer?->admin ?? false) || $this->perms->canModerateUsersAnywhere($viewer);
+
         return $this->respond($this->render('user/profile.html.twig', [
-            'profile'      => $profile,
-            'recent_posts' => $recentPosts ?? [],
-            'avatar'       => $avatar,
-            'is_buddy'     => $isBuddy,
+            'profile'         => $profile,
+            'recent_posts'    => $recentPosts ?? [],
+            'avatar'          => $avatar,
+            'is_buddy'        => $isBuddy,
+            'can_view_hidden' => $canViewHidden,
         ]));
     }
 

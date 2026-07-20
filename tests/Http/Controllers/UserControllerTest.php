@@ -11,7 +11,10 @@ use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\FileService;
+use Phorum\Service\PermissionService;
 use Phorum\Tests\Http\ControllerTestCase;
+use Twig\Environment;
+use Twig\Loader\LoaderInterface;
 
 class UserControllerTest extends ControllerTestCase
 {
@@ -20,13 +23,25 @@ class UserControllerTest extends ControllerTestCase
         $fileMapper = $deps['fileMapper'] ?? $this->createMock(FileMapper::class);
         return new UserController(
             config:      $this->makeConfig(),
-            twig:        $this->makeTwig(),
+            twig:        $deps['twig']        ?? $this->makeTwig(),
             users:       $deps['users']       ?? $this->createMock(UserMapper::class),
             messages:    $deps['messages']    ?? $this->createMock(MessageMapper::class),
             fileService: $deps['fileService'] ?? $this->createMock(FileService::class),
             fileMapper:  $fileMapper,
             buddies:     $deps['buddies']     ?? $this->createMock(PmBuddyMapper::class),
+            perms:       $deps['perms']       ?? $this->createMock(PermissionService::class),
         );
+    }
+
+    private function makeCapturingTwig(callable $assertion): Environment
+    {
+        $twig = $this->createMock(Environment::class);
+        $twig->method('getLoader')->willReturn($this->createMock(LoaderInterface::class));
+        $twig->expects($this->once())->method('render')->with(
+            'user/profile.html.twig',
+            $this->callback($assertion),
+        )->willReturn('<html>ok</html>');
+        return $twig;
     }
 
     // -------------------------------------------------------------------------
@@ -70,6 +85,74 @@ class UserControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['users' => $users, 'messages' => $messages]);
         $response = $ctrl->profile(new Request(tokens: ['user_id' => '1']));
         $this->assertSame(200, $response->status);
+    }
+
+    public function testProfileShowsHiddenFieldsForAdminViewer(): void
+    {
+        Auth::setUser($this->makeUser(2, admin: true));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => ($data['can_view_hidden'] ?? null) === true);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'twig' => $twig]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfileShowsHiddenFieldsForUserModerator(): void
+    {
+        Auth::setUser($this->makeUser(2));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => ($data['can_view_hidden'] ?? null) === true);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'twig' => $twig, 'perms' => $perms]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfileHidesFieldsForRegularViewer(): void
+    {
+        Auth::setUser($this->makeUser(2));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(false);
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => ($data['can_view_hidden'] ?? null) === false);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'twig' => $twig, 'perms' => $perms]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfileHidesFieldsForAnonymousViewer(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => ($data['can_view_hidden'] ?? null) === false);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'twig' => $twig]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
     }
 
     // -------------------------------------------------------------------------

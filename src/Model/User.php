@@ -41,4 +41,5 @@ class User
     public int    $force_password_change = 0;
     public int    $shadow_banned     = 0;
     public int    $deleted_count     = 0;
+    public string $reg_ip            = '';
 }

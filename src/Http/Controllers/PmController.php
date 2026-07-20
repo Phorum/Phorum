@@ -180,7 +180,7 @@ class PmController extends Controller
                 $errors[] = Lang::get('pm.error_recipient_required');
             } else {
                 $toUser = $users->findByUsername($toUsername);
-                if ($toUser === null || !$toUser->active) {
+                if ($toUser === null || $toUser->active !== 1) {
                     $errors[] = Lang::get('pm.error_user_not_found', ['username' => $toUsername]);
                 }
             }
@@ -397,7 +397,7 @@ class PmController extends Controller
             if ($r = $this->checkCsrf($request)) { return $r; }
             if ($buddyUserId > 0 && $buddyUserId !== $user->user_id) {
                 $buddyUser = $this->users->load($buddyUserId);
-                if ($buddyUser !== null && $buddyUser->active) {
+                if ($buddyUser !== null && $buddyUser->active === 1) {
                     $this->buddies->add($user->user_id, $buddyUserId);
                     phorum_api_hook('buddy_add', $buddyUserId);
                 }

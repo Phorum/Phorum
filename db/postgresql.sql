@@ -192,6 +192,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     force_password_change    SMALLINT        NOT NULL DEFAULT 0,
     shadow_banned            SMALLINT        NOT NULL DEFAULT 0,
     deleted_count            INTEGER         NOT NULL DEFAULT 0,
+    reg_ip                   VARCHAR(255)    NOT NULL DEFAULT '',
 
     PRIMARY KEY (user_id),
     UNIQUE (username)

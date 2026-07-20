@@ -281,6 +281,42 @@ class OauthServiceTest extends TestCase
         $this->assertFalse(password_verify('', $saved->password));
     }
 
+    public function testResolveUserAutoRegisterCapturesRemoteAddrAsRegIp(): void
+    {
+        $identities = $this->createMock(OauthIdentityMapper::class);
+        $identities->method('findByProviderAndId')->willReturn(null);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('findByUsername')->willReturn(null);
+        $users->method('save')->willReturnCallback(function (User $u) use (&$saved) {
+            $u->user_id = 42;
+            $saved      = $u;
+            return $u;
+        });
+
+        $service = $this->makeService(
+            $this->enabledSettings('google'),
+            [$this->googleUserinfoResponse()],
+            $users,
+            $identities,
+        );
+
+        $previous = $_SERVER['REMOTE_ADDR'] ?? null;
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.7';
+
+        $service->resolveUser('google', new AccessToken(['access_token' => 'tok']));
+
+        if ($previous === null) {
+            unset($_SERVER['REMOTE_ADDR']);
+        } else {
+            $_SERVER['REMOTE_ADDR'] = $previous;
+        }
+
+        $this->assertSame('203.0.113.7', $saved->reg_ip);
+    }
+
     public function testResolveUserAutoRegistersNewAccountGithub(): void
     {
         $identities = $this->createMock(OauthIdentityMapper::class);

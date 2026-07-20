@@ -48,7 +48,7 @@ class AdminAuth
         }
 
         $user = (new UserMapper())->load($userId);
-        if ($user === null || !$user->admin || !$user->active) {
+        if ($user === null || !$user->admin || $user->active !== 1) {
             self::logout($config);
             return;
         }

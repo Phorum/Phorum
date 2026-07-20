@@ -61,6 +61,20 @@ class UserMapperTest extends MapperTestCase
         $this->assertSame('alice', $loaded->username);
     }
 
+    public function testSaveAndLoadRoundTripsRegIp(): void
+    {
+        $mapper = $this->makeMapper();
+        $u = new User();
+        $u->username = 'alice';
+        $u->email    = 'alice@example.com';
+        $u->active   = 1;
+        $u->reg_ip   = '198.51.100.23';
+        $mapper->save($u);
+
+        $loaded = $mapper->load($u->user_id);
+        $this->assertSame('198.51.100.23', $loaded->reg_ip);
+    }
+
     public function testSaveUpdate(): void
     {
         $id = $this->seedUser(['username' => 'bob']);
@@ -193,5 +207,45 @@ class UserMapperTest extends MapperTestCase
         $mapper = $this->makeMapper();
         $mapper->incrementDeletedCount($uid, 3);
         $this->assertSame(5, $mapper->load($uid)->deleted_count);
+    }
+
+    // -------------------------------------------------------------------------
+    // findPendingModeration
+    // -------------------------------------------------------------------------
+
+    public function testFindPendingModerationIncludesPendingModAndPendingBoth(): void
+    {
+        $modId  = $this->seedUser(['username' => 'aaa_pending_mod', 'active' => UserMapper::PENDING_MOD]);
+        $bothId = $this->seedUser(['username' => 'bbb_pending_both', 'active' => UserMapper::PENDING_BOTH]);
+        $this->seedUser(['username' => 'ccc_active', 'active' => UserMapper::ACTIVE]);
+        $this->seedUser(['username' => 'ddd_pending_email', 'active' => UserMapper::PENDING_EMAIL]);
+        $this->seedUser(['username' => 'eee_inactive', 'active' => UserMapper::INACTIVE]);
+
+        $mapper = $this->makeMapper();
+        $results = $mapper->findPendingModeration();
+
+        $ids = array_map(fn($u) => $u->user_id, $results);
+        $this->assertContains($modId, $ids);
+        $this->assertContains($bothId, $ids);
+        $this->assertCount(2, $results);
+    }
+
+    public function testFindPendingModerationOrderedByUsername(): void
+    {
+        $this->seedUser(['username' => 'zeta', 'active' => UserMapper::PENDING_MOD]);
+        $this->seedUser(['username' => 'alpha', 'active' => UserMapper::PENDING_BOTH]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->findPendingModeration();
+
+        $this->assertSame('alpha', $results[0]->username);
+        $this->assertSame('zeta', $results[1]->username);
+    }
+
+    public function testFindPendingModerationReturnsNullWhenNoneWaiting(): void
+    {
+        $this->seedUser(['active' => UserMapper::ACTIVE]);
+        $mapper = $this->makeMapper();
+        $this->assertNull($mapper->findPendingModeration());
     }
 }

@@ -11,7 +11,9 @@ use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
 use Phorum\Mapper\ReportMapper;
 use Phorum\Mapper\SearchMapper;
+use Phorum\Mapper\UserMapper;
 use Phorum\Model\Report;
+use Phorum\Model\User;
 use Phorum\Service\ModerationService;
 use Phorum\Service\PermissionService;
 use Phorum\Service\SubscriptionService;
@@ -35,6 +37,7 @@ class ModerationControllerTest extends ControllerTestCase
             moderationService: $deps['moderationService'] ?? $this->createMock(ModerationService::class),
             modLog:            $deps['modLog']            ?? $this->createMock(ModLogMapper::class),
             reports:           $deps['reports']           ?? $this->createMock(ReportMapper::class),
+            users:             $deps['users']              ?? $this->createMock(UserMapper::class),
         );
     }
 
@@ -777,5 +780,211 @@ class ModerationControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['reports' => $reports, 'forums' => $forums]);
         $response = $ctrl->report($this->makeGetRequest(tokens: ['report_id' => '1', 'action' => 'resolve']));
         $this->assertSame(404, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // users (pending-registration queue)
+    // -------------------------------------------------------------------------
+
+    private function makePendingUser(int $id, int $active): User
+    {
+        $target            = new User();
+        $target->user_id   = $id;
+        $target->username  = 'user' . $id;
+        $target->active    = $active;
+        return $target;
+    }
+
+    public function testUsersRedirectsAnonymousUser(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->users(new Request());
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/login', $response->headers['Location']);
+    }
+
+    public function testUsersReturns403WhenCannotModerateUsersAnywhere(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(false);
+
+        $ctrl     = $this->makeController(['perms' => $perms]);
+        $response = $ctrl->users(new Request());
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testUsersReturns200WithPendingList(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findPendingModeration')->willReturn([$this->makePendingUser(5, UserMapper::PENDING_MOD)]);
+
+        $ctrl     = $this->makeController(['perms' => $perms, 'users' => $users]);
+        $response = $ctrl->users(new Request());
+        $this->assertSame(200, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // userAction (approve/reject a pending account)
+    // -------------------------------------------------------------------------
+
+    public function testUserActionReturns404ForInvalidAction(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->userAction(new Request(tokens: ['user_id' => '5', 'action' => 'bogus']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testUserActionReturns404WhenTargetNotFound(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn(null);
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->userAction(new Request(tokens: ['user_id' => '99', 'action' => 'approve']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testUserActionReturns404WhenTargetNotPending(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makePendingUser(5, UserMapper::ACTIVE));
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->userAction(new Request(tokens: ['user_id' => '5', 'action' => 'approve']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testUserActionRedirectsAnonymousUser(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makePendingUser(5, UserMapper::PENDING_MOD));
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->userAction(new Request(tokens: ['user_id' => '5', 'action' => 'approve']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/login', $response->headers['Location']);
+    }
+
+    public function testUserActionReturns403WhenCannotModerateUsersAnywhere(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makePendingUser(5, UserMapper::PENDING_MOD));
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(false);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms]);
+        $response = $ctrl->userAction(new Request(tokens: ['user_id' => '5', 'action' => 'approve']));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testUserActionGetReturns404(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makePendingUser(5, UserMapper::PENDING_MOD));
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms]);
+        $response = $ctrl->userAction($this->makeGetRequest(tokens: ['user_id' => '5', 'action' => 'approve']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testUserActionApprovePendingModBecomesActive(): void
+    {
+        Auth::setUser($this->makeUser(7));
+
+        $target = $this->makePendingUser(5, UserMapper::PENDING_MOD);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+        $users->expects($this->once())->method('save')->with($target);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with($this->anything(), 'approve', 'user', 5, 0, $target->username);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms, 'modLog' => $modLog]);
+        $response = $ctrl->userAction($this->makePostRequest(tokens: ['user_id' => '5', 'action' => 'approve']));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/moderate/users', $response->headers['Location']);
+        $this->assertSame(UserMapper::ACTIVE, $target->active);
+    }
+
+    public function testUserActionApprovePendingBothBecomesPendingEmail(): void
+    {
+        Auth::setUser($this->makeUser(7));
+
+        $target = $this->makePendingUser(6, UserMapper::PENDING_BOTH);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms]);
+        $response = $ctrl->userAction($this->makePostRequest(tokens: ['user_id' => '6', 'action' => 'approve']));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(UserMapper::PENDING_EMAIL, $target->active);
+    }
+
+    public function testUserActionRejectBecomesInactive(): void
+    {
+        Auth::setUser($this->makeUser(7));
+
+        $target = $this->makePendingUser(5, UserMapper::PENDING_MOD);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($target);
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with($this->anything(), 'reject', 'user', 5, 0, $target->username);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms, 'modLog' => $modLog]);
+        $response = $ctrl->userAction($this->makePostRequest(tokens: ['user_id' => '5', 'action' => 'reject']));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(UserMapper::INACTIVE, $target->active);
+    }
+
+    public function testUserActionPostReturns403WithBadCsrf(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makePendingUser(5, UserMapper::PENDING_MOD));
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canModerateUsersAnywhere')->willReturn(true);
+
+        $ctrl     = $this->makeController(['users' => $users, 'perms' => $perms]);
+        $response = $ctrl->userAction(new Request(
+            post:   ['csrf_token' => 'bad'],
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: ['user_id' => '5', 'action' => 'approve'],
+        ));
+        $this->assertSame(403, $response->status);
     }
 }

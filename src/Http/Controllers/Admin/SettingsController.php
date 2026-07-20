@@ -83,8 +83,9 @@ class SettingsController extends AdminController
                 $toSave['language'] = $selectedLocale;
             }
 
-            $toSave['enable_rss']    = !empty($request->post['enable_rss']);
-            $toSave['file_uploads']  = !empty($request->post['file_uploads']);
+            $toSave['enable_rss']          = !empty($request->post['enable_rss']);
+            $toSave['file_uploads']        = !empty($request->post['file_uploads']);
+            $toSave['require_mod_approval'] = !empty($request->post['require_mod_approval']);
 
             $this->settings->saveAll($toSave);
             $stored  = array_merge($stored, $toSave);
@@ -101,6 +102,9 @@ class SettingsController extends AdminController
         // enable_rss/file_uploads have no phorum.php config counterpart — DB-only, default enabled.
         $stored['enable_rss']   = $stored['enable_rss']   ?? true;
         $stored['file_uploads'] = $stored['file_uploads'] ?? true;
+        // Opt-in, unlike the two above — registration shouldn't gain a new
+        // moderator-approval gate for existing sites until an admin asks for it.
+        $stored['require_mod_approval'] = $stored['require_mod_approval'] ?? false;
 
         return $this->respond($this->renderAdmin('admin/settings.html.twig', [
             'fields'  => self::FIELDS,

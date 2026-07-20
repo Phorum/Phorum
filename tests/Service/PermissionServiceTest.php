@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Phorum\Tests\Service;
 
+use Phorum\Mapper\ForumMapper;
+use Phorum\Mapper\UserMapper;
 use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\User;
@@ -20,12 +22,12 @@ class PermissionServiceTest extends TestCase
         return $f;
     }
 
-    private function makeUser(bool $admin = false, bool $active = true): User
+    private function makeUser(bool $admin = false, bool $active = true, ?int $activeState = null): User
     {
         $u         = new User();
         $u->user_id = 42;
         $u->admin  = $admin ? 1 : 0;
-        $u->active = $active ? 1 : 0;
+        $u->active = $activeState ?? ($active ? 1 : 0);
         return $u;
     }
 
@@ -35,6 +37,18 @@ class PermissionServiceTest extends TestCase
         $mapper->method('getDirectPermission')->willReturn($direct);
         $mapper->method('getGroupPermission')->willReturn($group);
         return new PermissionService($mapper);
+    }
+
+    private function makeServiceWithForums(array $forums, ?int $direct = null, int $group = 0): PermissionService
+    {
+        $permsMapper = $this->createMock(UserPermissionMapper::class);
+        $permsMapper->method('getDirectPermission')->willReturn($direct);
+        $permsMapper->method('getGroupPermission')->willReturn($group);
+
+        $forumMapper = $this->createMock(ForumMapper::class);
+        $forumMapper->method('find')->willReturn($forums);
+
+        return new PermissionService($permsMapper, $forumMapper);
     }
 
     // -------------------------------------------------------------------------
@@ -82,6 +96,20 @@ class PermissionServiceTest extends TestCase
         $svc   = $this->makeService(direct: PermissionService::ALLOW_READ);
         $forum = $this->makeForum(pubPerms: PermissionService::ALLOW_READ, regPerms: PermissionService::ALLOW_READ);
         $this->assertFalse($svc->canRead($forum, $this->makeUser(active: false)));
+    }
+
+    /**
+     * Regression test: PHP treats any non-zero int (including negative
+     * pending states) as truthy, so a naive `!$user->active` check would
+     * incorrectly grant full permissions to a pending (unapproved) account.
+     */
+    public function testPendingModUserGetsNoPermissionsEvenWithDirectGrant(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_READ | PermissionService::ALLOW_REPLY);
+        $forum = $this->makeForum(pubPerms: PermissionService::ALLOW_READ, regPerms: PermissionService::ALLOW_READ);
+        $user  = $this->makeUser(activeState: UserMapper::PENDING_MOD);
+        $this->assertFalse($svc->canRead($forum, $user));
+        $this->assertFalse($svc->canReply($forum, $user));
     }
 
     // -------------------------------------------------------------------------
@@ -229,5 +257,101 @@ class PermissionServiceTest extends TestCase
         $svc   = $this->makeService();
         $forum = $this->makeForum(pubPerms: 0, regPerms: 0);
         $this->assertTrue($svc->canViewAttachments($forum, $this->makeUser(admin: true)));
+    }
+
+    // -------------------------------------------------------------------------
+    // canModerateUsers()
+    // -------------------------------------------------------------------------
+
+    public function testCanModerateUsersTrueWhenDirectGrantIncludesBit(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_MODERATE_USERS);
+        $forum = $this->makeForum();
+        $this->assertTrue($svc->canModerateUsers($forum, $this->makeUser()));
+    }
+
+    public function testCanModerateUsersFalseWithoutTheBit(): void
+    {
+        $svc   = $this->makeService(direct: PermissionService::ALLOW_READ);
+        $forum = $this->makeForum();
+        $this->assertFalse($svc->canModerateUsers($forum, $this->makeUser()));
+    }
+
+    public function testCanModerateUsersTrueForAdminRegardlessOfForumPerms(): void
+    {
+        $svc   = $this->makeService();
+        $forum = $this->makeForum(pubPerms: 0, regPerms: 0);
+        $this->assertTrue($svc->canModerateUsers($forum, $this->makeUser(admin: true)));
+    }
+
+    // -------------------------------------------------------------------------
+    // canModerateUsersAnywhere()
+    // -------------------------------------------------------------------------
+
+    public function testCanModerateUsersAnywhereFalseForAnonymous(): void
+    {
+        $svc = $this->makeServiceWithForums([$this->makeForum()]);
+        $this->assertFalse($svc->canModerateUsersAnywhere(null));
+    }
+
+    public function testCanModerateUsersAnywhereTrueForAdminEvenWithNoForums(): void
+    {
+        $svc = $this->makeServiceWithForums([]);
+        $this->assertTrue($svc->canModerateUsersAnywhere($this->makeUser(admin: true)));
+    }
+
+    public function testCanModerateUsersAnywhereTrueWhenAnyForumGrantsIt(): void
+    {
+        $forumWithout = $this->makeForum();
+        $forumWith    = $this->makeForum();
+
+        $svc = $this->makeServiceWithForums(
+            [$forumWithout, $forumWith],
+            direct: PermissionService::ALLOW_MODERATE_USERS,
+        );
+        $this->assertTrue($svc->canModerateUsersAnywhere($this->makeUser()));
+    }
+
+    public function testCanModerateUsersAnywhereFalseWhenNoForumGrantsIt(): void
+    {
+        $svc = $this->makeServiceWithForums(
+            [$this->makeForum(), $this->makeForum()],
+            direct: PermissionService::ALLOW_READ,
+        );
+        $this->assertFalse($svc->canModerateUsersAnywhere($this->makeUser()));
+    }
+
+    // -------------------------------------------------------------------------
+    // canModerateMessagesAnywhere()
+    // -------------------------------------------------------------------------
+
+    public function testCanModerateMessagesAnywhereFalseForAnonymous(): void
+    {
+        $svc = $this->makeServiceWithForums([$this->makeForum()]);
+        $this->assertFalse($svc->canModerateMessagesAnywhere(null));
+    }
+
+    public function testCanModerateMessagesAnywhereTrueForAdminEvenWithNoForums(): void
+    {
+        $svc = $this->makeServiceWithForums([]);
+        $this->assertTrue($svc->canModerateMessagesAnywhere($this->makeUser(admin: true)));
+    }
+
+    public function testCanModerateMessagesAnywhereTrueWhenAnyForumGrantsIt(): void
+    {
+        $svc = $this->makeServiceWithForums(
+            [$this->makeForum(), $this->makeForum()],
+            direct: PermissionService::ALLOW_MODERATE_MESSAGES,
+        );
+        $this->assertTrue($svc->canModerateMessagesAnywhere($this->makeUser()));
+    }
+
+    public function testCanModerateMessagesAnywhereFalseWhenNoForumGrantsIt(): void
+    {
+        $svc = $this->makeServiceWithForums(
+            [$this->makeForum(), $this->makeForum()],
+            direct: PermissionService::ALLOW_READ,
+        );
+        $this->assertFalse($svc->canModerateMessagesAnywhere($this->makeUser()));
     }
 }

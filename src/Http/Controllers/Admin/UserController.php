@@ -22,6 +22,15 @@ class UserController extends AdminController
 {
     private const PAGE_SIZE = 30;
 
+    /** Labels for the admin "Account Status" select — every valid `users.active` value. */
+    private const ACTIVE_STATES = [
+        UserMapper::ACTIVE        => 'Active',
+        UserMapper::INACTIVE      => 'Inactive',
+        UserMapper::PENDING_MOD   => 'Pending Moderator Approval',
+        UserMapper::PENDING_EMAIL => 'Pending Email Confirmation',
+        UserMapper::PENDING_BOTH  => 'Pending Email Confirmation & Moderator Approval',
+    ];
+
     private readonly UserMapper         $users;
     private readonly CustomFieldService $cfService;
     private readonly ModLogMapper       $modLog;
@@ -107,7 +116,7 @@ class UserController extends AdminController
             if ($r = $this->checkCsrf($request)) { return $r; }
             $displayName = trim($request->post['display_name'] ?? '');
             $email       = trim($request->post['email']        ?? '');
-            $active      = !empty($request->post['active']);
+            $activeState = (int) ($request->post['active'] ?? UserMapper::INACTIVE);
             $admin       = !empty($request->post['admin']);
             $forcePwChange = !empty($request->post['force_password_change']);
             $shadowBanned  = !empty($request->post['shadow_banned']);
@@ -123,6 +132,9 @@ class UserController extends AdminController
                 if ($taken !== null && $taken->user_id !== $userId) {
                     $errors[] = 'Email already in use.';
                 }
+            }
+            if (!isset(self::ACTIVE_STATES[$activeState])) {
+                $errors[] = 'A valid account status is required.';
             }
             if ($password !== '' && strlen($password) < 6) {
                 $errors[] = 'Password must be at least 6 characters.';
@@ -140,7 +152,7 @@ class UserController extends AdminController
 
                 $user->display_name = $displayName;
                 $user->email        = $email;
-                $user->active       = $active ? 1 : 0;
+                $user->active       = $activeState;
                 $user->admin        = $admin  ? 1 : 0;
                 $user->force_password_change = $forcePwChange ? 1 : 0;
                 $user->shadow_banned = $shadowBanned ? 1 : 0;
@@ -169,6 +181,7 @@ class UserController extends AdminController
         return $this->respond($this->renderAdmin('admin/users/edit.html.twig', [
             'profile'        => $user,
             'admin_fields'   => $this->cfService->getAdminUserFields($userId),
+            'active_states'  => self::ACTIVE_STATES,
             'errors'         => $errors,
             'success'        => $success,
             'admin_user_id'  => AdminAuth::user()->user_id,

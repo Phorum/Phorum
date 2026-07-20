@@ -20,22 +20,25 @@ class Auth
      */
     public static function initialize(UserMapper $mapper): void
     {
-        // Short-term session — has an expiry stored in the DB
+        // Short-term session — has an expiry stored in the DB. Also require
+        // active === 1 so a deactivated/pending account's still-valid token
+        // stops working immediately rather than lingering until it expires.
         $stToken = $_COOKIE[self::COOKIE_ST] ?? '';
         if ($stToken !== '') {
             $user = $mapper->findBySessionSt($stToken);
-            if ($user !== null && $user->sessid_st_timeout > time()) {
+            if ($user !== null && $user->sessid_st_timeout > time() && $user->active === 1) {
                 self::$user = $user;
                 phorum_api_hook('user_session_restore', $user);
                 return;
             }
         }
 
-        // Long-term session — remember-me cookie
+        // Long-term session — remember-me cookie. Strict comparison: PHP
+        // treats any non-zero int, including negative pending states, as truthy.
         $ltToken = $_COOKIE[self::COOKIE_LT] ?? '';
         if ($ltToken !== '') {
             $user = $mapper->findBySessionLt($ltToken);
-            if ($user !== null && $user->active) {
+            if ($user !== null && $user->active === 1) {
                 self::$user = $user;
                 phorum_api_hook('user_session_restore', $user);
             }
