@@ -118,7 +118,7 @@
         <div class="form-row">
             <label>{{ trans('settings.avatar_current') }}</label>
             <div>
-                <img src="{{ path('/avatar/' ~ profile.user_id) }}" alt="{{ trans('settings.avatar_current') }}" class="avatar-img">
+                <img src="{{ avatar_url(profile.user_id) }}" alt="{{ trans('settings.avatar_current') }}" class="avatar-img">
                 <div class="form-row" style="margin-top:6px">
                     <label>
                         <input type="checkbox" name="delete_avatar" value="1">

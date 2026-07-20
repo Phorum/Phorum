@@ -144,6 +144,66 @@ class PhorumExtensionTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // attachmentUrl / avatarUrl
+    // -------------------------------------------------------------------------
+
+    public function testAttachmentUrlFallsBackToPathWhenNoHookRegistered(): void
+    {
+        $ext = $this->makeExt();
+        $this->assertSame('/file/7/photo.jpg', $ext->attachmentUrl(7, 'photo.jpg'));
+    }
+
+    public function testAttachmentUrlUrlEncodesFilenameInDefault(): void
+    {
+        $ext = $this->makeExt();
+        $this->assertSame('/file/7/my%20photo.jpg', $ext->attachmentUrl(7, 'my photo.jpg'));
+    }
+
+    public function testAttachmentUrlUsesHookResultWhenClaimed(): void
+    {
+        HookDispatcher::getInstance()->register(
+            'attachment_url',
+            fn($default, $routePath, $fileId, $filename) => 'https://cdn.example.test' . $routePath,
+        );
+
+        $ext = $this->makeExt();
+        $this->assertSame('https://cdn.example.test/file/7/photo.jpg', $ext->attachmentUrl(7, 'photo.jpg'));
+    }
+
+    public function testAttachmentUrlFallsBackToDefaultWhenHookReturnsNull(): void
+    {
+        HookDispatcher::getInstance()->register('attachment_url', fn($default, $routePath, $fileId, $filename) => null);
+
+        $ext = $this->makeExt();
+        $this->assertSame('/file/7/photo.jpg', $ext->attachmentUrl(7, 'photo.jpg'));
+    }
+
+    public function testAvatarUrlFallsBackToPathWhenNoHookRegistered(): void
+    {
+        $ext = $this->makeExt();
+        $this->assertSame('/avatar/42', $ext->avatarUrl(42));
+    }
+
+    public function testAvatarUrlUsesHookResultWhenClaimed(): void
+    {
+        HookDispatcher::getInstance()->register(
+            'avatar_url',
+            fn($default, $routePath, $userId) => 'https://cdn.example.test' . $routePath,
+        );
+
+        $ext = $this->makeExt();
+        $this->assertSame('https://cdn.example.test/avatar/42', $ext->avatarUrl(42));
+    }
+
+    public function testAvatarUrlFallsBackToDefaultWhenHookReturnsNull(): void
+    {
+        HookDispatcher::getInstance()->register('avatar_url', fn($default, $routePath, $userId) => null);
+
+        $ext = $this->makeExt();
+        $this->assertSame('/avatar/42', $ext->avatarUrl(42));
+    }
+
+    // -------------------------------------------------------------------------
     // paginationRange
     // -------------------------------------------------------------------------
 

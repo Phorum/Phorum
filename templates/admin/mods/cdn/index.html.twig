@@ -1,0 +1,46 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}CDN{% endblock %}
+
+{% block content %}
+<h4 class="page-title">CDN</h4>
+
+{% include 'admin/_alerts.html.twig' %}
+
+<div class="card z-depth-1">
+    <div class="card-content">
+        <form method="post">
+            {{ csrf_field() }}
+
+            <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12 m8">
+                    <input id="field_cdn_base_url" type="text" name="cdn_base_url" value="{{ cdn_base_url|e }}">
+                    <label for="field_cdn_base_url" class="{{ cdn_base_url ? 'active' : '' }}">CDN Base URL</label>
+                    <span class="helper-text">
+                        e.g. https://cdn.example.com — leave blank to serve attachment and avatar links from this site as normal.
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12">
+                    <p class="grey-text" style="font-size:.85rem">
+                        <i class="material-icons tiny" style="vertical-align:middle">info_outline</i>
+                        Links generated this way are plain, unsigned URLs with no expiry. Once the CDN has cached
+                        an attachment or avatar, it stays reachable at that URL regardless of a viewer's forum
+                        permissions — fine for open forums, but a real caveat for anything relying on the
+                        "View Attachments" permission to restrict who can see attachments.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s12 right-align">
+                    <button type="submit" class="btn green darken-3 waves-effect waves-light">
+                        <i class="material-icons left">save</i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

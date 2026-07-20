@@ -1,0 +1,3 @@
+title: CDN
+desc: Serves attachment and avatar links from a CDN domain instead of this site's own base path.
+configure: /admin/cdn

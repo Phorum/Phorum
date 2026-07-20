@@ -52,6 +52,7 @@ It was built by surveying the code directly (controllers, services, templates, r
 - **User avatars** — Users can upload/replace/delete a profile avatar, served at `/avatar/{user_id}`.
 - **Attachment removal during edit** — Users editing their own message can remove previously-attached files.
 - **S3-backed attachment storage (optional module)** — Redirects attachment/avatar storage to an S3 bucket, serving downloads via short-lived signed URLs instead of streaming through the app. `mods/s3storage/`
+- **CDN base URL for attachments/avatars (optional module)** — Rewrites `/file/{id}/{filename}` and `/avatar/{user_id}` links to a configurable CDN domain instead of this site's own base path, via the `attachment_url`/`avatar_url` hooks dispatched from `PhorumExtension`. URLs are plain/unsigned with no expiry, so a cached copy stays reachable independent of the requester's forum permissions. `mods/cdn/`
 - **Per-forum attachment configuration (admin)** — Max attachments, max size per attachment, max total size, and allowed extensions, set per forum. `templates/admin/forums/edit.html.twig`
 
 ---
@@ -254,6 +255,7 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
   - **bbcode** — Legacy BBCode message rendering (see [Content Formatting](#content-formatting)).
   - **oauth** — Google/GitHub social login (see [OAuth / Social Login](#oauth--social-login)).
   - **s3storage** — S3-backed attachment/avatar storage (see [Attachments & Media](#attachments--media)).
+  - **cdn** — CDN base URL override for attachment/avatar links (see [Attachments & Media](#attachments--media)).
   - **webhooks** — Outgoing HTTP webhooks: HMAC-SHA256-signed deliveries, optional custom Twig payload template, custom content-type, firing on `message.created`, `message.approved`, `message.deleted`, `user.registered`, `user.banned`, `user.shadow_ban_changed`, and `pm.sent` (payload deliberately excludes the PM body). Delivery is synchronous/best-effort with a short timeout and no retry queue — failures are logged, never thrown back into the triggering request. `mods/webhooks/`
 
 ---

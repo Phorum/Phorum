@@ -56,7 +56,7 @@
         <ul class="attachment-list">
             {% for f in attachments %}
             <li>
-                <a href="{{ path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) }}">{{ f.filename }}</a>
+                <a href="{{ attachment_url(f.file_id, f.filename) }}">{{ f.filename }}</a>
                 <label class="attachment-remove">
                     <input type="checkbox" name="delete_file[]" value="{{ f.file_id }}">
                     {{ trans('attachment.remove') }}

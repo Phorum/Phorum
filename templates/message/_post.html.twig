@@ -4,7 +4,7 @@
         <div class="msg-author-info">
             <div class="msg-author-line">
                 {% if msg.user_id > 0 %}
-                    <img src="{{ path('/avatar/' ~ msg.user_id) }}" alt="" class="post-avatar-inline"
+                    <img src="{{ avatar_url(msg.user_id) }}" alt="" class="post-avatar-inline"
                          onerror="this.style.display='none'">
                     <a href="{{ path('/user/' ~ msg.user_id) }}" class="message-author">{{ msg.author }}</a>
                     {% if current_user_id is defined and current_user_id > 0 and current_user_id != msg.user_id %}
@@ -53,7 +53,7 @@
         <strong>{{ trans('attachment.label') }}:</strong>
         <ul class="attachment-list">
             {% for f in msg.attachments %}
-            {% set file_url = path('/file/' ~ f.file_id ~ '/' ~ (f.filename|url_encode)) %}
+            {% set file_url = attachment_url(f.file_id, f.filename) %}
             {% if f.mime_type in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] %}
                 {% set file_meta = f.meta|decode_file_meta %}
                 <li class="attachment-preview-item">

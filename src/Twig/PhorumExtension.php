@@ -99,6 +99,8 @@ class PhorumExtension extends AbstractExtension
             new TwigFunction('csrf_field', [CsrfGuard::class, 'field'], ['is_safe' => ['html']]),
             new TwigFunction('trans', [Lang::class, 'get']),
             new TwigFunction('path', [$this, 'path']),
+            new TwigFunction('attachment_url', [$this, 'attachmentUrl']),
+            new TwigFunction('avatar_url', [$this, 'avatarUrl']),
             new TwigFunction('hook', static function (string $name, mixed $data = ''): string {
                 $result = phorum_api_hook($name, $data);
                 return is_string($result) ? $result : '';
@@ -192,6 +194,33 @@ class PhorumExtension extends AbstractExtension
             return ((string) $this->config->get('base_path', '')) . $url;
         }
         return $url;
+    }
+
+    /**
+     * Build the URL for a message attachment link/image, giving a module
+     * (e.g. mods/cdn) the chance to override it via the 'attachment_url'
+     * hook — e.g. to point at a CDN domain instead of this site's own
+     * base path. Falls back to the normal path()-based URL when no module
+     * claims the hook.
+     */
+    public function attachmentUrl(int $fileId, string $filename): string
+    {
+        $routePath = '/file/' . $fileId . '/' . rawurlencode($filename);
+        $default   = $this->path($routePath);
+        $result    = phorum_api_hook('attachment_url', $default, $routePath, $fileId, $filename);
+        return is_string($result) && $result !== '' ? $result : $default;
+    }
+
+    /**
+     * Build the URL for a user's avatar image, giving a module the chance
+     * to override it via the 'avatar_url' hook — see attachmentUrl().
+     */
+    public function avatarUrl(int $userId): string
+    {
+        $routePath = '/avatar/' . $userId;
+        $default   = $this->path($routePath);
+        $result    = phorum_api_hook('avatar_url', $default, $routePath, $userId);
+        return is_string($result) && $result !== '' ? $result : $default;
     }
 
     public function paginationUrl(string $base, int $page): string

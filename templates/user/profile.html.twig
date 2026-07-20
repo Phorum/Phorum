@@ -11,7 +11,7 @@
 <div class="user-profile">
     {% if avatar %}
     <div class="user-avatar">
-        <img src="{{ path('/avatar/' ~ profile.user_id) }}" alt="{{ profile.display_name ?: profile.username }}" class="avatar-img">
+        <img src="{{ avatar_url(profile.user_id) }}" alt="{{ profile.display_name ?: profile.username }}" class="avatar-img">
     </div>
     {% endif %}
 
