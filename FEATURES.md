@@ -182,8 +182,8 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 - **User directory & search** — Paginated admin list, searchable by username/display name/email. `src/Http/Controllers/Admin/UserController.php`
 - **Edit user account** — Display name, email, account status (Active/Inactive/Pending Moderator Approval/Pending Email Confirmation/Pending Both), admin flag, forced-password-change flag, direct password reset.
 - **Custom profile field editing (admin)** — Renders and saves any admin-visible custom fields for that user.
-- **User groups** — Create/edit/delete named groups, each with an "open" (self-joinable) flag. `src/Http/Controllers/Admin/GroupController.php`
-- **Group membership management** — Add/remove members by username, change membership status.
+- **User groups** — Create/edit/delete named groups. Each group has an `open` flag, but it's informational only in the current UI — there's no self-service "request to join" flow; membership is entirely admin-managed (see [Known Gaps](#known-gaps--stubbed-features)). `src/Http/Controllers/Admin/GroupController.php`
+- **Group membership management** — Add/remove members by username; set a membership status (Suspended/Unapproved/Approved/Moderator). Only the suspended-vs-active distinction actually affects permissions — Approved and Moderator are treated identically, so "Moderator" status confers no extra capability today (see [Known Gaps](#known-gaps--stubbed-features)).
 - **Group-based per-forum permission grants** — See [Permissions](#permissions).
 
 ### Site-Wide Settings
@@ -262,6 +262,19 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 
 ## Known Gaps / Stubbed Features
 
-Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end:
+Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end. This list was built from a full schema-vs-codebase field audit (every column in `db/mysql.sql` checked against actual read/write consumers) — items below have confirmed no functional consumer beyond the mapper/model declaration, distinct from fields that are deliberately dead legacy carryovers (page-cache counters, Phorum-6-era presentational relics, etc.) which aren't listed here since they need no decision.
 
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
+- **Per-user permission overrides (`user_permissions` table)** — `PermissionService::resolve()` fully implements reading a per-user, per-forum override (priority #3, after admin/inactive and before group grants), but no admin UI/controller ever writes to the table. The read side is complete; only the write path is missing.
+- **`users.threaded_read` does nothing** — The account settings page has a working-looking checkbox for it (`UserController::settings()`, `templates/user/settings.html.twig`) and it saves, but nothing reads the stored value back — only the forum's own `threaded_read` default is consulted when rendering a thread. This is UI-visible and misleading, not just a dormant column.
+- **No per-user language or theme override** — `users.user_language` and `users.user_template` are mapped but never read; `App::initLang()` and theme resolution only consult site-wide config/settings.
+- **Group `open` flag is informational only** — no self-service "request to join" flow exists; all group membership is admin-driven despite the flag.
+- **Group moderator status confers no extra capability** — `user_group_xref.status` supports Suspended/Unapproved/Approved/Moderator, but permission resolution only checks `status >= 1`, treating Approved and Moderator identically. There's no group-moderator approval panel or differentiated permission (Phorum 6 had both).
+- **Posting IP is captured but never surfaced to moderators** — `messages.ip` is written on every post but never displayed; `forums.display_ip_address` and `messages.moderator_post` (which together gated that display in Phorum 6) are mapped but have no consumer.
+- **Content reports capture reporter/resolver identity but never display it** — `reports.reporter_user_id`, `resolved_user_id`, and `resolved_time` are written correctly on create/resolve but not shown anywhere in the moderation UI.
+- **Several per-forum presentation/behavior toggles are mapped but not wired**: `list_length_threaded` (no threaded-view-specific page length), `threaded_list` (thread-list-level threading mode), `float_to_top` (threads with new replies don't re-sort to top), `check_duplicate` (no duplicate-post detection), `edit_post` (no forum-wide "disable editing" switch — only the per-user permission + time window apply), `allow_email_notify` (no forum-level gate on subscriptions), `language`/`inherit_id` (no per-forum locale override or settings inheritance), `count_views`/`count_views_per_thread` (view counting is unconditional, ignoring these opt-outs), `reverse_threading` (no reverse-order threaded replies).
+- **`users.is_dst`** — mapped but unread; DST adjustment is dropped even though `tz_offset` itself is used.
+- **`users.last_active_forum`** — mapped but unread; no "return to your last forum" navigation.
+- **Forum-wide (whole-forum) subscriptions are unreachable** — `SubscriberMapper` still supports `thread = 0` meaning "the whole forum" in its queries, but no controller path ever creates one; only thread-specific subscriptions are reachable today.
+- **`pm_xref.reply_flag`** — always written as `0`, never read or toggled. Mirrors Phorum 6's own unfinished state (its source has a literal `PMTODO implement pm_reply_flag functionality` comment) rather than a Phorum 10 regression.
+- **Thread move doesn't leave a redirect stub** — Phorum 6 left behind a `moved`-flagged stub message pointing readers to the new forum when a thread was moved; Phorum 10 relocates the same message rows in place (IDs unchanged) with no stub, so old bookmarked links should still resolve correctly — but this is a behavioral difference from Phorum 6, not merely an unused column, and hasn't been explicitly signed off as intentional.
