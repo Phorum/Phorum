@@ -281,6 +281,12 @@ class ForumController extends AdminController
             $forum->email_moderators  = !empty($request->post['email_moderators']) ? 1 : 0;
             $forum->threaded_read     = !empty($request->post['threaded_read'])    ? 1 : 0;
             $forum->display_ip_address = !empty($request->post['display_ip_address']) ? 1 : 0;
+            $forum->float_to_top      = !empty($request->post['float_to_top']) ? 1 : 0;
+            $forum->count_views       = !empty($request->post['count_views']) ? 1 : 0;
+            $forum->count_views_per_thread = !empty($request->post['count_views_per_thread']) ? 1 : 0;
+            $forum->check_duplicate   = !empty($request->post['check_duplicate']) ? 1 : 0;
+            $forum->edit_post         = !empty($request->post['edit_post']) ? 1 : 0;
+            $forum->allow_email_notify = !empty($request->post['allow_email_notify']) ? 1 : 0;
             $forum->list_length_flat  = max(1, (int) ($request->post['list_length_flat'] ?? 25));
             $forum->pub_perms         = PermissionFlags::combine($request->post['pub_perms'] ?? []);
             $forum->reg_perms         = PermissionFlags::combine($request->post['reg_perms'] ?? []);

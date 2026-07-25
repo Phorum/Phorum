@@ -95,6 +95,7 @@ return [
     'post.error_body_required'    => 'Nachrichtentext ist erforderlich.',
     'post.error_flood_wait'       => 'Bitte warten Sie noch {seconds} Sekunde(n), bevor Sie erneut posten.',
     'post.error_posting_blocked'  => 'Das Posten ist für Ihr Konto nicht erlaubt.',
+    'post.error_duplicate'       => 'Sie haben diese Nachricht bereits kürzlich gepostet.',
 
     // Authentication
     'auth.login_title'       => 'Anmelden',

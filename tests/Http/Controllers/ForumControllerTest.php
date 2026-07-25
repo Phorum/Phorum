@@ -144,6 +144,36 @@ class ForumControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testShowPassesFloatToTopToFindThreadsInForum(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['float_to_top' => 1]));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findThreadsInForum')
+            ->with(1, $this->anything(), $this->anything(), $this->anything(), true)
+            ->willReturn([]);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testShowPassesFloatToTopFalseWhenForumDefaultsOff(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['float_to_top' => 0]));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findThreadsInForum')
+            ->with(1, $this->anything(), $this->anything(), $this->anything(), false)
+            ->willReturn([]);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
     /** can_moderate_users must be independently gated from can_moderate — a "user moderator" with no message-moderation rights still needs to see the "Moderate Users" link. */
     public function testShowPassesCanModerateUsersToTemplate(): void
     {

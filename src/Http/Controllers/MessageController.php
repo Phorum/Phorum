@@ -93,9 +93,10 @@ class MessageController extends Controller
 
     /**
      * True if $currentUser may edit $msg in $forum. Moderators always may;
-     * otherwise the post must be their own, the ALLOW_EDIT permission bit
-     * set, the thread not closed, and (if configured) within the site-wide
-     * edit time limit since the post was made.
+     * otherwise editing must not be forum-wide disabled (forums.edit_post),
+     * the post must be their own, the ALLOW_EDIT permission bit set, the
+     * thread not closed, and (if configured) within the site-wide edit time
+     * limit since the post was made.
      *
      * Resolves canModerate/canEdit/edit_time_limit itself — fine for a
      * single message (editMessage()'s use), but callers checking many
@@ -114,6 +115,7 @@ class MessageController extends Controller
             isModerator: $this->perms->canModerate($forum, $currentUser),
             canEditBit:  $this->perms->canEdit($forum, $currentUser),
             editTimeLimit: (int) ($this->settings->getSetting('edit_time_limit') ?? 0),
+            editingEnabled: (bool) $forum->edit_post,
         );
     }
 
@@ -123,10 +125,14 @@ class MessageController extends Controller
         User    $currentUser,
         bool    $isModerator,
         bool    $canEditBit,
-        int     $editTimeLimit
+        int     $editTimeLimit,
+        bool    $editingEnabled = true,
     ): bool {
         if ($isModerator) {
             return true;
+        }
+        if (!$editingEnabled) {
+            return false;
         }
         if ($msg->user_id !== $currentUser->user_id) {
             return false;
@@ -242,7 +248,9 @@ class MessageController extends Controller
             $newflags->markRead($currentUser->user_id, $forumId, $approvedIds);
         }
 
-        $this->messages->incrementViewCounts($threadId);
+        if ($forum->count_views) {
+            $this->messages->incrementViewCounts($threadId, (bool) $forum->count_views_per_thread);
+        }
 
         $this->fileService->hydrateMessages($threadMessages);
 
@@ -258,7 +266,7 @@ class MessageController extends Controller
             $canEditIds    = array_values(array_map(
                 fn($m) => $m->message_id,
                 array_filter($threadMessages, fn($m) => $this->canEditMessageWithContext(
-                    $m, $currentUser, $canModerate, $canEditBit, $editTimeLimit
+                    $m, $currentUser, $canModerate, $canEditBit, $editTimeLimit, (bool) $forum->edit_post
                 ))
             ));
         }
@@ -373,10 +381,16 @@ class MessageController extends Controller
                     }
                 }
 
+                if (empty($errors) && $forum->check_duplicate
+                    && $this->messages->isDuplicate($forumId, $authorName, $subject, $body, time() - 3600)
+                ) {
+                    $errors[] = Lang::get('post.error_duplicate');
+                }
+
                 if (empty($errors)) {
                     $msg = $this->messageService->post($forum, $user, $subject, $body, $parentId);
 
-                    $this->applyDefaultSubscription($user, $forumId, $msg->thread);
+                    $this->applyDefaultSubscription($user, $forum, $msg->thread);
 
                     if ($msg->status === 2) {
                         $this->searchIndex->indexMessage(
@@ -673,15 +687,16 @@ class MessageController extends Controller
      * email) — but only if they aren't already subscribed, so replying to a
      * thread you already follow (in whatever mode) never overrides that.
      * Matches Phorum 6's request_first.php behavior for new posts/replies;
-     * intentionally not applied on edits.
+     * intentionally not applied on edits. Downgrades to a silent bookmark
+     * when the forum has disabled email subscriptions (allow_email_notify).
      */
-    private function applyDefaultSubscription(User $user, int $forumId, int $thread): void
+    private function applyDefaultSubscription(User $user, Forum $forum, int $thread): void
     {
         // email_notify's own scale (0=none, 1=bookmark, 2=message+email) does
         // NOT line up numerically with SubscriberMapper's sub_type constants
         // (SUB_NONE=-1, SUB_MESSAGE=0, SUB_BOOKMARK=2) — map explicitly.
         $subType = match ($user->email_notify) {
-            2       => SubscriberMapper::SUB_MESSAGE,
+            2       => $forum->allow_email_notify ? SubscriberMapper::SUB_MESSAGE : SubscriberMapper::SUB_BOOKMARK,
             1       => SubscriberMapper::SUB_BOOKMARK,
             default => null,
         };
@@ -689,9 +704,9 @@ class MessageController extends Controller
             return;
         }
 
-        $current = $this->subscriptions->getSubscription($user->user_id, $forumId, $thread);
+        $current = $this->subscriptions->getSubscription($user->user_id, $forum->forum_id, $thread);
         if ($current === SubscriberMapper::SUB_NONE) {
-            $this->subscriptions->subscribe($user->user_id, $forumId, $thread, $subType);
+            $this->subscriptions->subscribe($user->user_id, $forum->forum_id, $thread, $subType);
         }
     }
 

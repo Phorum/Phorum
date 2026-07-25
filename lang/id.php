@@ -109,6 +109,7 @@ return [
     'post.error_body_required'    => 'Isi pesan wajib diisi.',
     'post.error_flood_wait'       => 'Harap tunggu {seconds} detik lagi sebelum memposting kembali.',
     'post.error_posting_blocked'  => 'Memposting tidak diizinkan dari akun Anda.',
+    'post.error_duplicate'       => 'Anda sudah memposting pesan ini baru-baru ini.',
 
     // -------------------------------------------------------------------------
     // Auth

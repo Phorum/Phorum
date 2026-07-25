@@ -95,6 +95,7 @@ return [
     'post.error_body_required'    => 'Необходимо ввести текст сообщения.',
     'post.error_flood_wait'       => 'Пожалуйста, подождите ещё {seconds} секунд(ы), прежде чем публиковать снова.',
     'post.error_posting_blocked'  => 'Публикация сообщений для вашего аккаунта запрещена.',
+    'post.error_duplicate'       => 'Вы уже недавно публиковали это сообщение.',
 
     // Authentication
     'auth.login_title'       => 'Вход',

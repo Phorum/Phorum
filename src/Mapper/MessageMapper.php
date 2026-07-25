@@ -63,16 +63,27 @@ class MessageMapper extends AbstractPhorumMapper
      * $viewerUserId, when given, also includes the viewer's own
      * STATUS_SHADOW threads, so a shadow-banned author still sees their own
      * posts as if nothing happened while every other viewer sees nothing.
+     *
+     * $floatToTop (forums.float_to_top) picks the secondary sort column:
+     * true sorts by modifystamp (a new reply bumps the thread back up),
+     * false sorts by datestamp (fixed creation-time order, replies don't
+     * move it). Stickies/announcements always rank first either way.
      */
-    public function findThreadsInForum(int $forumId, int $limit = 25, int $offset = 0, ?int $viewerUserId = null): ?array
-    {
+    public function findThreadsInForum(
+        int  $forumId,
+        int  $limit = 25,
+        int  $offset = 0,
+        ?int $viewerUserId = null,
+        bool $floatToTop = true,
+    ): ?array {
+        $sortColumn = $floatToTop ? 'modifystamp' : 'datestamp';
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE forum_id = :forum_id'
                 . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
                 . '   AND parent_id = 0'
                 // sort ASC: SORT_ANNOUNCE (0) and SORT_STICKY (1) rank above
                 // SORT_DEFAULT (2) — ascending puts pinned threads first.
-                . ' ORDER BY sort ASC, modifystamp DESC'
+                . " ORDER BY sort ASC, {$sortColumn} DESC"
                 . " LIMIT {$limit} OFFSET {$offset}";
         $params = [
             ':forum_id'     => $forumId,
@@ -412,17 +423,45 @@ class MessageMapper extends AbstractPhorumMapper
     }
 
     /**
-     * Increment viewcount and threadviewcount on the thread root in one query.
-     * Called each time a thread page is rendered.
+     * Increment viewcount (and, if $countPerThread is true, threadviewcount
+     * too) on the thread root in one query — forums.count_views_per_thread
+     * decides whether threadviewcount tracks separately. Called each time a
+     * thread page is rendered.
      */
-    public function incrementViewCounts(int $rootMessageId): void
+    public function incrementViewCounts(int $rootMessageId, bool $countPerThread = true): void
     {
+        $set = 'viewcount = viewcount + 1';
+        if ($countPerThread) {
+            $set .= ', threadviewcount = threadviewcount + 1';
+        }
         $this->crud()->run(
             'UPDATE ' . $this->table()
-            . ' SET viewcount = viewcount + 1, threadviewcount = threadviewcount + 1'
+            . ' SET ' . $set
             . ' WHERE message_id = :id',
             [':id' => $rootMessageId]
         );
+    }
+
+    /**
+     * True if an identical post (same forum, author, subject, and body) was
+     * already made within the lookback window — backs forums.check_duplicate.
+     */
+    public function isDuplicate(int $forumId, string $author, string $subject, string $body, int $sinceTimestamp): bool
+    {
+        $rows = $this->crud()->runFetch(
+            'SELECT message_id FROM ' . $this->table()
+            . ' WHERE forum_id = :forum_id AND author = :author AND subject = :subject'
+            . '   AND body = :body AND datestamp > :since'
+            . ' LIMIT 1',
+            [
+                ':forum_id' => $forumId,
+                ':author'   => $author,
+                ':subject'  => $subject,
+                ':body'     => $body,
+                ':since'    => $sinceTimestamp,
+            ]
+        );
+        return !empty($rows);
     }
 
     /**

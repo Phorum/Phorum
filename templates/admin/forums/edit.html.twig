@@ -91,6 +91,26 @@
                            value="{{ forum.list_length_flat ?: 25 }}" min="1">
                     <label for="list_length_flat" class="active">Threads per page</label>
                 </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="float_to_top" value="1" {{ forum.float_to_top ? 'checked' : '' }}>
+                        <span>Float threads with new replies back to top</span>
+                    </label>
+                    <small class="grey-text">Off sorts the thread list by creation time instead.</small>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="count_views" value="1" {{ forum.count_views ? 'checked' : '' }}>
+                        <span>Count thread views</span>
+                    </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="count_views_per_thread" value="1" {{ forum.count_views_per_thread ? 'checked' : '' }}>
+                        <span>Track view count per thread</span>
+                    </label>
+                    <small class="grey-text">Only takes effect when "Count thread views" is also on.</small>
+                </div>
             </div>
 
             <div class="row">
@@ -109,6 +129,26 @@
                         <input type="checkbox" name="display_ip_address" value="1" {{ forum.display_ip_address ? 'checked' : '' }}>
                         <span>Show poster IP address to moderators</span>
                     </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="check_duplicate" value="1" {{ forum.check_duplicate ? 'checked' : '' }}>
+                        <span>Block duplicate posts (same subject/body within an hour)</span>
+                    </label>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="edit_post" value="1" {{ forum.edit_post ? 'checked' : '' }}>
+                        <span>Allow editing posts</span>
+                    </label>
+                    <small class="grey-text">Off disables editing for everyone except moderators.</small>
+                </div>
+                <div class="col s12 m4">
+                    <label>
+                        <input type="checkbox" name="allow_email_notify" value="1" {{ forum.allow_email_notify ? 'checked' : '' }}>
+                        <span>Allow "email me on replies" subscriptions</span>
+                    </label>
+                    <small class="grey-text">Off leaves only the silent bookmark-follow option.</small>
                 </div>
             </div>
 

@@ -159,6 +159,34 @@ class SubscriptionControllerTest extends ControllerTestCase
         $this->assertSame('/forum/1/thread/5', $response->headers['Location']);
     }
 
+    public function testFollowPostSubscribeEmailIgnoredWhenForumDisallowsEmailNotify(): void
+    {
+        Auth::setUser($this->makeUser());
+        $root = $this->makeMessage(5, 1, 5);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($root);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['allow_email_notify' => 0]));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+        $subs->expects($this->never())->method('subscribe');
+
+        $ctrl     = $this->makeController([
+            'messages'            => $messages,
+            'forums'              => $forums,
+            'subscriptionService' => $subs,
+        ]);
+        $response = $ctrl->follow($this->makePostRequest(
+            post:   ['action' => 'subscribe_email'],
+            server: ['REQUEST_URI' => '/follow/5'],
+            tokens: ['thread_id' => '5'],
+        ));
+        $this->assertSame(302, $response->status);
+    }
+
     public function testFollowPostUnsubscribeRedirects(): void
     {
         Auth::setUser($this->makeUser());

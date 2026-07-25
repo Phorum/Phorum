@@ -109,6 +109,7 @@ return [
     'post.error_body_required'    => '内容为必填项。',
     'post.error_flood_wait'       => '请再等待 {seconds} 秒后再发布。',
     'post.error_posting_blocked'  => '您的账户不允许发帖。',
+    'post.error_duplicate'       => '您最近已经发过这条消息了。',
 
     // -------------------------------------------------------------------------
     // Auth

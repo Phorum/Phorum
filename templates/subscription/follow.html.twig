@@ -25,7 +25,7 @@
     <form method="post" action="{{ path('/follow/' ~ root.message_id) }}">
         {{ csrf_field() }}
         <div class="subscription-actions">
-            {% if current_sub != SUB_MESSAGE %}
+            {% if forum.allow_email_notify and current_sub != SUB_MESSAGE %}
                 <button type="submit" name="action" value="subscribe_email" class="button">
                     {{ trans('sub.follow_email') }}
                 </button>

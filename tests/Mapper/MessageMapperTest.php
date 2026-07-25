@@ -103,6 +103,22 @@ class MessageMapperTest extends MapperTestCase
         $this->assertSame($stickyId, $results[0]->message_id);
     }
 
+    public function testFindThreadsInForumSortsByDatestampWhenFloatToTopDisabled(): void
+    {
+        // Thread A is older but was bumped by a reply (higher modifystamp);
+        // thread B is newer but has had no replies (modifystamp == datestamp).
+        $this->seedMessage(['forum_id' => 7, 'parent_id' => 0, 'datestamp' => 1000, 'modifystamp' => 5000]);
+        $this->seedMessage(['forum_id' => 7, 'parent_id' => 0, 'datestamp' => 2000, 'modifystamp' => 2000]);
+
+        $mapper = $this->makeMapper();
+
+        $floating = $mapper->findThreadsInForum(7, floatToTop: true);
+        $this->assertSame(5000, $floating[0]->modifystamp);
+
+        $fixed = $mapper->findThreadsInForum(7, floatToTop: false);
+        $this->assertSame(2000, $fixed[0]->datestamp);
+    }
+
     public function testFindThreadsInForumExcludesUnapproved(): void
     {
         $this->seedMessage(['forum_id' => 2, 'parent_id' => 0, 'status' => MessageMapper::STATUS_UNAPPROVED]);
@@ -606,6 +622,57 @@ class MessageMapperTest extends MapperTestCase
         $m = $mapper->load($id);
         $this->assertSame(6, $m->viewcount);
         $this->assertSame(11, $m->threadviewcount);
+    }
+
+    public function testIncrementViewCountsSkipsThreadviewcountWhenCountPerThreadFalse(): void
+    {
+        $id = $this->seedMessage(['viewcount' => 5, 'threadviewcount' => 10]);
+        $mapper = $this->makeMapper();
+        $mapper->incrementViewCounts($id, countPerThread: false);
+
+        $m = $mapper->load($id);
+        $this->assertSame(6, $m->viewcount);
+        $this->assertSame(10, $m->threadviewcount);
+    }
+
+    // -------------------------------------------------------------------------
+    // isDuplicate
+    // -------------------------------------------------------------------------
+
+    public function testIsDuplicateTrueForRecentMatchingPost(): void
+    {
+        $this->seedMessage([
+            'forum_id' => 8, 'author' => 'alice', 'subject' => 'Hi', 'body' => 'Same text',
+            'datestamp' => 1000,
+        ]);
+        $mapper = $this->makeMapper();
+        $this->assertTrue($mapper->isDuplicate(8, 'alice', 'Hi', 'Same text', sinceTimestamp: 500));
+    }
+
+    public function testIsDuplicateFalseWhenOutsideWindow(): void
+    {
+        $this->seedMessage([
+            'forum_id' => 9, 'author' => 'alice', 'subject' => 'Hi', 'body' => 'Same text',
+            'datestamp' => 1000,
+        ]);
+        $mapper = $this->makeMapper();
+        $this->assertFalse($mapper->isDuplicate(9, 'alice', 'Hi', 'Same text', sinceTimestamp: 1500));
+    }
+
+    public function testIsDuplicateFalseWhenBodyDiffers(): void
+    {
+        $this->seedMessage([
+            'forum_id' => 10, 'author' => 'alice', 'subject' => 'Hi', 'body' => 'Original',
+            'datestamp' => 1000,
+        ]);
+        $mapper = $this->makeMapper();
+        $this->assertFalse($mapper->isDuplicate(10, 'alice', 'Hi', 'Different', sinceTimestamp: 500));
+    }
+
+    public function testIsDuplicateFalseWhenNoPriorPost(): void
+    {
+        $mapper = $this->makeMapper();
+        $this->assertFalse($mapper->isDuplicate(11, 'alice', 'Hi', 'Text', sinceTimestamp: 0));
     }
 
     // -------------------------------------------------------------------------

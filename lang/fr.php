@@ -109,6 +109,7 @@ return [
     'post.error_body_required'    => 'Le corps du message est obligatoire.',
     'post.error_flood_wait'       => 'Veuillez attendre encore {seconds} seconde(s) avant de publier à nouveau.',
     'post.error_posting_blocked'  => 'La publication n\'est pas autorisée depuis votre compte.',
+    'post.error_duplicate'       => 'Vous avez déjà publié ce message récemment.',
 
     // -------------------------------------------------------------------------
     // Auth

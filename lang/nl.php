@@ -116,6 +116,7 @@ return [
     'post.error_body_required'    => 'Berichttekst is verplicht.',
     'post.error_flood_wait'       => 'Wacht nog {seconds} seconde(n) voordat u opnieuw kunt plaatsen.',
     'post.error_posting_blocked'  => 'Plaatsen is niet toegestaan vanaf uw account.',
+    'post.error_duplicate'       => 'U heeft dit bericht recent al geplaatst.',
 
     // -------------------------------------------------------------------------
     // Auth

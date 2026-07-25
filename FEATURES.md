@@ -12,23 +12,24 @@ It was built by surveying the code directly (controllers, services, templates, r
 - **New thread / reply composer** — Start a new thread or reply to any post, gated by per-forum `ALLOW_NEW_TOPIC`/`ALLOW_REPLY` permissions and blocked on closed threads. `src/Http/Controllers/MessageController.php::post()`, `templates/message/post.html.twig`
 - **Live Markdown editor (EasyMDE)** — The post/edit body textarea gets a client-side Markdown toolbar. `templates/message/post.html.twig`, `templates/message/edit.html.twig`
 - **Post preview** — Renders the in-progress subject/body exactly as it will appear, without saving, for both new posts and edits.
-- **Message editing with permission/time window** — Authors can edit their own posts if the edit permission bit is set, the thread isn't closed, and (if `edit_time_limit` is set) the post is still within that window; moderators can always edit. `MessageController::canEditMessage()`, `src/Service/MessageService.php::edit()`
+- **Message editing with permission/time window** — Authors can edit their own posts if editing isn't forum-wide disabled (`edit_post`), the edit permission bit is set, the thread isn't closed, and (if `edit_time_limit` is set) the post is still within that window; moderators can always edit regardless of the forum-wide switch. `MessageController::canEditMessage()`, `src/Service/MessageService.php::edit()`
 - **Edit history / diff view** — When `track_edits` is enabled, every edit is snapshotted; a "Changes" page shows a reverse-chronological list with a line-level HTML diff of subject/body per revision. `MessageController::changes()`, `src/Service/DiffRenderer.php`
 - **Reply auto-subject prefill** — Replying pre-fills the subject as "Re: {original subject}" if left blank.
 - **Post moderation queue (pre-approval)** — Forums can require moderation of all new posts, or auto-flag based on account age or karma; flagged posts show an "Awaiting approval" badge. `src/Service/MessageService.php::post()`
 - **Flood control** — Non-moderators must wait a configurable number of seconds between posts. `src/Service/FloodControlService.php`
 - **Ban enforcement on posting** — New posts are checked against IP, email, username, and spam-word bans before being accepted.
+- **Duplicate-post detection (optional, per forum)** — When `check_duplicate` is on, posting the exact same subject+body to the same forum again within an hour is blocked. `MessageMapper::isDuplicate()`
 - **Report a message** — Any logged-in user (other than the author) can report a post to moderators. `src/Http/Controllers/ReportController.php`
 
 ### Reading & Navigation
 - **Threaded reply tree view** — Per-forum toggle (`threaded_read`) renders replies as a nested indented tree instead of a flat chronological list. `MessageController::thread()`/`buildTree()`
 - **Flat paginated thread view** — Paginates replies (`read_length` per page), supports deep-linking to a specific message (`?msg=`) which resolves the correct page.
-- **Thread list per forum** — Lists threads with subject, sticky/closed badges, reply count, unread-count badge, and last-post author/time. `src/Http/Controllers/ForumController.php::show()`
+- **Thread list per forum** — Lists threads with subject, sticky/closed badges, reply count, unread-count badge, and last-post author/time. Sort order is per-forum (`float_to_top`): on (default) bumps a thread back to the top on every new reply (sorted by last-activity time); off keeps threads in fixed creation-time order regardless of reply activity. Stickies/announcements always rank first either way. `src/Http/Controllers/ForumController.php::show()`, `MessageMapper::findThreadsInForum()`
 - **Sticky threads** — Threads can be pinned to the top of the list with a distinct badge/style.
 - **Unread/"new" tracking** — Per-forum and per-thread unread counts, with highlighted "new" styling on individual unread messages and a "Mark forum read" action. `src/Service/NewflagService.php`
 - **Thread subscribe/follow** — Follow a thread for reply notifications (see [Subscriptions & Notifications](#subscriptions--notifications)).
 - **Forum folders / hierarchy** — Forums can be organized into folders showing a sub-tree of child forums/folders instead of a thread list. `ForumController::showFolder()`
-- **View counts** — Each thread view increments a view counter.
+- **View counts (per forum, off by default)** — `count_views` gates whether a thread view increments `viewcount` at all; when on, `count_views_per_thread` additionally decides whether `threadviewcount` tracks alongside it. `MessageMapper::incrementViewCounts()`
 - **Signatures on posts** — A poster's signature (if enabled) renders as Markdown below their message body.
 
 ### Content Formatting
@@ -69,7 +70,7 @@ It was built by surveying the code directly (controllers, services, templates, r
 - No attachment support in PMs — text/Markdown only, by design.
 
 ### Subscriptions & Notifications
-- **Thread following/subscription** — Follow a thread with a choice of "email me on replies" or a silent bookmark, or unsubscribe. `src/Http/Controllers/SubscriptionController.php`, `src/Service/SubscriptionService.php`
+- **Thread following/subscription** — Follow a thread with a choice of "email me on replies" or a silent bookmark, or unsubscribe. The email option is itself gated per forum (`allow_email_notify`, on by default) — when a forum has it off, only the silent bookmark is offered, and a user's own default "email me" preference silently downgrades to a bookmark for that forum. `src/Http/Controllers/SubscriptionController.php`, `src/Service/SubscriptionService.php`
 - **Reply notification emails** — Subscribers (except the post's author) get an email on new approved posts, with unsubscribe and "keep as bookmark" one-click links.
 - **Moderator notification emails** — Forum moderators can be emailed about new posts in forums they moderate (per-forum `email_moderators` toggle).
 - **Unread/"new" post tracking** — Tracks which messages a user has/hasn't read per forum, with a "mark all read" action and an automatic 1000-flag-per-forum cap/pruning. `src/Service/NewflagService.php`
@@ -181,7 +182,7 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 ### Forum & Folder Management
 - **Forum/folder hierarchy** — Build a nested tree; folder-vs-forum is fixed at creation time. `src/Http/Controllers/Admin/ForumController.php`
 - **Create/edit/reorder/soft-delete** — Move-up/move-down reordering; deletion deactivates rather than hard-deletes.
-- **Per-forum discussion settings** — Moderation mode, moderator-email toggle, default threaded/flat mode, default page length, whether poster IPs are shown to moderators.
+- **Per-forum discussion settings** — Moderation mode, moderator-email toggle, default threaded/flat mode, default page length, whether poster IPs are shown to moderators, thread-list sort behavior (`float_to_top`), view counting (`count_views`/`count_views_per_thread`), duplicate-post blocking (`check_duplicate`), whether editing is allowed at all (`edit_post`), and whether email-subscription is offered (`allow_email_notify`).
 - **Per-forum attachment settings** — See [Attachments & Media](#attachments--media).
 - **Per-forum theme override** — A forum can use a different installed theme than the site default.
 - **Per-forum permission defaults** — `pub_perms`/`reg_perms` baseline bitmasks (see [Permissions](#permissions)).
@@ -274,7 +275,7 @@ Flags, settings, or service methods that exist in the code but aren't yet wired 
 
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
 - **Report resolution identity isn't displayed** — `reports.resolved_user_id`/`resolved_time` are written correctly when a report is resolved or dismissed, but aren't shown anywhere (the reports queue only ever lists open reports, so they never appear there); the same actor+timestamp is visible in the admin audit log instead, so this is low-priority duplication rather than lost data.
-- **Several per-forum presentation/behavior toggles are mapped but not wired**: `list_length_threaded` (no threaded-view-specific page length), `threaded_list` (thread-list-level threading mode), `float_to_top` (threads with new replies don't re-sort to top), `check_duplicate` (no duplicate-post detection), `edit_post` (no forum-wide "disable editing" switch — only the per-user permission + time window apply), `allow_email_notify` (no forum-level gate on subscriptions), `language`/`inherit_id` (no per-forum locale override or settings inheritance), `count_views`/`count_views_per_thread` (view counting is unconditional, ignoring these opt-outs), `reverse_threading` (no reverse-order threaded replies).
+- **Several per-forum presentation/behavior toggles are still mapped but not wired**: `list_length_threaded` (no threaded-view-specific page length — threaded mode always renders the whole thread in one page), `threaded_list` (thread-list-level threading mode, distinct from `threaded_read`'s in-thread view), `reverse_threading` (no reverse-order threaded replies), `language` (no per-forum locale override — awkward to wire since the site locale is resolved before routing/forum-lookup happens), `inherit_id` (no settings-inheritance-from-another-forum — a materially bigger feature than the others, not a quick toggle). `float_to_top`, `check_duplicate`, `edit_post`, `allow_email_notify`, `count_views`, and `count_views_per_thread` are now wired (see Posting & Editing, Reading & Navigation, Subscriptions & Notifications, and Forum & Folder Management above) — note that `float_to_top` and `count_views` both default to *off* per the (frozen, Phorum-6-inherited) schema default, which is a real behavior change from this codebase's prior hardcoded-always-on handling of thread-list sorting and view counting; flip them on per forum (or change the default in `src/Model/Forum.php`) if the old always-on behavior is preferred going forward.
 - **`users.is_dst`** — mapped but unread; DST adjustment is dropped even though `tz_offset` itself is used.
 - **`users.last_active_forum`** — mapped but unread; no "return to your last forum" navigation.
 - **Forum-wide (whole-forum) subscriptions are unreachable** — `SubscriberMapper` still supports `thread = 0` meaning "the whole forum" in its queries, but no controller path ever creates one; only thread-specific subscriptions are reachable today.

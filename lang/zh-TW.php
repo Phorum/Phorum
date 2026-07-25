@@ -109,6 +109,7 @@ return [
     'post.error_body_required'    => '請輸入訊息內容。',
     'post.error_flood_wait'       => '請再等待 {seconds} 秒後才能再次發文。',
     'post.error_posting_blocked'  => '您的帳號目前無法發文。',
+    'post.error_duplicate'       => '您最近已經發過這則訊息了。',
 
     // -------------------------------------------------------------------------
     // Auth

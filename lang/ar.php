@@ -96,6 +96,7 @@ return [
     'post.error_body_required'    => 'نص الرسالة مطلوب.',
     'post.error_flood_wait'       => 'يرجى الانتظار {seconds} ثانية إضافية قبل النشر مرة أخرى.',
     'post.error_posting_blocked'  => 'النشر غير مسموح به من حسابك.',
+    'post.error_duplicate'       => 'لقد نشرت هذه الرسالة بالفعل مؤخرًا.',
 
     // Authentication
     'auth.login_title'       => 'تسجيل الدخول',

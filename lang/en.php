@@ -116,6 +116,7 @@ return [
     'post.error_body_required'    => 'Message body is required.',
     'post.error_flood_wait'       => 'Please wait {seconds} more second(s) before posting again.',
     'post.error_posting_blocked'  => 'Posting is not allowed from your account.',
+    'post.error_duplicate'       => 'You\'ve already posted this message recently.',
 
     // -------------------------------------------------------------------------
     // Auth

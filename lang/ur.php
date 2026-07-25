@@ -96,6 +96,7 @@ return [
     'post.error_body_required'    => 'پیغام کا متن درکار ہے۔',
     'post.error_flood_wait'       => 'دوبارہ پوسٹ کرنے سے پہلے براہ کرم مزید {seconds} سیکنڈ انتظار کریں۔',
     'post.error_posting_blocked'  => 'آپ کے اکاؤنٹ سے پوسٹ کرنے کی اجازت نہیں ہے۔',
+    'post.error_duplicate'       => 'آپ یہ پیغام حال ہی میں پہلے ہی پوسٹ کر چکے ہیں۔',
 
     // Authentication
     'auth.login_title'       => 'لاگ ان',

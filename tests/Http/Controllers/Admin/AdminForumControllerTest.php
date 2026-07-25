@@ -331,6 +331,76 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(0, $saved->display_ip_address);
     }
 
+    public function testEditPostSavesNewPresentationTogglesChecked(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, [
+            'float_to_top' => 0, 'count_views' => 0, 'count_views_per_thread' => 0,
+            'check_duplicate' => 0, 'edit_post' => 0, 'allow_email_notify' => 0,
+        ]));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')
+            ->willReturnCallback(function ($forum) use (&$saved) {
+                $saved = $forum;
+                return $forum;
+            });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post: [
+                'name' => 'Updated Name', 'active' => '1',
+                'float_to_top' => '1', 'count_views' => '1', 'count_views_per_thread' => '1',
+                'check_duplicate' => '1', 'edit_post' => '1', 'allow_email_notify' => '1',
+            ],
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(1, $saved->float_to_top);
+        $this->assertSame(1, $saved->count_views);
+        $this->assertSame(1, $saved->count_views_per_thread);
+        $this->assertSame(1, $saved->check_duplicate);
+        $this->assertSame(1, $saved->edit_post);
+        $this->assertSame(1, $saved->allow_email_notify);
+    }
+
+    public function testEditPostSavesNewPresentationTogglesUncheckedAsZero(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, [
+            'float_to_top' => 1, 'count_views' => 1, 'count_views_per_thread' => 1,
+            'check_duplicate' => 1, 'edit_post' => 1, 'allow_email_notify' => 1,
+        ]));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')
+            ->willReturnCallback(function ($forum) use (&$saved) {
+                $saved = $forum;
+                return $forum;
+            });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['name' => 'Updated Name', 'active' => '1'], // none of the six checkboxes present
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(0, $saved->float_to_top);
+        $this->assertSame(0, $saved->count_views);
+        $this->assertSame(0, $saved->count_views_per_thread);
+        $this->assertSame(0, $saved->check_duplicate);
+        $this->assertSame(0, $saved->edit_post);
+        $this->assertSame(0, $saved->allow_email_notify);
+    }
+
     public function testEditPostSavesAttachmentSettingsConvertingMbToBytes(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

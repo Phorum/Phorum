@@ -100,7 +100,9 @@ class ForumController extends Controller
         $page    = max(1, (int) ($request->query['page'] ?? 1));
         $offset  = ($page - 1) * $perPage;
 
-        $threads = $this->messages->findThreadsInForum($forumId, $perPage, $offset, Auth::user()?->user_id);
+        $threads = $this->messages->findThreadsInForum(
+            $forumId, $perPage, $offset, Auth::user()?->user_id, (bool) $forum->float_to_top
+        );
         $total   = $forum->thread_count;
         $pages   = $total > 0 ? (int) ceil($total / $perPage) : 1;
 

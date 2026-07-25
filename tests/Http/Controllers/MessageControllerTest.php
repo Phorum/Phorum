@@ -174,6 +174,60 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testThreadSkipsViewCountIncrementWhenCountViewsDisabled(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['count_views' => 0]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findByThread')->willReturn([$root]);
+        $messages->expects($this->never())->method('incrementViewCounts');
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+    }
+
+    public function testThreadIncrementsViewCountWhenCountViewsEnabled(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['count_views' => 1, 'count_views_per_thread' => 1]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findByThread')->willReturn([$root]);
+        $messages->expects($this->once())->method('incrementViewCounts')->with(10, true);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+    }
+
+    public function testThreadIncrementsViewCountWithoutThreadviewcountWhenCountPerThreadDisabled(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['count_views' => 1, 'count_views_per_thread' => 0]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findByThread')->willReturn([$root]);
+        $messages->expects($this->once())->method('incrementViewCounts')->with(10, false);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+    }
+
     public function testThreadUsesReadLengthForPerPage(): void
     {
         $forums = $this->createMock(ForumMapper::class);
@@ -633,6 +687,113 @@ class MessageControllerTest extends ControllerTestCase
         ));
     }
 
+    public function testPostWithEmailNotifyMessageDowngradesToBookmarkWhenForumDisallowsEmail(): void
+    {
+        $user               = $this->makeUser();
+        $user->email_notify = 2;
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['allow_email_notify' => 0]));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $postedMsg        = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+        $subs->expects($this->once())->method('subscribe')
+            ->with($user->user_id, 1, 42, SubscriberMapper::SUB_BOOKMARK);
+
+        $ctrl     = $this->makeController([
+            'forums'        => $forums,
+            'banService'    => $ban,
+            'messageService'=> $msgService,
+            'subscriptions' => $subs,
+        ]);
+        $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+    }
+
+    public function testPostBlockedWhenCheckDuplicateEnabledAndDuplicateFound(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['check_duplicate' => 1]));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('isDuplicate')->willReturn(true);
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->expects($this->never())->method('post');
+
+        $ctrl     = $this->makeController([
+            'forums'         => $forums,
+            'banService'     => $ban,
+            'messages'       => $messages,
+            'messageService' => $msgService,
+        ]);
+        $response = $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testPostAllowedWhenCheckDuplicateEnabledButNoMatchFound(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['check_duplicate' => 1]));
+
+        $ban = $this->createMock(BanService::class);
+        $ban->method('checkIp')->willReturn(false);
+        $ban->method('checkEmail')->willReturn(false);
+        $ban->method('checkUsername')->willReturn(false);
+        $ban->method('checkSpamWords')->willReturn(false);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('isDuplicate')->willReturn(false);
+
+        $postedMsg        = $this->makeMessage(42, 1, 42);
+        $postedMsg->status = 2;
+
+        $msgService = $this->createMock(MessageService::class);
+        $msgService->method('post')->willReturn($postedMsg);
+
+        $ctrl     = $this->makeController([
+            'forums'         => $forums,
+            'banService'     => $ban,
+            'messages'       => $messages,
+            'messageService' => $msgService,
+        ]);
+        $response = $ctrl->post($this->makePostRequest(
+            post:   ['subject' => 'New Thread', 'body' => 'Hello world!'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+    }
+
     public function testPostReplyRedirectsToResolvedPageWhenForumIsPaginatedFlat(): void
     {
         $user = $this->makeUser();
@@ -1051,6 +1212,52 @@ class MessageControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums, 'canEdit' => false]);
         $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
         $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageReturns403WhenForumDisablesEditing(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 1;
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['edit_post' => 0]));
+
+        $ctrl     = $this->makeController(['messages' => $messages, 'forums' => $forums]);
+        $response = $ctrl->editMessage(new Request(tokens: ['message_id' => '1']));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testEditMessageModeratorCanEditWhenForumDisablesEditing(): void
+    {
+        $user = $this->makeUser(1);
+        Auth::setUser($user);
+
+        $msg          = $this->makeMessage(1, 1, 1);
+        $msg->user_id = 99; // not the owner
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($msg);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['edit_post' => 0]));
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('getAttachments')->willReturn([]);
+
+        $ctrl     = $this->makeController([
+            'messages'    => $messages,
+            'forums'      => $forums,
+            'fileService' => $fileService,
+            'canModerate' => true,
+        ]);
+        $response = $ctrl->editMessage($this->makeGetRequest(tokens: ['message_id' => '1']));
+        $this->assertSame(200, $response->status);
     }
 
     public function testEditMessageReturns403WhenPastTimeLimit(): void

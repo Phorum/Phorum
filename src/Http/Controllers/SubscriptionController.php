@@ -90,9 +90,9 @@ class SubscriptionController extends Controller
             $action = $request->post['action'] ?? '';
 
             match ($action) {
-                'subscribe_email' => $service->subscribe(
+                'subscribe_email' => $forum->allow_email_notify ? $service->subscribe(
                     $user->user_id, $root->forum_id, $threadId, SubscriberMapper::SUB_MESSAGE
-                ),
+                ) : null,
                 'subscribe_bookmark' => $service->subscribe(
                     $user->user_id, $root->forum_id, $threadId, SubscriberMapper::SUB_BOOKMARK
                 ),
