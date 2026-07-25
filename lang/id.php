@@ -210,6 +210,8 @@ return [
     'settings.email_notify_message'  => 'Ikuti dan kirimi saya email saat ada balasan',
     'settings.pm_email_notify'   => 'Kirimkan email ketika saya menerima pesan pribadi',
     'settings.tz_offset'         => 'Selisih Zona Waktu (jam, -12 hingga +14; -99 = waktu server)',
+    'settings.language'          => 'Bahasa',
+    'settings.theme'             => 'Tema',
     'settings.save'              => 'Simpan Pengaturan',
     'settings.cancel'            => 'Batal',
     'settings.avatar_section'    => 'Avatar',

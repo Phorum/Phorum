@@ -188,6 +188,8 @@ return [
     'settings.email_notify_message'  => 'Подписываться и уведомлять меня по почте об ответах',
     'settings.pm_email_notify'   => 'Уведомлять меня по электронной почте при получении личного сообщения',
     'settings.tz_offset'         => 'Временная зона (часы, от −12 до +14; −99 = серверное время)',
+    'settings.language'          => 'Язык',
+    'settings.theme'             => 'Тема',
     'settings.save'              => 'Сохранить настройки',
     'settings.cancel'            => 'Отмена',
     'settings.avatar_section'    => 'Аватар',

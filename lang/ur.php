@@ -189,6 +189,8 @@ return [
     'settings.email_notify_message'  => 'فالو کریں اور جوابات پر مجھے ای میل کریں',
     'settings.pm_email_notify'   => 'نجی پیغام موصول ہونے پر مجھے ای میل کریں',
     'settings.tz_offset'         => 'ٹائم زون آفسیٹ (گھنٹے، -12 سے +14؛ -99 = سرور وقت)',
+    'settings.language'          => 'زبان',
+    'settings.theme'             => 'تھیم',
     'settings.save'              => 'ترتیبات محفوظ کریں',
     'settings.cancel'            => 'منسوخ کریں',
     'settings.avatar_section'    => 'اوتار',

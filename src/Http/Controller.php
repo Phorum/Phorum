@@ -57,7 +57,7 @@ abstract class Controller
         return [
             'site_name'      => SiteSettings::name(),
             'user'           => Auth::user(),
-            'theme'          => $this->config->get('template', 'emerald'),
+            'theme'          => $this->resolveTheme(),
             'lang_locale'    => Lang::locale(),
             'lang_dir'       => Lang::dir(),
             'impersonating'  => Impersonation::isActive(),
@@ -68,13 +68,19 @@ abstract class Controller
     }
 
     /**
-     * Resolve the active theme name.
-     * Falls back to the site-wide config default if the forum has no override.
+     * Resolve the active theme name, highest priority first:
+     *   1. The forum's own override, if given and set.
+     *   2. The current user's personal theme preference, if set.
+     *   3. The site-wide config default.
      */
     protected function resolveTheme(?Forum $forum = null): string
     {
         if ($forum !== null && $forum->template !== '') {
             return $forum->template;
+        }
+        $userTemplate = Auth::user()?->user_template ?? '';
+        if ($userTemplate !== '') {
+            return $userTemplate;
         }
         return (string) $this->config->get('template', 'emerald');
     }

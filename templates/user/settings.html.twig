@@ -109,6 +109,24 @@
             <input type="number" id="tz_offset" name="tz_offset" min="-99" max="14" step="0.5"
                    style="width:6em" value="{{ profile.tz_offset }}">
         </div>
+
+        <div class="form-row">
+            <label for="user_language">{{ trans('settings.language') }}</label>
+            <select id="user_language" name="user_language">
+                {% for code, label in locales %}
+                    <option value="{{ code }}" {{ profile.user_language == code ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label for="user_template">{{ trans('settings.theme') }}</label>
+            <select id="user_template" name="user_template">
+                {% for code, label in themes %}
+                    <option value="{{ code }}" {{ profile.user_template == code ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </fieldset>
 
     <fieldset>

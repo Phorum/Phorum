@@ -217,6 +217,8 @@ return [
     'settings.email_notify_message'  => 'Follow and email me on replies',
     'settings.pm_email_notify'   => 'Email me when I receive a private message',
     'settings.tz_offset'         => 'Timezone Offset (hours, -12 to +14; -99 = server time)',
+    'settings.language'          => 'Language',
+    'settings.theme'             => 'Theme',
     'settings.save'              => 'Save Settings',
     'settings.cancel'            => 'Cancel',
     'settings.avatar_section'    => 'Avatar',

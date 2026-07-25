@@ -7,6 +7,7 @@ use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\Lang;
 use Phorum\Core\RedirectGuard;
+use Phorum\Core\Themes;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
@@ -100,6 +101,8 @@ class UserController extends Controller
         $errors      = [];
         $success     = false;
         $avatarFile  = $this->fileMapper->findAvatarForUser($currentUser->user_id);
+        $locales     = Lang::availableLocales(withDefault: true);
+        $themes      = Themes::available(withDefault: true);
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
@@ -115,6 +118,17 @@ class UserController extends Controller
             $pmNotify     = !empty($request->post['pm_email_notify']);
             $tzOffset     = (float) ($request->post['tz_offset']  ?? -99);
             $deleteAvatar = !empty($request->post['delete_avatar']);
+
+            // Blank means "use the site default" — only keep the posted value
+            // if it names a locale/theme that actually exists.
+            $userLanguage = trim($request->post['user_language'] ?? '');
+            if (!array_key_exists($userLanguage, $locales)) {
+                $userLanguage = '';
+            }
+            $userTemplate = trim($request->post['user_template'] ?? '');
+            if (!array_key_exists($userTemplate, $themes)) {
+                $userTemplate = '';
+            }
 
             // Validate avatar if one was uploaded
             $phpAvatar = null;
@@ -170,6 +184,8 @@ class UserController extends Controller
                 $currentUser->email_notify    = $emailNotify;
                 $currentUser->pm_email_notify = $pmNotify ? 1 : 0;
                 $currentUser->tz_offset       = $tzOffset;
+                $currentUser->user_language   = $userLanguage;
+                $currentUser->user_template   = $userTemplate;
 
                 if ($password !== '') {
                     $currentUser->password = password_hash($password, PASSWORD_BCRYPT);
@@ -196,6 +212,8 @@ class UserController extends Controller
             'avatar'     => $avatarFile,
             'errors'     => $errors,
             'success'    => $success,
+            'locales'    => $locales,
+            'themes'     => $themes,
         ]));
     }
 

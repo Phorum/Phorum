@@ -272,6 +272,56 @@ class UserControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testSettingsPostSavesValidLanguageAndTheme(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->settings($this->makePostRequest([
+            'display_name'  => 'New Name',
+            'email'         => 'user1@example.com',
+            'user_language' => 'fr',
+            'user_template' => 'ruby',
+        ]));
+        $this->assertSame(200, $response->status);
+        $this->assertSame('fr', $saved->user_language);
+        $this->assertSame('ruby', $saved->user_template);
+    }
+
+    public function testSettingsPostFallsBackToSiteDefaultForUnknownLanguageAndTheme(): void
+    {
+        $user = $this->makeUser();
+        Auth::setUser($user);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->settings($this->makePostRequest([
+            'display_name'  => 'New Name',
+            'email'         => 'user1@example.com',
+            'user_language' => 'not-a-real-locale',
+            'user_template' => 'not-a-real-theme',
+        ]));
+        $this->assertSame(200, $response->status);
+        $this->assertSame('', $saved->user_language);
+        $this->assertSame('', $saved->user_template);
+    }
+
     public function testSettingsPostReturns403WithBadCsrf(): void
     {
         Auth::setUser($this->makeUser());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Http\Controllers\Admin;
 
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\SettingMapper;
@@ -67,7 +68,7 @@ class SettingsController extends AdminController
         $success = '';
         $errors  = [];
         $themes  = $this->loadThemes();   // inherited from AdminController
-        $locales = $this->loadLocales();
+        $locales = Lang::availableLocales();
 
         if ($request->isPost()) {
             if ($r = $this->checkCsrf($request)) { return $r; }
@@ -122,38 +123,5 @@ class SettingsController extends AdminController
             'success' => $success,
             'errors'  => $errors,
         ]));
-    }
-
-
-
-    /**
-     * Scan lang/ directory and return [locale_code => display_name] for all
-     * available locale files. Display name comes from the '_name' key in each
-     * file; falls back to the locale code if not present.
-     */
-    private function loadLocales(): array
-    {
-        $locales = ['en' => 'English (en)'];
-        $dir     = ROOT_PATH . '/lang';
-
-        if (!is_dir($dir)) {
-            return $locales;
-        }
-
-        foreach (new \DirectoryIterator($dir) as $entry) {
-            if (!$entry->isFile() || $entry->getExtension() !== 'php') {
-                continue;
-            }
-            $code = $entry->getBasename('.php');
-            if ($code === 'en') {
-                continue;
-            }
-            $strings = require $entry->getPathname();
-            $name    = is_array($strings) ? ($strings['_name'] ?? $code) : $code;
-            $locales[$code] = $name . ' (' . $code . ')';
-        }
-
-        asort($locales);
-        return $locales;
     }
 }

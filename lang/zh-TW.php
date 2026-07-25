@@ -210,6 +210,8 @@ return [
     'settings.email_notify_message'  => '關注並在有回覆時通知我',
     'settings.pm_email_notify'   => '收到私訊時寄送電子郵件通知',
     'settings.tz_offset'         => '時區偏移（小時，-12 至 +14；-99 = 伺服器時間）',
+    'settings.language'          => '語言',
+    'settings.theme'             => '主題',
     'settings.save'              => '儲存設定',
     'settings.cancel'            => '取消',
     'settings.avatar_section'    => '大頭貼',

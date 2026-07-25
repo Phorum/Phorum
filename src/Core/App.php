@@ -320,6 +320,12 @@ class App
             }
         } catch (\Throwable) {
         }
+
+        $userLocale = Auth::user()?->user_language ?? '';
+        if ($userLocale !== '') {
+            $locale = $userLocale;
+        }
+
         Lang::load($locale);
     }
 

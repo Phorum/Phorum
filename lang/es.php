@@ -210,6 +210,8 @@ return [
     'settings.email_notify_message'  => 'Seguir y avisarme por correo de las respuestas',
     'settings.pm_email_notify'   => 'Enviarme un correo cuando reciba un mensaje privado',
     'settings.tz_offset'         => 'Desfase horario (horas, -12 a +14; -99 = hora del servidor)',
+    'settings.language'          => 'Idioma',
+    'settings.theme'             => 'Tema',
     'settings.save'              => 'Guardar configuración',
     'settings.cancel'            => 'Cancelar',
     'settings.avatar_section'    => 'Avatar',

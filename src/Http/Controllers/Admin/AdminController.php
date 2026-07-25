@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phorum\Http\Controllers\Admin;
 
 use Phorum\Core\AdminAuth;
+use Phorum\Core\Themes;
 use Phorum\Core\Version;
 use Phorum\Http\Controller;
 use Phorum\Http\Response;
@@ -25,40 +26,15 @@ abstract class AdminController extends Controller
     }
 
     /**
-     * Return [directory_name => display_name] for every theme that has a
-     * config.php and is not marked hidden. Includes a leading blank entry so
-     * selects can represent "use site default".
+     * Return [directory_name => display_name] for every installed theme.
+     * With $withDefault, includes a leading blank entry so selects can
+     * represent "use site default".
      *
      * @return array<string,string>
      */
     protected function loadThemes(bool $withDefault = false): array
     {
-        $themes = [];
-        $dir    = ROOT_PATH . '/themes';
-
-        if (is_dir($dir)) {
-            foreach (new \DirectoryIterator($dir) as $entry) {
-                if (!$entry->isDir() || $entry->isDot()) {
-                    continue;
-                }
-                $configFile = $entry->getPathname() . '/config.php';
-                if (!file_exists($configFile)) {
-                    continue;
-                }
-                $config = require $configFile;
-                if (!is_array($config) || !empty($config['hidden'])) {
-                    continue;
-                }
-                $themes[$entry->getFilename()] = $config['name'] ?? $entry->getFilename();
-            }
-            asort($themes);
-        }
-
-        if ($withDefault) {
-            $themes = ['' => '— Site default —'] + $themes;
-        }
-
-        return $themes;
+        return Themes::available($withDefault);
     }
 
     /** Render an admin template with the standard admin base data merged in. */

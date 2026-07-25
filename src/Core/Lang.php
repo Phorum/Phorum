@@ -79,6 +79,43 @@ class Lang
         return self::$locale;
     }
 
+    /**
+     * Scan lang/ and return [locale_code => display_name] for every available
+     * locale file. Display name comes from the '_name' key in each file;
+     * falls back to the locale code if not present. Always includes 'en'.
+     * With $withDefault, includes a leading blank entry for "use site default"
+     * (used by the per-user language preference, which can be unset).
+     *
+     * @return array<string,string>
+     */
+    public static function availableLocales(bool $withDefault = false): array
+    {
+        $locales = ['en' => 'English (en)'];
+        $dir     = (defined('ROOT_PATH') ? ROOT_PATH : '') . '/lang';
+
+        if (is_dir($dir)) {
+            foreach (new \DirectoryIterator($dir) as $entry) {
+                if (!$entry->isFile() || $entry->getExtension() !== 'php') {
+                    continue;
+                }
+                $code = $entry->getBasename('.php');
+                if ($code === 'en') {
+                    continue;
+                }
+                $strings = require $entry->getPathname();
+                $name    = is_array($strings) ? ($strings['_name'] ?? $code) : $code;
+                $locales[$code] = $name . ' (' . $code . ')';
+            }
+            asort($locales);
+        }
+
+        if ($withDefault) {
+            $locales = ['' => '— Site default —'] + $locales;
+        }
+
+        return $locales;
+    }
+
     /** Returns 'rtl' for right-to-left languages, 'ltr' for everything else. */
     public static function dir(): string
     {

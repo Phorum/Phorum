@@ -106,4 +106,42 @@ class LangTest extends TestCase
         Lang::load('ar');
         $this->assertSame('rtl', Lang::dir());
     }
+
+    // -------------------------------------------------------------------------
+    // availableLocales()
+    // -------------------------------------------------------------------------
+
+    public function testAvailableLocalesAlwaysIncludesEnglish(): void
+    {
+        $locales = Lang::availableLocales();
+        $this->assertArrayHasKey('en', $locales);
+    }
+
+    public function testAvailableLocalesIncludesKnownShippedLocales(): void
+    {
+        $locales = Lang::availableLocales();
+        $this->assertArrayHasKey('fr', $locales);
+        $this->assertArrayHasKey('ar', $locales);
+        $this->assertArrayHasKey('zh-CN', $locales);
+    }
+
+    public function testAvailableLocalesUsesNameKeyForDisplayName(): void
+    {
+        $locales = Lang::availableLocales();
+        $this->assertStringContainsString('Français', $locales['fr']);
+        $this->assertStringContainsString('(fr)', $locales['fr']);
+    }
+
+    public function testAvailableLocalesWithDefaultAddsLeadingBlankEntry(): void
+    {
+        $locales = Lang::availableLocales(withDefault: true);
+        $keys    = array_keys($locales);
+        $this->assertSame('', $keys[0]);
+    }
+
+    public function testAvailableLocalesWithoutDefaultHasNoBlankEntry(): void
+    {
+        $locales = Lang::availableLocales();
+        $this->assertArrayNotHasKey('', $locales);
+    }
 }

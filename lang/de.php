@@ -188,6 +188,8 @@ return [
     'settings.email_notify_message'  => 'Folgen und mich bei Antworten per E-Mail benachrichtigen',
     'settings.pm_email_notify'   => 'E-Mail-Benachrichtigung beim Empfang einer privaten Nachricht',
     'settings.tz_offset'         => 'Zeitzonenversatz (Stunden, -12 bis +14; -99 = Serverzeit)',
+    'settings.language'          => 'Sprache',
+    'settings.theme'             => 'Design',
     'settings.save'              => 'Einstellungen speichern',
     'settings.cancel'            => 'Abbrechen',
     'settings.avatar_section'    => 'Avatar',

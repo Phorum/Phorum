@@ -166,7 +166,8 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 - **Redirect-target sanitization** — Post-login/redirect URLs are sanitized to prevent open-redirect attacks. `src/Core/RedirectGuard.php`
 
 ### Account Settings
-- **Profile & preferences** — Display name, email, password, signature (+ show/hide), hide-email flag, threaded-vs-flat reading mode, email-notify and PM-email-notify toggles, timezone offset. `src/Http/Controllers/UserController.php::settings()`
+- **Profile & preferences** — Display name, email, password, signature (+ show/hide), hide-email flag, threaded-vs-flat reading mode, email-notify and PM-email-notify toggles, timezone offset, personal language and theme override (below). `src/Http/Controllers/UserController.php::settings()`
+- **Per-user language & theme override** — Either can be left as "site default" or pinned to any installed locale/theme; resolution order is (per page) forum-specific theme override → this personal preference → site-wide default. `App::initLang()`, `Controller::resolveTheme()`, `Phorum\Core\Lang::availableLocales()`, `Phorum\Core\Themes::available()`
 - **Avatar upload/removal** — Type/size-validated image upload or deletion, from the same settings page.
 
 ---
@@ -272,7 +273,6 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 Flags, settings, or service methods that exist in the code but aren't yet wired to real, reachable behavior. Worth checking here before assuming something works end-to-end. This list was built from a full schema-vs-codebase field audit (every column in `db/mysql.sql` checked against actual read/write consumers) — items below have confirmed no functional consumer beyond the mapper/model declaration, distinct from fields that are deliberately dead legacy carryovers (page-cache counters, Phorum-6-era presentational relics, etc.) which aren't listed here since they need no decision.
 
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
-- **No per-user language or theme override** — `users.user_language` and `users.user_template` are mapped but never read; `App::initLang()` and theme resolution only consult site-wide config/settings.
 - **Report resolution identity isn't displayed** — `reports.resolved_user_id`/`resolved_time` are written correctly when a report is resolved or dismissed, but aren't shown anywhere (the reports queue only ever lists open reports, so they never appear there); the same actor+timestamp is visible in the admin audit log instead, so this is low-priority duplication rather than lost data.
 - **Several per-forum presentation/behavior toggles are mapped but not wired**: `list_length_threaded` (no threaded-view-specific page length), `threaded_list` (thread-list-level threading mode), `float_to_top` (threads with new replies don't re-sort to top), `check_duplicate` (no duplicate-post detection), `edit_post` (no forum-wide "disable editing" switch — only the per-user permission + time window apply), `allow_email_notify` (no forum-level gate on subscriptions), `language`/`inherit_id` (no per-forum locale override or settings inheritance), `count_views`/`count_views_per_thread` (view counting is unconditional, ignoring these opt-outs), `reverse_threading` (no reverse-order threaded replies).
 - **`users.is_dst`** — mapped but unread; DST adjustment is dropped even though `tz_offset` itself is used.

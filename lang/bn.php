@@ -208,6 +208,8 @@ return [
     'settings.email_notify_message'  => 'ফলো করুন এবং উত্তরে ইমেইল করুন',
     'settings.pm_email_notify'   => 'ব্যক্তিগত বার্তা পেলে ইমেইল পাঠান',
     'settings.tz_offset'         => 'টাইমজোন অফসেট (ঘণ্টা, -12 থেকে +14; -99 = সার্ভার সময়)',
+    'settings.language'          => 'ভাষা',
+    'settings.theme'             => 'থিম',
     'settings.save'              => 'সেটিংস সংরক্ষণ করুন',
     'settings.cancel'            => 'বাতিল করুন',
     'settings.avatar_section'    => 'অবতার',

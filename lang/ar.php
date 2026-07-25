@@ -189,6 +189,8 @@ return [
     'settings.email_notify_message'  => 'المتابعة وإرسال بريد إلكتروني عند الردود',
     'settings.pm_email_notify'   => 'إرسال بريد إلكتروني إليّ عند استلام رسالة خاصة',
     'settings.tz_offset'         => 'فارق التوقيت (بالساعات، من -12 إلى +14؛ -99 = توقيت الخادم)',
+    'settings.language'          => 'اللغة',
+    'settings.theme'             => 'المظهر',
     'settings.save'              => 'حفظ الإعدادات',
     'settings.cancel'            => 'إلغاء',
     'settings.avatar_section'    => 'الصورة الرمزية',

@@ -217,6 +217,8 @@ return [
     'settings.email_notify_message'  => 'Volgen en mij e-mailen bij reacties',
     'settings.pm_email_notify'   => 'Stuur mij een e-mail wanneer ik een privébericht ontvang',
     'settings.tz_offset'         => 'Tijdzoneverschuiving (uren, -12 t/m +14; -99 = servertijd)',
+    'settings.language'          => 'Taal',
+    'settings.theme'             => 'Thema',
     'settings.save'              => 'Instellingen opslaan',
     'settings.cancel'            => 'Annuleren',
     'settings.avatar_section'    => 'Avatar',

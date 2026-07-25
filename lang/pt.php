@@ -210,6 +210,8 @@ return [
     'settings.email_notify_message'  => 'Seguir e me avisar por e-mail sobre respostas',
     'settings.pm_email_notify'   => 'Enviar e-mail quando eu receber uma mensagem privada',
     'settings.tz_offset'         => 'Fuso horário (horas, -12 a +14; -99 = horário do servidor)',
+    'settings.language'          => 'Idioma',
+    'settings.theme'             => 'Tema',
     'settings.save'              => 'Salvar configurações',
     'settings.cancel'            => 'Cancelar',
     'settings.avatar_section'    => 'Avatar',

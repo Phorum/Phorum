@@ -208,6 +208,8 @@ return [
     'settings.email_notify_message'  => 'फ़ॉलो करें और उत्तरों पर मुझे ईमेल करें',
     'settings.pm_email_notify'   => 'जब मुझे निजी संदेश मिले तो ईमेल करें',
     'settings.tz_offset'         => 'समय क्षेत्र ऑफ़सेट (घंटे, -12 से +14; -99 = सर्वर समय)',
+    'settings.language'          => 'भाषा',
+    'settings.theme'             => 'थीम',
     'settings.save'              => 'सेटिंग सहेजें',
     'settings.cancel'            => 'रद्द करें',
     'settings.avatar_section'    => 'अवतार',
