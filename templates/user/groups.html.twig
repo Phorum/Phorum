@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('groups.title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    {{ trans('groups.title') }}
+</nav>
+
+<h1>{{ trans('groups.title') }}</h1>
+
+<h2>{{ trans('groups.my_groups') }}</h2>
+{% if my_groups is empty %}
+    <p>{{ trans('groups.no_memberships') }}</p>
+{% else %}
+    <table class="tbl-boxed">
+        <thead>
+            <tr>
+                <th scope="col">{{ trans('groups.col_group') }}</th>
+                <th scope="col">{{ trans('groups.col_status') }}</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in my_groups %}
+            <tr>
+                <td>{{ entry.group.name|e }}</td>
+                <td>
+                    {% if entry.membership.status == 2 %}
+                        {{ trans('groups.status_moderator') }}
+                    {% elseif entry.membership.status == 1 %}
+                        {{ trans('groups.status_approved') }}
+                    {% elseif entry.membership.status == 0 %}
+                        {{ trans('groups.status_unapproved') }}
+                    {% else %}
+                        {{ trans('groups.status_suspended') }}
+                    {% endif %}
+                </td>
+                <td class="row-actions">
+                    {% if entry.membership.status == 2 %}
+                        <a href="{{ path('/groups/' ~ entry.group.group_id ~ '/moderate') }}">{{ trans('groups.manage') }}</a>
+                    {% endif %}
+                    {% if entry.membership.status != -1 %}
+                        <form method="post" action="{{ path('/groups/' ~ entry.group.group_id ~ '/leave') }}" class="inline-form">
+                            {{ csrf_field() }}
+                            <button type="submit" class="button-link">{{ trans('groups.leave') }}</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<h2>{{ trans('groups.joinable_groups') }}</h2>
+{% if joinable is empty %}
+    <p>{{ trans('groups.no_joinable') }}</p>
+{% else %}
+    <table class="tbl-boxed">
+        <thead>
+            <tr>
+                <th scope="col">{{ trans('groups.col_group') }}</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for group in joinable %}
+            <tr>
+                <td>{{ group.name|e }}</td>
+                <td class="row-actions">
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/join') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <button type="submit" class="button-link">{{ trans('groups.join') }}</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

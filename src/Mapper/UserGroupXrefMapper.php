@@ -41,6 +41,12 @@ class UserGroupXrefMapper extends AbstractPhorumMapper
         return $rows[0] ?? null;
     }
 
+    /** True if the user holds Moderator status on this specific group. */
+    public function isModerator(int $userId, int $groupId): bool
+    {
+        return $this->findByUserAndGroup($userId, $groupId)?->status === self::STATUS_MODERATOR;
+    }
+
     /** Add a user to a group, or update their status if already a member. */
     public function setMembership(int $userId, int $groupId, int $status): void
     {

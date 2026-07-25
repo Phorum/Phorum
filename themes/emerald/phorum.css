@@ -1729,6 +1729,9 @@ table.pm-list tr.pm-unread td {
 .pm-date    { white-space: nowrap; font-size: var(--fs-sm); }
 .pm-actions { white-space: nowrap; font-size: var(--fs-sm); }
 
+/* Generic action-cell styling for any tbl-boxed table outside PM (e.g. groups) */
+.row-actions { white-space: nowrap; font-size: var(--fs-sm); }
+
 .pm-empty {
     padding: 1rem 0;
     color: #666;

@@ -23,6 +23,7 @@ return [
     'nav.forum_index'      => 'Forum Index',
     'nav.search'           => 'Search',
     'nav.messages'         => 'Messages',
+    'nav.groups'           => 'Groups',
     'nav.settings'         => 'Settings',
     'nav.log_out'          => 'Log Out',
     'nav.log_in'           => 'Log In',
@@ -287,6 +288,38 @@ return [
     'pm.error_body_required'        => 'Message body is required.',
     'pm.error_folder_name_required' => 'Folder name is required.',
     'pm.error_folder_name_length'   => 'Folder name must be 60 characters or fewer.',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'Groups',
+    'groups.my_groups'         => 'My Groups',
+    'groups.no_memberships'    => 'You are not a member of any groups.',
+    'groups.col_group'         => 'Group',
+    'groups.col_status'        => 'Status',
+    'groups.status_moderator'  => 'Moderator',
+    'groups.status_approved'   => 'Member',
+    'groups.status_unapproved' => 'Pending approval',
+    'groups.status_suspended'  => 'Suspended',
+    'groups.manage'            => 'Manage',
+    'groups.leave'             => 'Leave',
+    'groups.joinable_groups'   => 'Groups You Can Join',
+    'groups.no_joinable'       => 'There are no groups available to join right now.',
+    'groups.join'              => 'Request to Join',
+    'groups.moderate_title'    => 'Manage Group: {name}',
+    'groups.pending_requests'  => 'Pending Requests',
+    'groups.no_pending'        => 'No pending requests.',
+    'groups.col_user'          => 'User',
+    'groups.approve'           => 'Approve',
+    'groups.reject'            => 'Reject',
+    'groups.members'           => 'Members',
+    'groups.no_members'        => 'No approved members.',
+    'groups.suspend'           => 'Suspend',
+    'groups.remove'            => 'Remove',
+    'groups.suspended_members' => 'Suspended Members',
+    'groups.no_suspended'      => 'No suspended members.',
+    'groups.reinstate'         => 'Reinstate',
+    'groups.back_to_groups'    => 'Back to Groups',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

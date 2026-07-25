@@ -14,6 +14,7 @@ return [
     'nav.forum_index'   => 'ফোরাম তালিকা',
     'nav.search'        => 'অনুসন্ধান',
     'nav.messages'      => 'বার্তা',
+    'nav.groups'        => 'গ্রুপ',
     'nav.settings'      => 'সেটিংস',
     'nav.log_out'       => 'লগ আউট',
     'nav.log_in'        => 'লগ ইন',
@@ -267,6 +268,38 @@ return [
     'pm.error_body_required'        => 'বার্তার মূল অংশ আবশ্যক।',
     'pm.error_folder_name_required' => 'ফোল্ডারের নাম আবশ্যক।',
     'pm.error_folder_name_length'   => 'ফোল্ডারের নাম সর্বোচ্চ ৬০ অক্ষরের হতে হবে।',
+
+    // -------------------------------------------------------------------------
+    // Groups
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'গ্রুপ',
+    'groups.my_groups'         => 'আমার গ্রুপ',
+    'groups.no_memberships'    => 'আপনি কোনো গ্রুপের সদস্য নন।',
+    'groups.col_group'         => 'গ্রুপ',
+    'groups.col_status'        => 'অবস্থা',
+    'groups.status_moderator'  => 'মডারেটর',
+    'groups.status_approved'   => 'সদস্য',
+    'groups.status_unapproved' => 'অনুমোদনের অপেক্ষায়',
+    'groups.status_suspended'  => 'স্থগিত',
+    'groups.manage'            => 'পরিচালনা করুন',
+    'groups.leave'             => 'ত্যাগ করুন',
+    'groups.joinable_groups'   => 'যোগদানযোগ্য গ্রুপ',
+    'groups.no_joinable'       => 'এই মুহূর্তে যোগদানের জন্য কোনো গ্রুপ উপলব্ধ নেই।',
+    'groups.join'              => 'যোগদানের অনুরোধ করুন',
+    'groups.moderate_title'    => 'গ্রুপ পরিচালনা করুন: {name}',
+    'groups.pending_requests'  => 'মুলতুবি অনুরোধ',
+    'groups.no_pending'        => 'কোনো মুলতুবি অনুরোধ নেই।',
+    'groups.col_user'          => 'ব্যবহারকারী',
+    'groups.approve'           => 'অনুমোদন করুন',
+    'groups.reject'            => 'প্রত্যাখ্যান করুন',
+    'groups.members'           => 'সদস্যগণ',
+    'groups.no_members'        => 'কোনো অনুমোদিত সদস্য নেই।',
+    'groups.suspend'           => 'স্থগিত করুন',
+    'groups.remove'            => 'অপসারণ করুন',
+    'groups.suspended_members' => 'স্থগিত সদস্যগণ',
+    'groups.no_suspended'      => 'কোনো স্থগিত সদস্য নেই।',
+    'groups.reinstate'         => 'পুনর্বহাল করুন',
+    'groups.back_to_groups'    => 'গ্রুপে ফিরে যান',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

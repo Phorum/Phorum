@@ -16,6 +16,7 @@ return [
     'nav.forum_index'   => 'Indeks Forum',
     'nav.search'        => 'Cari',
     'nav.messages'      => 'Pesan',
+    'nav.groups'        => 'Grup',
     'nav.settings'      => 'Pengaturan',
     'nav.log_out'       => 'Keluar',
     'nav.log_in'        => 'Masuk',
@@ -280,6 +281,38 @@ return [
     'pm.error_body_required'        => 'Isi pesan wajib diisi.',
     'pm.error_folder_name_required' => 'Nama folder wajib diisi.',
     'pm.error_folder_name_length'   => 'Nama folder harus terdiri dari 60 karakter atau kurang.',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'Grup',
+    'groups.my_groups'         => 'Grup Saya',
+    'groups.no_memberships'    => 'Anda bukan anggota grup mana pun.',
+    'groups.col_group'         => 'Grup',
+    'groups.col_status'        => 'Status',
+    'groups.status_moderator'  => 'Moderator',
+    'groups.status_approved'   => 'Anggota',
+    'groups.status_unapproved' => 'Menunggu persetujuan',
+    'groups.status_suspended'  => 'Ditangguhkan',
+    'groups.manage'            => 'Kelola',
+    'groups.leave'             => 'Tinggalkan',
+    'groups.joinable_groups'   => 'Grup yang Dapat Anda Ikuti',
+    'groups.no_joinable'       => 'Saat ini tidak ada grup yang tersedia untuk diikuti.',
+    'groups.join'              => 'Ajukan Permintaan Bergabung',
+    'groups.moderate_title'    => 'Kelola Grup: {name}',
+    'groups.pending_requests'  => 'Permintaan Tertunda',
+    'groups.no_pending'        => 'Tidak ada permintaan tertunda.',
+    'groups.col_user'          => 'Pengguna',
+    'groups.approve'           => 'Setujui',
+    'groups.reject'            => 'Tolak',
+    'groups.members'           => 'Anggota',
+    'groups.no_members'        => 'Tidak ada anggota yang disetujui.',
+    'groups.suspend'           => 'Tangguhkan',
+    'groups.remove'            => 'Hapus',
+    'groups.suspended_members' => 'Anggota yang Ditangguhkan',
+    'groups.no_suspended'      => 'Tidak ada anggota yang ditangguhkan.',
+    'groups.reinstate'         => 'Pulihkan',
+    'groups.back_to_groups'    => 'Kembali ke Grup',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

@@ -81,4 +81,28 @@ class UserGroupXrefMapperTest extends MapperTestCase
         $mapper = $this->makeMapper();
         $this->assertNull($mapper->findByUserAndGroup(1, 1));
     }
+
+    // -------------------------------------------------------------------------
+    // isModerator
+    // -------------------------------------------------------------------------
+
+    public function testIsModeratorTrueForModeratorStatus(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->setMembership(5, 1, UserGroupXrefMapper::STATUS_MODERATOR);
+        $this->assertTrue($mapper->isModerator(5, 1));
+    }
+
+    public function testIsModeratorFalseForApprovedStatus(): void
+    {
+        $mapper = $this->makeMapper();
+        $mapper->setMembership(5, 1, UserGroupXrefMapper::STATUS_APPROVED);
+        $this->assertFalse($mapper->isModerator(5, 1));
+    }
+
+    public function testIsModeratorFalseWhenNotAMember(): void
+    {
+        $mapper = $this->makeMapper();
+        $this->assertFalse($mapper->isModerator(5, 1));
+    }
 }

@@ -71,6 +71,7 @@
                     <li><a href="{{ path('/search') }}"><i class="fa fa-search"></i>{{ trans('nav.search') }}</a></li>
                     {% if user is defined and user %}
                         <li><a href="{{ path('/pm') }}"><i class="fa fa-envelope-o"></i>{{ trans('nav.messages') }}{% if user.pm_new_count > 0 %} <span class="pm-badge">{{ user.pm_new_count }}</span>{% endif %}</a></li>
+                        <li><a href="{{ path('/groups') }}"><i class="fa fa-users"></i>{{ trans('nav.groups') }}</a></li>
                         <li><a href="{{ path('/user/' ~ user.user_id) }}"><i class="fa fa-user"></i>{{ user.display_name ?: user.username }}</a></li>
                         <li><a href="{{ path('/user/settings') }}"><i class="fa fa-cog"></i>{{ trans('nav.settings') }}</a></li>
                         <li><a href="{{ path('/logout') }}"><i class="fa fa-sign-out"></i>{{ trans('nav.log_out') }}</a></li>

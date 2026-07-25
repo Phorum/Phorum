@@ -16,6 +16,7 @@ return [
     'nav.forum_index'   => '討論區首頁',
     'nav.search'        => '搜尋',
     'nav.messages'      => '私訊',
+    'nav.groups'        => '群組',
     'nav.settings'      => '設定',
     'nav.log_out'       => '登出',
     'nav.log_in'        => '登入',
@@ -280,6 +281,38 @@ return [
     'pm.error_body_required'        => '請輸入訊息內容。',
     'pm.error_folder_name_required' => '請輸入資料夾名稱。',
     'pm.error_folder_name_length'   => '資料夾名稱長度不可超過 60 個字元。',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => '群組',
+    'groups.my_groups'         => '我的群組',
+    'groups.no_memberships'    => '您尚未加入任何群組。',
+    'groups.col_group'         => '群組',
+    'groups.col_status'        => '狀態',
+    'groups.status_moderator'  => '版主',
+    'groups.status_approved'   => '成員',
+    'groups.status_unapproved' => '待審核',
+    'groups.status_suspended'  => '已停權',
+    'groups.manage'            => '管理',
+    'groups.leave'             => '退出',
+    'groups.joinable_groups'   => '可加入的群組',
+    'groups.no_joinable'       => '目前沒有可加入的群組。',
+    'groups.join'              => '申請加入',
+    'groups.moderate_title'    => '管理群組：{name}',
+    'groups.pending_requests'  => '待處理的申請',
+    'groups.no_pending'        => '目前沒有待處理的申請。',
+    'groups.col_user'          => '使用者',
+    'groups.approve'           => '核准',
+    'groups.reject'            => '拒絕',
+    'groups.members'           => '成員',
+    'groups.no_members'        => '目前沒有已核准的成員。',
+    'groups.suspend'           => '停權',
+    'groups.remove'            => '移除',
+    'groups.suspended_members' => '已停權成員',
+    'groups.no_suspended'      => '目前沒有已停權的成員。',
+    'groups.reinstate'         => '恢復權限',
+    'groups.back_to_groups'    => '返回群組列表',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

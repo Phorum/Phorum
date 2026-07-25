@@ -23,6 +23,7 @@ return [
     'nav.forum_index'   => 'Forumoverzicht',
     'nav.search'        => 'Zoeken',
     'nav.messages'      => 'Berichten',
+    'nav.groups'        => 'Groepen',
     'nav.settings'      => 'Instellingen',
     'nav.log_out'       => 'Uitloggen',
     'nav.log_in'        => 'Inloggen',
@@ -287,6 +288,38 @@ return [
     'pm.error_body_required'        => 'Berichttekst is verplicht.',
     'pm.error_folder_name_required' => 'Mapnaam is verplicht.',
     'pm.error_folder_name_length'   => 'Mapnaam mag maximaal 60 tekens bevatten.',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'Groepen',
+    'groups.my_groups'         => 'Mijn groepen',
+    'groups.no_memberships'    => 'U bent geen lid van een groep.',
+    'groups.col_group'         => 'Groep',
+    'groups.col_status'        => 'Status',
+    'groups.status_moderator'  => 'Moderator',
+    'groups.status_approved'   => 'Lid',
+    'groups.status_unapproved' => 'In afwachting van goedkeuring',
+    'groups.status_suspended'  => 'Geschorst',
+    'groups.manage'            => 'Beheren',
+    'groups.leave'             => 'Verlaten',
+    'groups.joinable_groups'   => 'Groepen waaraan u kunt deelnemen',
+    'groups.no_joinable'       => 'Er zijn momenteel geen groepen beschikbaar om aan deel te nemen.',
+    'groups.join'              => 'Aanvragen om lid te worden',
+    'groups.moderate_title'    => 'Groep beheren: {name}',
+    'groups.pending_requests'  => 'Openstaande verzoeken',
+    'groups.no_pending'        => 'Geen openstaande verzoeken.',
+    'groups.col_user'          => 'Gebruiker',
+    'groups.approve'           => 'Goedkeuren',
+    'groups.reject'            => 'Afwijzen',
+    'groups.members'           => 'Leden',
+    'groups.no_members'        => 'Geen goedgekeurde leden.',
+    'groups.suspend'           => 'Schorsen',
+    'groups.remove'            => 'Verwijderen',
+    'groups.suspended_members' => 'Geschorste leden',
+    'groups.no_suspended'      => 'Geen geschorste leden.',
+    'groups.reinstate'         => 'Herstellen',
+    'groups.back_to_groups'    => 'Terug naar groepen',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

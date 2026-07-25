@@ -346,6 +346,43 @@ return [
         'action'  => 'PmController@inbox',
     ],
 
+    // Groups — self-service join/leave, and a group moderator's review panel
+    [
+        'type'    => 'exact',
+        'pattern' => '/groups',
+        'action'  => 'GroupController@index',
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/groups/(\d+)/join$!',
+        'action'  => 'GroupController@join',
+        'tokens'  => ['group_id'],
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/groups/(\d+)/leave$!',
+        'action'  => 'GroupController@leave',
+        'tokens'  => ['group_id'],
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/groups/(\d+)/moderate$!',
+        'action'  => 'GroupController@moderate',
+        'tokens'  => ['group_id'],
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/groups/(\d+)/moderate/(\d+)/status$!',
+        'action'  => 'GroupController@setMemberStatus',
+        'tokens'  => ['group_id', 'user_id'],
+    ],
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/groups/(\d+)/moderate/(\d+)/remove$!',
+        'action'  => 'GroupController@removeMember',
+        'tokens'  => ['group_id', 'user_id'],
+    ],
+
     // Search
     [
         'type'    => 'exact',

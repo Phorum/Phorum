@@ -16,6 +16,7 @@ return [
     'nav.forum_index'   => '论坛首页',
     'nav.search'        => '搜索',
     'nav.messages'      => '私信',
+    'nav.groups'        => '群组',
     'nav.settings'      => '设置',
     'nav.log_out'       => '退出登录',
     'nav.log_in'        => '登录',
@@ -280,6 +281,38 @@ return [
     'pm.error_body_required'        => '内容为必填项。',
     'pm.error_folder_name_required' => '文件夹名称为必填项。',
     'pm.error_folder_name_length'   => '文件夹名称不能超过 60 个字符。',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => '群组',
+    'groups.my_groups'         => '我的群组',
+    'groups.no_memberships'    => '您尚未加入任何群组。',
+    'groups.col_group'         => '群组',
+    'groups.col_status'        => '状态',
+    'groups.status_moderator'  => '版主',
+    'groups.status_approved'   => '成员',
+    'groups.status_unapproved' => '待审核',
+    'groups.status_suspended'  => '已停权',
+    'groups.manage'            => '管理',
+    'groups.leave'             => '退出',
+    'groups.joinable_groups'   => '可加入的群组',
+    'groups.no_joinable'       => '目前没有可加入的群组。',
+    'groups.join'              => '申请加入',
+    'groups.moderate_title'    => '管理群组：{name}',
+    'groups.pending_requests'  => '待处理的申请',
+    'groups.no_pending'        => '暂无待处理的申请。',
+    'groups.col_user'          => '用户',
+    'groups.approve'           => '批准',
+    'groups.reject'            => '拒绝',
+    'groups.members'           => '成员',
+    'groups.no_members'        => '暂无已批准的成员。',
+    'groups.suspend'           => '停权',
+    'groups.remove'            => '移除',
+    'groups.suspended_members' => '已停权成员',
+    'groups.no_suspended'      => '暂无已停权的成员。',
+    'groups.reinstate'         => '恢复权限',
+    'groups.back_to_groups'    => '返回群组列表',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

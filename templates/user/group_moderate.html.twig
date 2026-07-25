@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('groups.moderate_title', {name: group.name}) }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ trans('nav.breadcrumb') }}">
+    <a href="{{ path('/') }}">{{ trans('nav.forum_index') }}</a> &rsaquo;
+    <a href="{{ path('/groups') }}">{{ trans('groups.title') }}</a> &rsaquo;
+    {{ group.name }}
+</nav>
+
+<h1>{{ trans('groups.moderate_title', {name: group.name}) }}</h1>
+
+<h2>{{ trans('groups.pending_requests') }}</h2>
+{% if pending is empty %}
+    <p>{{ trans('groups.no_pending') }}</p>
+{% else %}
+    <table class="tbl-boxed">
+        <thead>
+            <tr>
+                <th scope="col">{{ trans('groups.col_user') }}</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in pending %}
+            <tr>
+                <td>
+                    {% if entry.user %}
+                        <a href="{{ path('/user/' ~ entry.user.user_id) }}">{{ (entry.user.display_name ?: entry.user.username)|e }}</a>
+                    {% else %}
+                        #{{ entry.membership.user_id }}
+                    {% endif %}
+                </td>
+                <td class="row-actions">
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/status') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <input type="hidden" name="status" value="1">
+                        <button type="submit" class="button-link">{{ trans('groups.approve') }}</button>
+                    </form>
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/remove') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <button type="submit" class="button-link">{{ trans('groups.reject') }}</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<h2>{{ trans('groups.members') }}</h2>
+{% if approved is empty %}
+    <p>{{ trans('groups.no_members') }}</p>
+{% else %}
+    <table class="tbl-boxed">
+        <thead>
+            <tr>
+                <th scope="col">{{ trans('groups.col_user') }}</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in approved %}
+            <tr>
+                <td>
+                    {% if entry.user %}
+                        <a href="{{ path('/user/' ~ entry.user.user_id) }}">{{ (entry.user.display_name ?: entry.user.username)|e }}</a>
+                    {% else %}
+                        #{{ entry.membership.user_id }}
+                    {% endif %}
+                </td>
+                <td class="row-actions">
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/status') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <input type="hidden" name="status" value="-1">
+                        <button type="submit" class="button-link">{{ trans('groups.suspend') }}</button>
+                    </form>
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/remove') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <button type="submit" class="button-link">{{ trans('groups.remove') }}</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<h2>{{ trans('groups.suspended_members') }}</h2>
+{% if suspended is empty %}
+    <p>{{ trans('groups.no_suspended') }}</p>
+{% else %}
+    <table class="tbl-boxed">
+        <thead>
+            <tr>
+                <th scope="col">{{ trans('groups.col_user') }}</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in suspended %}
+            <tr>
+                <td>
+                    {% if entry.user %}
+                        <a href="{{ path('/user/' ~ entry.user.user_id) }}">{{ (entry.user.display_name ?: entry.user.username)|e }}</a>
+                    {% else %}
+                        #{{ entry.membership.user_id }}
+                    {% endif %}
+                </td>
+                <td class="row-actions">
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/status') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <input type="hidden" name="status" value="1">
+                        <button type="submit" class="button-link">{{ trans('groups.reinstate') }}</button>
+                    </form>
+                    <form method="post" action="{{ path('/groups/' ~ group.group_id ~ '/moderate/' ~ entry.membership.user_id ~ '/remove') }}" class="inline-form">
+                        {{ csrf_field() }}
+                        <button type="submit" class="button-link">{{ trans('groups.remove') }}</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<p><a href="{{ path('/groups') }}">&larr; {{ trans('groups.back_to_groups') }}</a></p>
+{% endblock %}

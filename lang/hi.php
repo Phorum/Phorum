@@ -14,6 +14,7 @@ return [
     'nav.forum_index'   => 'फ़ोरम सूची',
     'nav.search'        => 'खोजें',
     'nav.messages'      => 'संदेश',
+    'nav.groups'        => 'समूह',
     'nav.settings'      => 'सेटिंग',
     'nav.log_out'       => 'लॉग आउट',
     'nav.log_in'        => 'लॉग इन',
@@ -278,6 +279,38 @@ return [
     'pm.error_body_required'        => 'संदेश आवश्यक है।',
     'pm.error_folder_name_required' => 'फ़ोल्डर का नाम आवश्यक है।',
     'pm.error_folder_name_length'   => 'फ़ोल्डर का नाम 60 अक्षर या उससे कम का होना चाहिए।',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'समूह',
+    'groups.my_groups'         => 'मेरे समूह',
+    'groups.no_memberships'    => 'आप किसी भी समूह के सदस्य नहीं हैं।',
+    'groups.col_group'         => 'समूह',
+    'groups.col_status'        => 'स्थिति',
+    'groups.status_moderator'  => 'मॉडरेटर',
+    'groups.status_approved'   => 'सदस्य',
+    'groups.status_unapproved' => 'स्वीकृति लंबित',
+    'groups.status_suspended'  => 'निलंबित',
+    'groups.manage'            => 'प्रबंधित करें',
+    'groups.leave'             => 'छोड़ें',
+    'groups.joinable_groups'   => 'समूह जिनमें आप शामिल हो सकते हैं',
+    'groups.no_joinable'       => 'अभी शामिल होने के लिए कोई समूह उपलब्ध नहीं है।',
+    'groups.join'              => 'शामिल होने का अनुरोध करें',
+    'groups.moderate_title'    => 'समूह प्रबंधित करें: {name}',
+    'groups.pending_requests'  => 'लंबित अनुरोध',
+    'groups.no_pending'        => 'कोई लंबित अनुरोध नहीं।',
+    'groups.col_user'          => 'उपयोगकर्ता',
+    'groups.approve'           => 'स्वीकृत करें',
+    'groups.reject'            => 'अस्वीकार करें',
+    'groups.members'           => 'सदस्य',
+    'groups.no_members'        => 'कोई स्वीकृत सदस्य नहीं।',
+    'groups.suspend'           => 'निलंबित करें',
+    'groups.remove'            => 'हटाएं',
+    'groups.suspended_members' => 'निलंबित सदस्य',
+    'groups.no_suspended'      => 'कोई निलंबित सदस्य नहीं।',
+    'groups.reinstate'         => 'पुनः बहाल करें',
+    'groups.back_to_groups'    => 'समूहों पर वापस',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

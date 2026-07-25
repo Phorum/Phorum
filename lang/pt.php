@@ -16,6 +16,7 @@ return [
     'nav.forum_index'   => 'Índice do fórum',
     'nav.search'        => 'Buscar',
     'nav.messages'      => 'Mensagens',
+    'nav.groups'        => 'Grupos',
     'nav.settings'      => 'Configurações',
     'nav.log_out'       => 'Sair',
     'nav.log_in'        => 'Entrar',
@@ -280,6 +281,38 @@ return [
     'pm.error_body_required'        => 'O corpo da mensagem é obrigatório.',
     'pm.error_folder_name_required' => 'O nome da pasta é obrigatório.',
     'pm.error_folder_name_length'   => 'O nome da pasta deve ter no máximo 60 caracteres.',
+
+    // -------------------------------------------------------------------------
+    // Groups (self-service join/leave + group moderator panel)
+    // -------------------------------------------------------------------------
+    'groups.title'             => 'Grupos',
+    'groups.my_groups'         => 'Meus Grupos',
+    'groups.no_memberships'    => 'Você não é membro de nenhum grupo.',
+    'groups.col_group'         => 'Grupo',
+    'groups.col_status'        => 'Status',
+    'groups.status_moderator'  => 'Moderador',
+    'groups.status_approved'   => 'Membro',
+    'groups.status_unapproved' => 'Aguardando aprovação',
+    'groups.status_suspended'  => 'Suspenso',
+    'groups.manage'            => 'Gerenciar',
+    'groups.leave'             => 'Sair',
+    'groups.joinable_groups'   => 'Grupos Que Você Pode Participar',
+    'groups.no_joinable'       => 'No momento não há grupos disponíveis para participar.',
+    'groups.join'              => 'Solicitar Participação',
+    'groups.moderate_title'    => 'Gerenciar Grupo: {name}',
+    'groups.pending_requests'  => 'Solicitações Pendentes',
+    'groups.no_pending'        => 'Nenhuma solicitação pendente.',
+    'groups.col_user'          => 'Usuário',
+    'groups.approve'           => 'Aprovar',
+    'groups.reject'            => 'Rejeitar',
+    'groups.members'           => 'Membros',
+    'groups.no_members'        => 'Nenhum membro aprovado.',
+    'groups.suspend'           => 'Suspender',
+    'groups.remove'            => 'Remover',
+    'groups.suspended_members' => 'Membros Suspensos',
+    'groups.no_suspended'      => 'Nenhum membro suspenso.',
+    'groups.reinstate'         => 'Reintegrar',
+    'groups.back_to_groups'    => 'Voltar aos Grupos',
 
     // -------------------------------------------------------------------------
     // Thread subscriptions

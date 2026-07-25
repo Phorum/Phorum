@@ -80,6 +80,12 @@ It was built by surveying the code directly (controllers, services, templates, r
 - **Buddy list ("friends")** — Add/remove other users as buddies, see mutual status, jump to composing a PM, and see last-active time. One-directional-by-default; there is **no** user-blocking/ignoring feature anywhere in the codebase. `src/Mapper/PmBuddyMapper.php`
 - **Account settings** — See [Account Settings](#account-settings-1) under Authentication & Account.
 
+### Groups
+- **Browse & self-service join** — `/groups` lists your own memberships and any `open` group you're not already in; requesting to join files a Pending-Approval membership (never instant — a group moderator must approve it). Closed groups aren't offered and can't be requested into; they remain admin-invite-only. `src/Http/Controllers/GroupController.php::index()`/`join()`
+- **Leave a group** — Self-service from the same page, for any status except Suspended (a suspension is a moderator decision, not something you can route around by leaving and rejoining — the existing row blocks a fresh join request). `GroupController::leave()`
+- **Group moderator review panel** — A member with Moderator status on a specific group gets `/groups/{id}/moderate`: approve or reject pending requests, and suspend/reinstate/remove existing members. A group moderator can never grant or touch Moderator status itself — appointing moderators stays an admin-only action via `/admin/groups`. `GroupController::moderate()`/`setMemberStatus()`/`removeMember()`
+- **Moderator actions are audit-logged** — Approve/reject/suspend/remove all write to the same admin audit log as message moderation and admin group changes.
+
 ---
 
 ## Moderation & Trust and Safety
@@ -183,8 +189,8 @@ A single bitmask permission model underlies forum defaults, group grants, and pe
 - **User directory & search** — Paginated admin list, searchable by username/display name/email. `src/Http/Controllers/Admin/UserController.php`
 - **Edit user account** — Display name, email, account status (Active/Inactive/Pending Moderator Approval/Pending Email Confirmation/Pending Both), admin flag, forced-password-change flag, direct password reset.
 - **Custom profile field editing (admin)** — Renders and saves any admin-visible custom fields for that user.
-- **User groups** — Create/edit/delete named groups. Each group has an `open` flag, but it's informational only in the current UI — there's no self-service "request to join" flow; membership is entirely admin-managed (see [Known Gaps](#known-gaps--stubbed-features)). `src/Http/Controllers/Admin/GroupController.php`
-- **Group membership management** — Add/remove members by username; set a membership status (Suspended/Unapproved/Approved/Moderator). Only the suspended-vs-active distinction actually affects permissions — Approved and Moderator are treated identically, so "Moderator" status confers no extra capability today (see [Known Gaps](#known-gaps--stubbed-features)).
+- **User groups** — Create/edit/delete named groups. The `open` flag gates front-end self-service joining — see [Groups](#groups) under Community & Social. `src/Http/Controllers/Admin/GroupController.php`
+- **Group membership management** — Add/remove members by username; set a membership status (Suspended/Unapproved/Approved/Moderator). Moderator status now confers real capability (the front-end group review panel — see [Groups](#groups)), but is still equivalent to Approved for *forum permission bitmask* purposes: `PermissionService`/`UserPermissionMapper::getGroupPermission()` only check `status >= 1`, so a group moderator gets no extra forum-permission bits beyond what the group's own grant gives every approved member. Appointing/demoting a Moderator remains admin-only, from this same page.
 - **Group-based per-forum permission grants** — See [Permissions](#permissions).
 
 ### Site-Wide Settings
@@ -267,8 +273,6 @@ Flags, settings, or service methods that exist in the code but aren't yet wired 
 
 - **`SUB_DIGEST` subscription type** — Defined as a constant but explicitly unused; no digest-email sending code exists.
 - **No per-user language or theme override** — `users.user_language` and `users.user_template` are mapped but never read; `App::initLang()` and theme resolution only consult site-wide config/settings.
-- **Group `open` flag is informational only** — no self-service "request to join" flow exists; all group membership is admin-driven despite the flag.
-- **Group moderator status confers no extra capability** — `user_group_xref.status` supports Suspended/Unapproved/Approved/Moderator, but permission resolution only checks `status >= 1`, treating Approved and Moderator identically. There's no group-moderator approval panel or differentiated permission (Phorum 6 had both).
 - **Report resolution identity isn't displayed** — `reports.resolved_user_id`/`resolved_time` are written correctly when a report is resolved or dismissed, but aren't shown anywhere (the reports queue only ever lists open reports, so they never appear there); the same actor+timestamp is visible in the admin audit log instead, so this is low-priority duplication rather than lost data.
 - **Several per-forum presentation/behavior toggles are mapped but not wired**: `list_length_threaded` (no threaded-view-specific page length), `threaded_list` (thread-list-level threading mode), `float_to_top` (threads with new replies don't re-sort to top), `check_duplicate` (no duplicate-post detection), `edit_post` (no forum-wide "disable editing" switch — only the per-user permission + time window apply), `allow_email_notify` (no forum-level gate on subscriptions), `language`/`inherit_id` (no per-forum locale override or settings inheritance), `count_views`/`count_views_per_thread` (view counting is unconditional, ignoring these opt-outs), `reverse_threading` (no reverse-order threaded replies).
 - **`users.is_dst`** — mapped but unread; DST adjustment is dropped even though `tz_offset` itself is used.
