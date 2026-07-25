@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Phorum\Http\Controllers;
 
+use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\Url;
 use Phorum\Http\Controller;
@@ -95,8 +96,9 @@ class LegacyRedirectController extends Controller
             $page      = null;
 
             if ($targetMsg !== null) {
-                $forum = $this->forums->load($forum_id);
-                if ($forum !== null && !$forum->threaded_read) {
+                $forum  = $this->forums->load($forum_id);
+                $viewer = Auth::user();
+                if ($forum !== null && !$forum->threaded_read && !($viewer?->threaded_read)) {
                     $perPage  = $forum->read_length ?: 25;
                     $position = $this->messages->findMessagePosition($thread_id, $targetMsg);
                     if ($position !== null) {

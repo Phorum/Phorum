@@ -77,7 +77,7 @@ abstract class ControllerTestCase extends TestCase
         return $twig;
     }
 
-    protected function makeUser(int $id = 1, bool $admin = false): User
+    protected function makeUser(int $id = 1, bool $admin = false, bool $threadedRead = false): User
     {
         $user               = new User();
         $user->user_id      = $id;
@@ -86,6 +86,7 @@ abstract class ControllerTestCase extends TestCase
         $user->email        = "user{$id}@example.com";
         $user->active       = 1;
         $user->admin        = $admin ? 1 : 0;
+        $user->threaded_read = $threadedRead ? 1 : 0;
         $user->password     = password_hash('secret', PASSWORD_BCRYPT);
         return $user;
     }

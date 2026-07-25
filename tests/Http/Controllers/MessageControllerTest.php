@@ -240,6 +240,68 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testThreadUsesThreadedModeWhenUserPrefersItOnAFlatForum(): void
+    {
+        Auth::setUser($this->makeUser(threadedRead: true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        // Threaded mode fetches the whole thread via findByThread(), no findRoot().
+        $messages->expects($this->once())->method('findByThread')->with(10, 1)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadIgnoresUserPreferenceWhenForumForcesFlat(): void
+    {
+        // Forum default (threaded_read = 0, the model default) always wins
+        // over a user who does NOT want threaded mode — there's no "force
+        // flat" value in the schema/UI, only "opt into threaded."
+        Auth::setUser($this->makeUser(threadedRead: false));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->expects($this->once())->method('findByThread')->with(10, 1, 25, 0)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testThreadIgnoresUserPreferenceWhenForumAlreadyThreaded(): void
+    {
+        Auth::setUser($this->makeUser(threadedRead: false));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['threaded_read' => 1]));
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findByThread')->with(10, 1)->willReturn([$root]);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+        $this->assertSame(200, $response->status);
+    }
+
     public function testThreadRedirectsWhenMsgParamResolvesToDifferentPage(): void
     {
         $forums = $this->createMock(ForumMapper::class);

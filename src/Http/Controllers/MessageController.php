@@ -160,7 +160,7 @@ class MessageController extends Controller
 
         $currentUser  = Auth::user();
         $viewerUserId = $currentUser?->user_id;
-        $threaded     = (bool) $forum->threaded_read;
+        $threaded     = $this->isThreadedView($forum, $currentUser);
 
         if ($threaded) {
             // Threaded mode always renders the whole reply tree in one page —
@@ -395,7 +395,7 @@ class MessageController extends Controller
 
                         return $this->redirect(Url::thread(
                             $forumId, $msg->thread, $msg->message_id,
-                            $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $user->user_id)
+                            $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $user)
                         ));
                     }
                 }
@@ -511,7 +511,7 @@ class MessageController extends Controller
                 if (empty($errors)) {
                     return $this->redirect(Url::thread(
                         $msg->forum_id, $msg->thread, $msg->message_id,
-                        $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $currentUser->user_id)
+                        $this->resolveMessagePage($forum, $msg->thread, $msg->message_id, $currentUser)
                     ));
                 }
             }
@@ -639,19 +639,30 @@ class MessageController extends Controller
     }
 
     /**
+     * A forum's threaded_read default applies unless the viewer has opted
+     * into threaded viewing themselves — matching Phorum 6's "0 = no
+     * override" semantics for the user-level column (there's no "force
+     * flat" value in the current schema/UI).
+     */
+    private function isThreadedView(Forum $forum, ?User $viewer): bool
+    {
+        return (bool) $forum->threaded_read || (bool) ($viewer?->threaded_read);
+    }
+
+    /**
      * Resolve which flat-mode page a message lands on, for redirects after
      * posting/editing — a new reply is always the newest message, so it
      * always lands on the last page, not page 1. Returns null in threaded
      * mode (no pagination to resolve) or when the position can't be found.
      */
-    private function resolveMessagePage(Forum $forum, int $threadId, int $messageId, ?int $viewerUserId): ?int
+    private function resolveMessagePage(Forum $forum, int $threadId, int $messageId, ?User $viewer): ?int
     {
-        if ($forum->threaded_read) {
+        if ($this->isThreadedView($forum, $viewer)) {
             return null;
         }
 
         $perPage  = $forum->read_length ?: 25;
-        $position = $this->messages->findMessagePosition($threadId, $messageId, $viewerUserId);
+        $position = $this->messages->findMessagePosition($threadId, $messageId, $viewer?->user_id);
 
         return $position !== null ? max(1, (int) ceil($position / $perPage)) : null;
     }
