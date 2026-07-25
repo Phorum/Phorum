@@ -680,6 +680,32 @@ class ModerationControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testReportsLoadsReporterUsersForDisplay(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([$this->makeForum(1)]);
+
+        $reports = $this->createMock(ReportMapper::class);
+        $reports->method('findOpenInForums')->willReturn([$this->makeReport(1, ['reporter_user_id' => 5])]);
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('loadMulti')->willReturn([$this->makeMessage(1, 1, 1)]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->once())->method('loadMulti')->with([5])->willReturn([$this->makeUser(5)]);
+
+        $ctrl     = $this->makeController([
+            'forums'   => $forums,
+            'reports'  => $reports,
+            'messages' => $messages,
+            'users'    => $users,
+        ]);
+        $response = $ctrl->reports(new Request());
+        $this->assertSame(200, $response->status);
+    }
+
     // -------------------------------------------------------------------------
     // report (resolve/dismiss)
     // -------------------------------------------------------------------------

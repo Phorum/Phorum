@@ -315,6 +315,7 @@ return [
     'mod.reports_empty'            => 'Нет открытых жалоб.',
     'mod.reports_message_missing'  => '(сообщение, на которое пожаловались, больше недоступно)',
     'mod.reports_reported'         => 'жалоба подана',
+    'mod.reports_reported_by'      => 'от {name}',
     'mod.reports_resolve'          => 'Решить',
     'mod.reports_dismiss'          => 'Отклонить',
     'mod.reports_view'             => 'Просмотреть в теме',

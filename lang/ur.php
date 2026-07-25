@@ -307,6 +307,7 @@ return [
     'mod.reports_empty'            => 'کوئی کھلی رپورٹ نہیں ہے۔',
     'mod.reports_message_missing'  => '(رپورٹ شدہ پیغام اب دستیاب نہیں ہے)',
     'mod.reports_reported'         => 'رپورٹ کیا گیا',
+    'mod.reports_reported_by'      => '{name} کی طرف سے',
     'mod.reports_resolve'          => 'حل کریں',
     'mod.reports_dismiss'          => 'مسترد کریں',
     'mod.reports_view'             => 'دھاگے میں دیکھیں',

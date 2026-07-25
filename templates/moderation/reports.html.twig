@@ -24,6 +24,11 @@
                     <div class="msg-date-line">
                         {{ trans('mod.queue_forum') }}: {{ forum_names[item.forum_id]|default('#' ~ item.forum_id) }}
                         &mdash; {{ trans('mod.reports_reported') }} {{ item.created|relative_time }}
+                        {{ trans('mod.reports_reported_by', {
+                            name: reporters_map[item.reporter_user_id] is defined
+                                ? reporters_map[item.reporter_user_id].display_name
+                                : '#' ~ item.reporter_user_id,
+                        }) }}
                     </div>
                 </div>
             </header>

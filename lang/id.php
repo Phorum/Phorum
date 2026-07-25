@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => 'Tidak ada laporan yang terbuka.',
     'mod.reports_message_missing'  => '(pesan yang dilaporkan tidak lagi tersedia)',
     'mod.reports_reported'         => 'dilaporkan',
+    'mod.reports_reported_by'      => 'oleh {name}',
     'mod.reports_resolve'          => 'Selesaikan',
     'mod.reports_dismiss'          => 'Abaikan',
     'mod.reports_view'             => 'Lihat di utas',

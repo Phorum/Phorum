@@ -318,6 +318,7 @@ return [
     'mod.reports_empty'            => 'لا توجد بلاغات مفتوحة.',
     'mod.reports_message_missing'  => '(الرسالة المُبلَّغ عنها لم تعد متوفرة)',
     'mod.reports_reported'         => 'تم الإبلاغ',
+    'mod.reports_reported_by'      => 'بواسطة {name}',
     'mod.reports_resolve'          => 'حل البلاغ',
     'mod.reports_dismiss'          => 'رفض البلاغ',
     'mod.reports_view'             => 'عرض في الموضوع',

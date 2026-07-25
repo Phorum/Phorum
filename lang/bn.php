@@ -342,6 +342,7 @@ return [
     'mod.reports_empty'          => 'কোনো খোলা রিপোর্ট নেই।',
     'mod.reports_message_missing' => '(রিপোর্ট করা বার্তাটি আর উপলব্ধ নেই)',
     'mod.reports_reported'       => 'রিপোর্ট করা হয়েছে',
+    'mod.reports_reported_by'    => '{name} দ্বারা',
     'mod.reports_resolve'        => 'সমাধান করুন',
     'mod.reports_dismiss'        => 'খারিজ করুন',
     'mod.reports_view'           => 'থ্রেডে দেখুন',

@@ -352,6 +352,7 @@ return [
     'mod.reports_empty'            => 'No open reports.',
     'mod.reports_message_missing'  => '(reported message no longer available)',
     'mod.reports_reported'         => 'reported',
+    'mod.reports_reported_by'      => 'by {name}',
     'mod.reports_resolve'          => 'Resolve',
     'mod.reports_dismiss'          => 'Dismiss',
     'mod.reports_view'             => 'View in thread',

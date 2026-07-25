@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => 'Aucun signalement ouvert.',
     'mod.reports_message_missing'  => '(le message signalé n\'est plus disponible)',
     'mod.reports_reported'         => 'signalé',
+    'mod.reports_reported_by'      => 'par {name}',
     'mod.reports_resolve'          => 'Résoudre',
     'mod.reports_dismiss'          => 'Rejeter',
     'mod.reports_view'             => 'Voir dans le fil',

@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => '目前沒有待處理的檢舉。',
     'mod.reports_message_missing'  => '（被檢舉的文章已不存在）',
     'mod.reports_reported'         => '已檢舉',
+    'mod.reports_reported_by'      => '由 {name}',
     'mod.reports_resolve'          => '結案',
     'mod.reports_dismiss'          => '駁回',
     'mod.reports_view'             => '在主題中檢視',

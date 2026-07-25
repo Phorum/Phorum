@@ -315,6 +315,7 @@ return [
     'mod.reports_empty'            => 'Keine offenen Meldungen.',
     'mod.reports_message_missing'  => '(gemeldete Nachricht nicht mehr verfügbar)',
     'mod.reports_reported'         => 'gemeldet',
+    'mod.reports_reported_by'      => 'von {name}',
     'mod.reports_resolve'          => 'Erledigt',
     'mod.reports_dismiss'          => 'Verwerfen',
     'mod.reports_view'             => 'Im Thread ansehen',

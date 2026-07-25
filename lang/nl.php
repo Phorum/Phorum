@@ -352,6 +352,7 @@ return [
     'mod.reports_empty'            => 'Geen openstaande meldingen.',
     'mod.reports_message_missing'  => '(gemeld bericht niet meer beschikbaar)',
     'mod.reports_reported'         => 'gemeld',
+    'mod.reports_reported_by'      => 'door {name}',
     'mod.reports_resolve'          => 'Afhandelen',
     'mod.reports_dismiss'          => 'Afwijzen',
     'mod.reports_view'             => 'Bekijken in discussie',

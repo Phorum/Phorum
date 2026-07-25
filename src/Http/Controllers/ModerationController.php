@@ -134,10 +134,17 @@ class ModerationController extends Controller
             $messagesMap[$msg->message_id] = $msg;
         }
 
+        $reporterIds = array_values(array_unique(array_map(fn($r) => $r->reporter_user_id, $openReports)));
+        $reportersMap = [];
+        foreach ($this->users->loadMulti($reporterIds) ?? [] as $reporter) {
+            $reportersMap[$reporter->user_id] = $reporter;
+        }
+
         return $this->respond($this->render('moderation/reports.html.twig', [
-            'reports'     => $openReports,
-            'messages_map' => $messagesMap,
-            'forum_names' => $forumNames,
+            'reports'       => $openReports,
+            'messages_map'  => $messagesMap,
+            'reporters_map' => $reportersMap,
+            'forum_names'   => $forumNames,
         ]));
     }
 

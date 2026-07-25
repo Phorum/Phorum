@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => 'Nenhuma denúncia em aberto.',
     'mod.reports_message_missing'  => '(mensagem denunciada não está mais disponível)',
     'mod.reports_reported'         => 'denunciado',
+    'mod.reports_reported_by'      => 'por {name}',
     'mod.reports_resolve'          => 'Resolver',
     'mod.reports_dismiss'          => 'Descartar',
     'mod.reports_view'             => 'Ver no tópico',

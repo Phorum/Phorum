@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => '暂无待处理的举报。',
     'mod.reports_message_missing'  => '（被举报的消息已不存在）',
     'mod.reports_reported'         => '举报',
+    'mod.reports_reported_by'      => '由 {name}',
     'mod.reports_resolve'          => '处理',
     'mod.reports_dismiss'          => '忽略',
     'mod.reports_view'             => '在主题中查看',

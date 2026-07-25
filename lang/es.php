@@ -345,6 +345,7 @@ return [
     'mod.reports_empty'            => 'No hay reportes abiertos.',
     'mod.reports_message_missing'  => '(el mensaje reportado ya no está disponible)',
     'mod.reports_reported'         => 'reportado',
+    'mod.reports_reported_by'      => 'por {name}',
     'mod.reports_resolve'          => 'Resolver',
     'mod.reports_dismiss'          => 'Descartar',
     'mod.reports_view'             => 'Ver en el hilo',

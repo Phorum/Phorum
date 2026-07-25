@@ -350,6 +350,7 @@ return [
     'mod.reports_empty'           => 'कोई खुली रिपोर्ट नहीं है।',
     'mod.reports_message_missing' => '(रिपोर्ट किया गया संदेश अब उपलब्ध नहीं है)',
     'mod.reports_reported'        => 'रिपोर्ट किया गया',
+    'mod.reports_reported_by'     => '{name} द्वारा',
     'mod.reports_resolve'         => 'हल करें',
     'mod.reports_dismiss'         => 'खारिज करें',
     'mod.reports_view'            => 'थ्रेड में देखें',
