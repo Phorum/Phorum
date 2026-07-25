@@ -14,26 +14,27 @@
     <p>{{ trans('mod.reports_empty') }}</p>
 {% else %}
     {% for item in reports %}
-        {% set reported_msg = attribute(messages_map, item.message_id) %}
+        {# A plain `{% set x = attribute(map, key) %}` is always "defined" afterwards even
+           when the lookup missed and x is null — `is not null` tests the actual value instead. #}
+        {% set reported_msg = messages_map[item.message_id] is defined ? messages_map[item.message_id] : null %}
+        {% set reporter     = reporters_map[item.reporter_user_id] is defined ? reporters_map[item.reporter_user_id] : null %}
         <article class="message message-unapproved">
             <header class="message-header">
                 <div class="msg-author-info">
                     <div class="msg-subject-line">
-                        {{ reported_msg is defined ? reported_msg.subject : trans('mod.reports_message_missing') }}
+                        {{ reported_msg is not null ? reported_msg.subject : trans('mod.reports_message_missing') }}
                     </div>
                     <div class="msg-date-line">
                         {{ trans('mod.queue_forum') }}: {{ forum_names[item.forum_id]|default('#' ~ item.forum_id) }}
                         &mdash; {{ trans('mod.reports_reported') }} {{ item.created|relative_time }}
                         {{ trans('mod.reports_reported_by', {
-                            name: reporters_map[item.reporter_user_id] is defined
-                                ? reporters_map[item.reporter_user_id].display_name
-                                : '#' ~ item.reporter_user_id,
+                            name: reporter is not null ? reporter.display_name : '#' ~ item.reporter_user_id,
                         }) }}
                     </div>
                 </div>
             </header>
 
-            {% if reported_msg is defined %}
+            {% if reported_msg is not null %}
                 <div class="message-body">
                     {{ reported_msg.body|format(reported_msg.meta) }}
                 </div>
@@ -53,7 +54,7 @@
                         {{ csrf_field() }}
                         <button type="submit">{{ trans('mod.reports_dismiss') }}</button>
                     </form>
-                    {% if reported_msg is defined %}
+                    {% if reported_msg is not null %}
                         <a href="{{ path('/forum/' ~ item.forum_id ~ '/thread/' ~ reported_msg.thread) }}#msg-{{ reported_msg.message_id }}">{{ trans('mod.reports_view') }}</a>
                     {% endif %}
                 </span>
