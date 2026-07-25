@@ -422,6 +422,12 @@ return [
         'tokens'  => ['user_id'],
     ],
     [
+        'type'    => 'regex',
+        'pattern' => '!^/admin/users/(\d+)/permissions$!',
+        'action'  => 'Admin\UserController@savePermissions',
+        'tokens'  => ['user_id'],
+    ],
+    [
         'type'    => 'exact',
         'pattern' => '/admin/stop-impersonating',
         'action'  => 'Admin\UserController@stopImpersonate',

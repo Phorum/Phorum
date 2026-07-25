@@ -10,12 +10,15 @@ use Phorum\Core\Impersonation;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\CustomFieldConfigMapper;
+use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
 use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\UserCustomFieldMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Service\CustomFieldService;
+use Phorum\Service\PermissionFlags;
 use Twig\Environment;
 
 class UserController extends AdminController
@@ -31,20 +34,24 @@ class UserController extends AdminController
         UserMapper::PENDING_BOTH  => 'Pending Email Confirmation & Moderator Approval',
     ];
 
-    private readonly UserMapper         $users;
-    private readonly CustomFieldService $cfService;
-    private readonly ModLogMapper       $modLog;
-    private readonly MessageMapper      $messages;
-    private readonly SearchMapper       $searchIndex;
+    private readonly UserMapper           $users;
+    private readonly CustomFieldService   $cfService;
+    private readonly ModLogMapper         $modLog;
+    private readonly MessageMapper        $messages;
+    private readonly SearchMapper         $searchIndex;
+    private readonly ForumMapper          $forums;
+    private readonly UserPermissionMapper $userPerms;
 
     public function __construct(
-        Config              $config,
-        Environment         $twig,
-        ?UserMapper         $users       = null,
-        ?CustomFieldService $cfService   = null,
-        ?ModLogMapper       $modLog      = null,
-        ?MessageMapper      $messages    = null,
-        ?SearchMapper       $searchIndex = null,
+        Config                 $config,
+        Environment            $twig,
+        ?UserMapper             $users       = null,
+        ?CustomFieldService     $cfService   = null,
+        ?ModLogMapper           $modLog      = null,
+        ?MessageMapper          $messages    = null,
+        ?SearchMapper           $searchIndex = null,
+        ?ForumMapper            $forums      = null,
+        ?UserPermissionMapper   $userPerms   = null,
     ) {
         parent::__construct($config, $twig);
         $this->users       = $users       ?? new UserMapper();
@@ -52,6 +59,8 @@ class UserController extends AdminController
         $this->modLog      = $modLog      ?? new ModLogMapper();
         $this->messages    = $messages    ?? new MessageMapper();
         $this->searchIndex = $searchIndex ?? new SearchMapper();
+        $this->forums      = $forums      ?? new ForumMapper();
+        $this->userPerms   = $userPerms   ?? new UserPermissionMapper();
     }
 
     public function index(Request $request): Response
@@ -185,7 +194,48 @@ class UserController extends AdminController
             'errors'         => $errors,
             'success'        => $success,
             'admin_user_id'  => AdminAuth::user()->user_id,
+            'forums'         => $this->forums->find(filter: ['active' => 1, 'folder_flag' => 0], order: 'name ASC') ?? [],
+            'overrides'      => $this->userPerms->findByUser($userId),
+            'perm_flags'     => PermissionFlags::FLAGS,
         ]));
+    }
+
+    /**
+     * Save this user's direct per-forum permission overrides — these take
+     * priority over group-based grants and the forum's own defaults (see
+     * PermissionService::resolve()).
+     */
+    public function savePermissions(Request $request): Response
+    {
+        if ($r = $this->requireAdmin()) { return $r; }
+
+        $userId = (int) ($request->tokens['user_id'] ?? 0);
+        $user   = $this->users->load($userId);
+        if ($user === null) { return $this->notFound(); }
+        if (!$request->isPost()) { return $this->notFound(); }
+        if ($r = $this->checkCsrf($request)) { return $r; }
+
+        $posted = $request->post['perms'] ?? [];
+        foreach ($this->forums->find(filter: ['active' => 1, 'folder_flag' => 0]) ?? [] as $forum) {
+            $bits = $posted[$forum->forum_id] ?? [];
+            $perm = PermissionFlags::combine($bits);
+            if ($perm > 0) {
+                $this->userPerms->setPermission($userId, $forum->forum_id, $perm);
+            } else {
+                $this->userPerms->removePermission($userId, $forum->forum_id);
+            }
+        }
+
+        $this->modLog->record(
+            userId:     AdminAuth::user()->user_id,
+            action:     'set_permissions',
+            objectType: 'user',
+            objectId:   $userId,
+            forumId:    0,
+            details:    $user->username,
+        );
+
+        return $this->redirect('/admin/users/' . $userId . '/edit');
     }
 
     /**

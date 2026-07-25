@@ -29,6 +29,49 @@ class UserPermissionMapper
         return empty($rows) ? null : (int) $rows[0]['permission'];
     }
 
+    /** All of a user's direct per-forum overrides, as [forum_id => permission]. */
+    public function findByUser(int $userId): array
+    {
+        $rows = $this->crud()->runFetch(
+            'SELECT forum_id, permission FROM ' . $this->table('user_permissions')
+            . ' WHERE user_id = :user_id',
+            [':user_id' => $userId]
+        );
+
+        $overrides = [];
+        foreach ($rows as $row) {
+            $overrides[(int) $row['forum_id']] = (int) $row['permission'];
+        }
+        return $overrides;
+    }
+
+    /** Grant (or update) a user's direct permission override on a forum. */
+    public function setPermission(int $userId, int $forumId, int $permission): void
+    {
+        if ($this->getDirectPermission($userId, $forumId) === null) {
+            $this->crud()->create($this->table('user_permissions'), [
+                'user_id'    => $userId,
+                'forum_id'   => $forumId,
+                'permission' => $permission,
+            ]);
+        } else {
+            $this->crud()->update(
+                $this->table('user_permissions'),
+                ['permission' => $permission],
+                ['user_id' => $userId, 'forum_id' => $forumId],
+            );
+        }
+    }
+
+    /** Remove a user's direct permission override on a forum, if any. */
+    public function removePermission(int $userId, int $forumId): void
+    {
+        $this->crud()->delete(
+            $this->table('user_permissions'),
+            ['user_id' => $userId, 'forum_id' => $forumId],
+        );
+    }
+
     /**
      * Return the combined (BIT_OR) group permission for a user in a forum.
      * Only groups where the user has an active or moderator status (>= 1)

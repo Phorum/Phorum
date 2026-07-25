@@ -8,10 +8,12 @@ use Phorum\Core\Impersonation;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Http\Controllers\Admin\UserController;
 use Phorum\Http\Request;
+use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\ModLogMapper;
 use Phorum\Mapper\SearchMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Service\CustomFieldService;
 use Phorum\Tests\Http\ControllerTestCase;
 
@@ -31,6 +33,8 @@ class AdminUserControllerTest extends ControllerTestCase
             modLog:      $deps['modLog']      ?? $this->createMock(ModLogMapper::class),
             messages:    $deps['messages']    ?? $this->createMock(MessageMapper::class),
             searchIndex: $deps['searchIndex'] ?? $this->createMock(SearchMapper::class),
+            forums:      $deps['forums']      ?? $this->createMock(ForumMapper::class),
+            userPerms:   $deps['userPerms']   ?? $this->createMock(UserPermissionMapper::class),
         );
     }
 
@@ -492,5 +496,91 @@ class AdminUserControllerTest extends ControllerTestCase
         $this->assertSame('/admin/users', $response->headers['Location']);
         $this->assertFalse(Impersonation::isActive());
         $this->assertNull(Auth::user());
+    }
+
+    // -------------------------------------------------------------------------
+    // savePermissions
+    // -------------------------------------------------------------------------
+
+    public function testSavePermissionsRedirectsWhenNotAdmin(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->savePermissions($this->makePostRequest(tokens: ['user_id' => '2']));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/login', $response->headers['Location']);
+    }
+
+    public function testSavePermissionsReturns404WhenUserNotFound(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn(null);
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->savePermissions($this->makePostRequest(tokens: ['user_id' => '99']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testSavePermissionsReturns403WithBadCsrf(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(2));
+
+        $ctrl     = $this->makeController(['users' => $users]);
+        $response = $ctrl->savePermissions(new Request(
+            post:   ['csrf_token' => 'bad'],
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(403, $response->status);
+    }
+
+    public function testSavePermissionsSetsCheckedForumsAndRemovesUnchecked(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(2));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([$this->makeForum(1), $this->makeForum(2)]);
+
+        $userPerms = $this->createMock(UserPermissionMapper::class);
+        $userPerms->expects($this->once())->method('setPermission')->with(2, 1, 3);
+        $userPerms->expects($this->once())->method('removePermission')->with(2, 2);
+
+        $ctrl     = $this->makeController(['users' => $users, 'forums' => $forums, 'userPerms' => $userPerms]);
+        $response = $ctrl->savePermissions($this->makePostRequest(
+            ['perms' => [1 => ['1', '2']]],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/admin/users/2/edit', $response->headers['Location']);
+    }
+
+    public function testSavePermissionsLogsAction(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $users = $this->createMock(UserMapper::class);
+        $target = $this->makeUser(2);
+        $users->method('load')->willReturn($target);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('find')->willReturn([$this->makeForum(1)]);
+
+        $modLog = $this->createMock(ModLogMapper::class);
+        $modLog->expects($this->once())->method('record')
+            ->with(1, 'set_permissions', 'user', 2, 0, $target->username);
+
+        $ctrl     = $this->makeController(['users' => $users, 'forums' => $forums, 'modLog' => $modLog]);
+        $response = $ctrl->savePermissions($this->makePostRequest(
+            ['perms' => [1 => ['1']]],
+            tokens: ['user_id' => '2'],
+        ));
+        $this->assertSame(302, $response->status);
     }
 }
