@@ -98,8 +98,8 @@ class SubscriptionServiceTest extends TestCase
     public function testNotifySubscribersSendsEmailToEachRecipient(): void
     {
         $recipients = [
-            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice'],
-            ['user_id' => 3, 'email' => 'b@test.com', 'display_name' => '',      'username' => 'bob'],
+            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice', 'matched_thread' => 100],
+            ['user_id' => 3, 'email' => 'b@test.com', 'display_name' => '',      'username' => 'bob',   'matched_thread' => 100],
         ];
         $mapper = $this->createMock(SubscriberMapper::class);
         $mapper->method('listEmailSubscribers')->willReturn($recipients);
@@ -126,7 +126,7 @@ class SubscriptionServiceTest extends TestCase
         SiteSettings::initialize($settings, 'Phorum');
 
         $recipients = [
-            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice'],
+            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice', 'matched_thread' => 100],
         ];
         $mapper = $this->createMock(SubscriberMapper::class);
         $mapper->method('listEmailSubscribers')->willReturn($recipients);
@@ -134,6 +134,58 @@ class SubscriptionServiceTest extends TestCase
         $mailer = $this->createMock(MailService::class);
         $mailer->expects($this->once())->method('send')
             ->with($this->anything(), $this->anything(), $this->stringContains('[My Test Forum]'), $this->anything());
+
+        $msg = new Message();
+        $msg->forum_id = 10; $msg->thread = 100; $msg->message_id = 200; $msg->subject = 'Test topic';
+
+        $svc = $this->makeService(subscribers: $mapper, mailer: $mailer);
+        $svc->notifySubscribers($msg, new Forum(), 1);
+    }
+
+    public function testNotifySubscribersLinksToForumFollowForForumWideSubscriber(): void
+    {
+        $recipients = [
+            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice', 'matched_thread' => 0],
+        ];
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn($recipients);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->once())->method('send')
+            ->with(
+                $this->anything(), $this->anything(), $this->anything(),
+                $this->logicalAnd(
+                    $this->stringContains('/forum/10/follow?action=remove'),
+                    $this->stringContains('/forum/10/follow?action=bookmark'),
+                    $this->logicalNot($this->stringContains('/follow/100?action')),
+                ),
+            );
+
+        $msg = new Message();
+        $msg->forum_id = 10; $msg->thread = 100; $msg->message_id = 200; $msg->subject = 'Test topic';
+
+        $svc = $this->makeService(subscribers: $mapper, mailer: $mailer);
+        $svc->notifySubscribers($msg, new Forum(), 1);
+    }
+
+    public function testNotifySubscribersLinksToThreadFollowForThreadSpecificSubscriber(): void
+    {
+        $recipients = [
+            ['user_id' => 2, 'email' => 'a@test.com', 'display_name' => 'Alice', 'username' => 'alice', 'matched_thread' => 100],
+        ];
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn($recipients);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->once())->method('send')
+            ->with(
+                $this->anything(), $this->anything(), $this->anything(),
+                $this->logicalAnd(
+                    $this->stringContains('/follow/100?action=remove'),
+                    $this->stringContains('/follow/100?action=bookmark'),
+                    $this->logicalNot($this->stringContains('/forum/10/follow')),
+                ),
+            );
 
         $msg = new Message();
         $msg->forum_id = 10; $msg->thread = 100; $msg->message_id = 200; $msg->subject = 'Test topic';
@@ -157,7 +209,7 @@ class SubscriptionServiceTest extends TestCase
     public function testNotifySubscribersUsesFallbackUsernameWhenDisplayNameEmpty(): void
     {
         $recipients = [
-            ['user_id' => 2, 'email' => 'b@test.com', 'display_name' => '', 'username' => 'bob'],
+            ['user_id' => 2, 'email' => 'b@test.com', 'display_name' => '', 'username' => 'bob', 'matched_thread' => 1],
         ];
         $mapper = $this->createMock(SubscriberMapper::class);
         $mapper->method('listEmailSubscribers')->willReturn($recipients);

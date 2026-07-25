@@ -120,6 +120,15 @@ class UserMapper extends AbstractPhorumMapper
         );
     }
 
+    /** Record the forum a user just browsed, for "return to your last forum" navigation. */
+    public function updateLastActiveForum(int $userId, int $forumId): void
+    {
+        $this->crud()->run(
+            'UPDATE ' . $this->table() . ' SET last_active_forum = :forum_id WHERE user_id = :id',
+            [':forum_id' => $forumId, ':id' => $userId]
+        );
+    }
+
     public function incrementNewPmCount(int $userId): void
     {
         $this->crud()->run(

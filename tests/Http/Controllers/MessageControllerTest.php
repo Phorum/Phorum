@@ -174,6 +174,52 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(200, $response->status);
     }
 
+    public function testThreadUpdatesLastActiveForumForLoggedInUser(): void
+    {
+        Auth::setUser($this->makeUser(3));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findByThread')->willReturn([$root]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->once())->method('updateLastActiveForum')->with(3, 1);
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl = $this->makeController([
+            'forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs, 'users' => $users,
+        ]);
+        $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+    }
+
+    public function testThreadSkipsLastActiveForumForAnonymousUser(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $root = $this->makeMessage(10, 1, 10);
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findRoot')->willReturn($root);
+        $messages->method('findByThread')->willReturn([$root]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->never())->method('updateLastActiveForum');
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(0);
+
+        $ctrl = $this->makeController([
+            'forums' => $forums, 'messages' => $messages, 'subscriptions' => $subs, 'users' => $users,
+        ]);
+        $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+    }
+
     public function testThreadSkipsViewCountIncrementWhenCountViewsDisabled(): void
     {
         $forums = $this->createMock(ForumMapper::class);

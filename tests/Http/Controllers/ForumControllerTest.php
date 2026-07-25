@@ -9,6 +9,7 @@ use Phorum\Http\Request;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\NewflagMapper;
+use Phorum\Mapper\UserMapper;
 use Phorum\Service\AnnouncementService;
 use Phorum\Service\NewflagService;
 use Phorum\Service\PermissionService;
@@ -27,6 +28,7 @@ class ForumControllerTest extends ControllerTestCase
         $messages      = $deps['messages']      ?? $this->createMock(MessageMapper::class);
         $newflags      = $deps['newflags']      ?? $this->createMock(NewflagService::class);
         $announcements = $deps['announcements'] ?? $this->createMock(AnnouncementService::class);
+        $users         = $deps['users']         ?? $this->createMock(UserMapper::class);
 
         return new ForumController(
             config:        $this->makeConfig(),
@@ -36,6 +38,7 @@ class ForumControllerTest extends ControllerTestCase
             perms:         $perms,
             newflags:      $newflags,
             announcements: $announcements,
+            users:         $users,
         );
     }
 
@@ -140,6 +143,40 @@ class ForumControllerTest extends ControllerTestCase
         $messages->method('findThreadsInForum')->willReturn([]);
 
         $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testShowUpdatesLastActiveForumForLoggedInUser(): void
+    {
+        Auth::setUser($this->makeUser(3));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findThreadsInForum')->willReturn([]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->once())->method('updateLastActiveForum')->with(3, 1);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'users' => $users]);
+        $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testShowSkipsLastActiveForumForAnonymousUser(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findThreadsInForum')->willReturn([]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->never())->method('updateLastActiveForum');
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages, 'users' => $users]);
         $response = $ctrl->show(new Request(tokens: ['forum_id' => '1']));
         $this->assertSame(200, $response->status);
     }

@@ -12,6 +12,7 @@ use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\FileMapper;
+use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
@@ -28,6 +29,7 @@ class UserController extends Controller
     private readonly FileMapper       $fileMapper;
     private readonly PmBuddyMapper    $buddies;
     private readonly PermissionService $perms;
+    private readonly ForumMapper      $forums;
 
     public function __construct(
         Config              $config,
@@ -38,6 +40,7 @@ class UserController extends Controller
         ?FileMapper         $fileMapper  = null,
         ?PmBuddyMapper      $buddies     = null,
         ?PermissionService  $perms       = null,
+        ?ForumMapper        $forums      = null,
     ) {
         parent::__construct($config, $twig);
         $this->fileMapper  = $fileMapper  ?? new FileMapper();
@@ -46,6 +49,7 @@ class UserController extends Controller
         $this->fileService = $fileService ?? new FileService($this->fileMapper);
         $this->buddies     = $buddies     ?? new PmBuddyMapper();
         $this->perms       = $perms       ?? new PermissionService(new UserPermissionMapper());
+        $this->forums      = $forums      ?? new ForumMapper();
     }
 
     // -------------------------------------------------------------------------
@@ -78,12 +82,23 @@ class UserController extends Controller
         // Site admins and ALLOW_MODERATE_USERS holders bypass hide_email/hide_activity.
         $canViewHidden = ($viewer?->admin ?? false) || $this->perms->canModerateUsersAnywhere($viewer);
 
+        // Only look this up on your own profile — it's a personal nav
+        // shortcut, not something worth a query on every profile view.
+        $lastActiveForum = null;
+        if ($viewer !== null && $viewer->user_id === $userId && $viewer->last_active_forum > 0) {
+            $candidate = $this->forums->load($viewer->last_active_forum);
+            if ($candidate !== null && $candidate->active) {
+                $lastActiveForum = $candidate;
+            }
+        }
+
         return $this->respond($this->render('user/profile.html.twig', [
-            'profile'         => $profile,
-            'recent_posts'    => $recentPosts ?? [],
-            'avatar'          => $avatar,
-            'is_buddy'        => $isBuddy,
-            'can_view_hidden' => $canViewHidden,
+            'profile'            => $profile,
+            'recent_posts'       => $recentPosts ?? [],
+            'avatar'             => $avatar,
+            'is_buddy'           => $isBuddy,
+            'can_view_hidden'    => $canViewHidden,
+            'last_active_forum'  => $lastActiveForum,
         ]));
     }
 

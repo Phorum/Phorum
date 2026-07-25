@@ -87,6 +87,11 @@
     <div class="profile-actions">
         {% if user and user.user_id == profile.user_id %}
             <a href="{{ path('/user/settings') }}" class="btn-primary">{{ trans('profile.edit_settings') }}</a>
+            {% if last_active_forum %}
+                <a href="{{ path('/forum/' ~ last_active_forum.forum_id) }}" class="btn-secondary">
+                    {{ trans('profile.continue_browsing', {forum: last_active_forum.name}) }}
+                </a>
+            {% endif %}
         {% elseif user %}
             <a href="{{ path('/pm/compose/' ~ profile.user_id) }}" class="btn-primary">{{ trans('pm.compose') }}</a>
             {% if is_buddy %}

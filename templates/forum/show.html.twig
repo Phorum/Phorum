@@ -36,6 +36,7 @@
                 {{ csrf_field() }}
                 <button type="submit" class="btn-mark-read"><i class="fa fa-check-square-o"></i>{{ trans('forum.mark_read') }}</button>
             </form>
+            <a href="{{ path('/forum/' ~ forum.forum_id ~ '/follow') }}" class="btn-feed"><i class="fa fa-bell-o"></i>{{ trans('sub.forum_title') }}</a>
         {% endif %}
         {% if feeds_enabled %}
             <a href="{{ path('/forum/' ~ forum.forum_id ~ '/feed.rss') }}" class="btn-feed"><i class="fa fa-rss"></i>{{ trans('forum.feed_link') }}</a>

@@ -186,6 +186,7 @@ return [
     'profile.col_subject'    => '主题',
     'profile.col_date'       => '日期',
     'profile.edit_settings'  => '编辑设置',
+    'profile.continue_browsing' => '继续浏览：{forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -334,6 +335,13 @@ return [
     'sub.confirm_bookmark'   => '将您的关注切换为收藏（不发送邮件通知）？',
     'sub.confirm_yes'        => '是，确认',
     'sub.confirm_cancel'     => '取消',
+    'sub.forum_title' => '关注版块',
+    'sub.forum_following_email' => '您目前正在关注此版块，将收到新主题和回复的邮件通知。',
+    'sub.forum_bookmarked' => '您已收藏此版块（无邮件通知）。',
+    'sub.forum_not_following' => '您尚未关注此版块。',
+    'sub.back_to_forum' => '返回版块',
+    'sub.confirm_remove_forum' => '确定要取消关注此版块吗？',
+    'sub.confirm_bookmark_forum' => '将您的版块订阅改为收藏（无邮件通知）？',
 
     // -------------------------------------------------------------------------
     // Moderation

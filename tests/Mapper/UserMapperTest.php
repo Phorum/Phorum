@@ -158,6 +158,16 @@ class UserMapperTest extends MapperTestCase
         $this->assertSame(4, (int) $row['pm_new_count']);
     }
 
+    public function testUpdateLastActiveForum(): void
+    {
+        $id = $this->seedUser(['last_active_forum' => 0]);
+        $mapper = $this->makeMapper();
+        $mapper->updateLastActiveForum($id, 7);
+
+        $row = self::$pdo->query("SELECT last_active_forum FROM phorum_users WHERE user_id = {$id}")->fetch();
+        $this->assertSame(7, (int) $row['last_active_forum']);
+    }
+
     // -------------------------------------------------------------------------
     // findModeratorsForForum
     // -------------------------------------------------------------------------

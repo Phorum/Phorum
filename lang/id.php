@@ -186,6 +186,7 @@ return [
     'profile.col_subject'    => 'Subjek',
     'profile.col_date'       => 'Tanggal',
     'profile.edit_settings'  => 'Ubah Pengaturan',
+    'profile.continue_browsing' => 'Lanjutkan Menjelajah: {forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -334,6 +335,13 @@ return [
     'sub.confirm_bookmark'   => 'Alihkan langganan Anda menjadi bookmark (tanpa notifikasi email)?',
     'sub.confirm_yes'        => 'Ya, konfirmasi',
     'sub.confirm_cancel'     => 'Batal',
+    'sub.forum_title' => 'Ikuti Forum',
+    'sub.forum_following_email' => 'Anda saat ini mengikuti forum ini dan akan menerima notifikasi email untuk utas dan balasan baru.',
+    'sub.forum_bookmarked' => 'Anda telah menandai forum ini (tanpa notifikasi email).',
+    'sub.forum_not_following' => 'Anda tidak mengikuti forum ini.',
+    'sub.back_to_forum' => 'Kembali ke forum',
+    'sub.confirm_remove_forum' => 'Apakah Anda yakin ingin berhenti berlangganan forum ini?',
+    'sub.confirm_bookmark_forum' => 'Ubah langganan forum Anda menjadi penanda (tanpa notifikasi email)?',
 
     // -------------------------------------------------------------------------
     // Moderation

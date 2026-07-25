@@ -113,4 +113,74 @@ class SubscriptionController extends Controller
             'theme'       => $this->resolveTheme($forum),
         ]));
     }
+
+    /**
+     * GET  /forum/{forum_id}/follow — show forum-wide subscribe options
+     * POST /forum/{forum_id}/follow — handle subscribe/unsubscribe for the
+     * whole forum (thread = 0) — every new thread and reply in the forum
+     * notifies, same as following one thread but forum-scoped.
+     */
+    public function followForum(Request $request): Response
+    {
+        $user = Auth::user();
+        if ($user === null) {
+            return $this->redirect('/login?redirect=' . urlencode($request->server['REQUEST_URI'] ?? '/'));
+        }
+
+        $forumId = (int) ($request->tokens['forum_id'] ?? 0);
+        $forum   = $this->forums->load($forumId);
+        if ($forum === null || $forum->folder_flag) {
+            return $this->notFound();
+        }
+
+        $service = $this->subscriptionService;
+        $current = $service->getSubscription($user->user_id, $forumId, thread: 0);
+
+        // Quick-action links from notification emails arrive as GET requests.
+        // Show a confirmation form so the action only fires on a CSRF-protected POST.
+        $quickAction = $request->query['action'] ?? '';
+        if (in_array($quickAction, ['remove', 'bookmark'], true)) {
+            if ($request->isPost()) {
+                if ($r = $this->checkCsrf($request)) { return $r; }
+                if ($quickAction === 'remove') {
+                    $service->unsubscribe($user->user_id, $forumId, 0);
+                } else {
+                    $service->subscribe($user->user_id, $forumId, 0, SubscriberMapper::SUB_BOOKMARK);
+                }
+                return $this->redirect(Url::forum($forumId));
+            }
+            return $this->respond($this->render('subscription/quick_confirm_forum.html.twig', [
+                'forum'       => $forum,
+                'quick_action'=> $quickAction,
+                'theme'       => $this->resolveTheme($forum),
+            ]));
+        }
+
+        if ($request->isPost()) {
+            if ($r = $this->checkCsrf($request)) { return $r; }
+            $action = $request->post['action'] ?? '';
+
+            match ($action) {
+                'subscribe_email' => $forum->allow_email_notify ? $service->subscribe(
+                    $user->user_id, $forumId, 0, SubscriberMapper::SUB_MESSAGE
+                ) : null,
+                'subscribe_bookmark' => $service->subscribe(
+                    $user->user_id, $forumId, 0, SubscriberMapper::SUB_BOOKMARK
+                ),
+                'unsubscribe' => $service->unsubscribe($user->user_id, $forumId, 0),
+                default       => null,
+            };
+
+            return $this->redirect(Url::forum($forumId));
+        }
+
+        return $this->respond($this->render('subscription/follow_forum.html.twig', [
+            'forum'       => $forum,
+            'current_sub' => $current,
+            'SUB_NONE'    => SubscriberMapper::SUB_NONE,
+            'SUB_MESSAGE' => SubscriberMapper::SUB_MESSAGE,
+            'SUB_BOOKMARK'=> SubscriberMapper::SUB_BOOKMARK,
+            'theme'       => $this->resolveTheme($forum),
+        ]));
+    }
 }

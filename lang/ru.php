@@ -166,6 +166,7 @@ return [
     'profile.col_subject'    => 'Тема',
     'profile.col_date'       => 'Дата',
     'profile.edit_settings'  => 'Изменить настройки',
+    'profile.continue_browsing' => 'Продолжить просмотр: {forum}',
 
     // Account settings
     'settings.title'             => 'Настройки аккаунта',
@@ -304,6 +305,13 @@ return [
     'sub.confirm_bookmark'   => 'Заменить подписку на закладку (без уведомлений по электронной почте)?',
     'sub.confirm_yes'        => 'Да, подтвердить',
     'sub.confirm_cancel'     => 'Отмена',
+    'sub.forum_title' => 'Подписаться на форум',
+    'sub.forum_following_email' => 'Вы сейчас следите за этим форумом и будете получать уведомления по электронной почте о новых темах и ответах.',
+    'sub.forum_bookmarked' => 'Вы добавили этот форум в закладки (без уведомлений по email).',
+    'sub.forum_not_following' => 'Вы не следите за этим форумом.',
+    'sub.back_to_forum' => 'Назад к форуму',
+    'sub.confirm_remove_forum' => 'Вы уверены, что хотите отписаться от этого форума?',
+    'sub.confirm_bookmark_forum' => 'Изменить подписку на форум на закладку (без уведомлений по email)?',
 
     // Moderation
     'mod.delete_thread'            => 'Удалить тему',

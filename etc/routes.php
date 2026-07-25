@@ -95,6 +95,14 @@ return [
         'tokens'  => ['forum_id'],
     ],
 
+    // Follow an entire forum (thread = 0) — new threads and replies notify
+    [
+        'type'    => 'regex',
+        'pattern' => '!^/forum/(\d+)/follow$!',
+        'action'  => 'SubscriptionController@followForum',
+        'tokens'  => ['forum_id'],
+    ],
+
     // Thread / read
     [
         'type'    => 'regex',

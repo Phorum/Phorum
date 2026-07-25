@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Phorum\Tests\Twig;
 
 use DealNews\SchemaOrg\Type\WebPage;
+use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Hook\HookDispatcher;
+use Phorum\Model\User;
 use Phorum\Twig\PhorumExtension;
 use PHPUnit\Framework\TestCase;
 
@@ -15,11 +17,22 @@ class PhorumExtensionTest extends TestCase
     {
         HookDispatcher::reset();
         require_once dirname(__DIR__, 2) . '/src/Hook/functions.php';
+        Auth::clear();
     }
 
     protected function tearDown(): void
     {
         HookDispatcher::reset();
+        Auth::clear();
+    }
+
+    private function makeUser(float $tzOffset, bool $isDst = false): User
+    {
+        $user            = new User();
+        $user->user_id   = 1;
+        $user->tz_offset = $tzOffset;
+        $user->is_dst    = $isDst ? 1 : 0;
+        return $user;
     }
 
     private function makeExt(): PhorumExtension
@@ -49,6 +62,52 @@ class PhorumExtensionTest extends TestCase
         $ext    = $this->makeExt();
         $result = $ext->formatDatestamp(strtotime('2024-01-15'), 'Y-m-d');
         $this->assertSame('2024-01-15', $result);
+    }
+
+    public function testFormatDatestampUnaffectedWhenNoViewerLoggedIn(): void
+    {
+        $ext    = $this->makeExt();
+        $ts     = gmmktime(12, 0, 0, 1, 15, 2024);
+        $result = $ext->formatDatestamp($ts, 'Y-m-d H:i');
+        // No viewer preference — falls back to plain date() (server-local
+        // time), matching pre-existing behavior; NOT necessarily UTC.
+        $this->assertSame(date('Y-m-d H:i', $ts), $result);
+    }
+
+    public function testFormatDatestampUnaffectedWhenViewerHasDefaultSentinel(): void
+    {
+        Auth::setUser($this->makeUser(-99.0));
+        $ext    = $this->makeExt();
+        $ts     = gmmktime(12, 0, 0, 1, 15, 2024);
+        $result = $ext->formatDatestamp($ts, 'Y-m-d H:i');
+        $this->assertSame(date('Y-m-d H:i', $ts), $result);
+    }
+
+    public function testFormatDatestampShiftsByViewerTzOffset(): void
+    {
+        Auth::setUser($this->makeUser(5.0));
+        $ext    = $this->makeExt();
+        $ts     = gmmktime(12, 0, 0, 1, 15, 2024); // noon UTC
+        $result = $ext->formatDatestamp($ts, 'Y-m-d H:i');
+        $this->assertSame('2024-01-15 17:00', $result);
+    }
+
+    public function testFormatDatestampShiftsByViewerTzOffsetPlusDst(): void
+    {
+        Auth::setUser($this->makeUser(5.0, isDst: true));
+        $ext    = $this->makeExt();
+        $ts     = gmmktime(12, 0, 0, 1, 15, 2024); // noon UTC
+        $result = $ext->formatDatestamp($ts, 'Y-m-d H:i');
+        $this->assertSame('2024-01-15 18:00', $result);
+    }
+
+    public function testFormatDatestampHandlesNegativeOffsetCrossingMidnight(): void
+    {
+        Auth::setUser($this->makeUser(-8.0));
+        $ext    = $this->makeExt();
+        $ts     = gmmktime(2, 0, 0, 1, 15, 2024); // 02:00 UTC
+        $result = $ext->formatDatestamp($ts, 'Y-m-d H:i');
+        $this->assertSame('2024-01-14 18:00', $result);
     }
 
     // -------------------------------------------------------------------------
@@ -93,6 +152,15 @@ class PhorumExtensionTest extends TestCase
         $ext    = $this->makeExt();
         $result = $ext->relativeTime(strtotime('2020-01-01'));
         $this->assertStringContainsString('2020', $result);
+    }
+
+    public function testRelativeTimeOldDateFallbackRespectsViewerTzOffset(): void
+    {
+        Auth::setUser($this->makeUser(5.0));
+        $ext = $this->makeExt();
+        // 2024-01-01 23:00 UTC + 5h = 2024-01-02 in the viewer's local date.
+        $result = $ext->relativeTime(gmmktime(23, 0, 0, 1, 1, 2024));
+        $this->assertSame('Jan 2, 2024', $result);
     }
 
     // -------------------------------------------------------------------------

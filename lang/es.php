@@ -186,6 +186,7 @@ return [
     'profile.col_subject'    => 'Asunto',
     'profile.col_date'       => 'Fecha',
     'profile.edit_settings'  => 'Editar configuración',
+    'profile.continue_browsing' => 'Seguir navegando: {forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -334,6 +335,13 @@ return [
     'sub.confirm_bookmark'   => '¿Cambiar tu suscripción a favorito (sin notificaciones por correo)?',
     'sub.confirm_yes'        => 'Sí, confirmar',
     'sub.confirm_cancel'     => 'Cancelar',
+    'sub.forum_title' => 'Seguir foro',
+    'sub.forum_following_email' => 'Actualmente sigues este foro y recibirás notificaciones por correo electrónico de nuevos temas y respuestas.',
+    'sub.forum_bookmarked' => 'Has marcado este foro (sin notificaciones por correo electrónico).',
+    'sub.forum_not_following' => 'No estás siguiendo este foro.',
+    'sub.back_to_forum' => 'Volver al foro',
+    'sub.confirm_remove_forum' => '¿Seguro que quieres cancelar la suscripción a este foro?',
+    'sub.confirm_bookmark_forum' => '¿Cambiar tu suscripción del foro a un marcador (sin notificaciones por correo electrónico)?',
 
     // -------------------------------------------------------------------------
     // Moderation

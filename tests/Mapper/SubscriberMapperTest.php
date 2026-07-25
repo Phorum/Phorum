@@ -150,4 +150,53 @@ class SubscriberMapperTest extends MapperTestCase
         $results = $mapper->listEmailSubscribers(32, 0, 999);
         $this->assertSame([], $results);
     }
+
+    public function testListEmailSubscribersReportsMatchedThreadForThreadSpecificSubscriber(): void
+    {
+        $uid = $this->insert('phorum_users', [
+            'username' => 'threaduser', 'email' => 'thread@example.com', 'active' => 1, 'settings_data' => '{}',
+        ]);
+        $this->insert('phorum_subscribers', [
+            'user_id' => $uid, 'forum_id' => 33, 'thread' => 42, 'sub_type' => SubscriberMapper::SUB_MESSAGE,
+        ]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->listEmailSubscribers(33, 42, 999);
+        $this->assertCount(1, $results);
+        $this->assertSame(42, (int) $results[0]['matched_thread']);
+    }
+
+    public function testListEmailSubscribersReportsZeroMatchedThreadForForumWideSubscriber(): void
+    {
+        $uid = $this->insert('phorum_users', [
+            'username' => 'forumuser', 'email' => 'forum@example.com', 'active' => 1, 'settings_data' => '{}',
+        ]);
+        $this->insert('phorum_subscribers', [
+            'user_id' => $uid, 'forum_id' => 34, 'thread' => 0, 'sub_type' => SubscriberMapper::SUB_MESSAGE,
+        ]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->listEmailSubscribers(34, 99, 999);
+        $this->assertCount(1, $results);
+        $this->assertSame(0, (int) $results[0]['matched_thread']);
+    }
+
+    public function testListEmailSubscribersDedupesUserWithBothThreadAndForumWideSubscription(): void
+    {
+        $uid = $this->insert('phorum_users', [
+            'username' => 'bothuser', 'email' => 'both@example.com', 'active' => 1, 'settings_data' => '{}',
+        ]);
+        $this->insert('phorum_subscribers', [
+            'user_id' => $uid, 'forum_id' => 35, 'thread' => 55, 'sub_type' => SubscriberMapper::SUB_MESSAGE,
+        ]);
+        $this->insert('phorum_subscribers', [
+            'user_id' => $uid, 'forum_id' => 35, 'thread' => 0, 'sub_type' => SubscriberMapper::SUB_MESSAGE,
+        ]);
+
+        $mapper  = $this->makeMapper();
+        $results = $mapper->listEmailSubscribers(35, 55, 999);
+        $this->assertCount(1, $results);
+        // Forum-wide (0) wins so the unsubscribe link points at the broader subscription.
+        $this->assertSame(0, (int) $results[0]['matched_thread']);
+    }
 }

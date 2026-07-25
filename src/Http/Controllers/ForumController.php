@@ -35,6 +35,7 @@ class ForumController extends Controller
     private readonly SubscriptionService  $subscriptions;
     private readonly AnnouncementService  $announcements;
     private readonly SchemaOrgService     $schemaOrg;
+    private readonly UserMapper           $users;
 
     public function __construct(
         Config                $config,
@@ -46,6 +47,7 @@ class ForumController extends Controller
         ?SubscriptionService  $subscriptions = null,
         ?AnnouncementService  $announcements = null,
         ?SchemaOrgService     $schemaOrg     = null,
+        ?UserMapper           $users         = null,
     ) {
         parent::__construct($config, $twig);
         $this->forums        = $forums        ?? new ForumMapper();
@@ -55,6 +57,7 @@ class ForumController extends Controller
         $this->subscriptions = $subscriptions ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
         $this->announcements = $announcements ?? new AnnouncementService();
         $this->schemaOrg     = $schemaOrg     ?? new SchemaOrgService($config);
+        $this->users         = $users         ?? new UserMapper();
     }
 
     public function index(Request $request): Response
@@ -110,6 +113,7 @@ class ForumController extends Controller
         $threadNewCounts = [];
         if ($currentUser !== null) {
             $threadNewCounts = $this->newflags->getNewCountsForThreads($currentUser->user_id, $forumId);
+            $this->users->updateLastActiveForum($currentUser->user_id, $forumId);
         }
 
         $hookResult = phorum_api_hook('list', $threads ?? []);

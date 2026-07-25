@@ -193,6 +193,7 @@ return [
     'profile.col_subject'    => 'Subject',
     'profile.col_date'       => 'Date',
     'profile.edit_settings'  => 'Edit Settings',
+    'profile.continue_browsing' => 'Continue Browsing: {forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -341,6 +342,13 @@ return [
     'sub.confirm_bookmark'   => 'Switch your subscription to a bookmark (no email notifications)?',
     'sub.confirm_yes'        => 'Yes, confirm',
     'sub.confirm_cancel'     => 'Cancel',
+    'sub.forum_title' => 'Follow Forum',
+    'sub.forum_following_email' => 'You are currently following this forum and will receive email notifications for new threads and replies.',
+    'sub.forum_bookmarked' => 'You have bookmarked this forum (no email notifications).',
+    'sub.forum_not_following' => 'You are not following this forum.',
+    'sub.back_to_forum' => 'Back to forum',
+    'sub.confirm_remove_forum' => 'Are you sure you want to unsubscribe from this forum?',
+    'sub.confirm_bookmark_forum' => 'Switch your forum subscription to a bookmark (no email notifications)?',
 
     // -------------------------------------------------------------------------
     // Moderation

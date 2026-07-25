@@ -69,8 +69,15 @@ class SubscriptionService
         $readUrl   = $baseUrl . Url::thread($message->forum_id, $message->thread, $message->message_id);
 
         foreach ($recipients as $row) {
-            $unsubUrl  = $baseUrl . "/follow/{$message->thread}?action=remove";
-            $bookmarkUrl = $baseUrl . "/follow/{$message->thread}?action=bookmark";
+            // matched_thread == 0 means this recipient is subscribed to the
+            // whole forum, not just this thread — link to the matching
+            // unsubscribe endpoint so the click actually removes the
+            // subscription that caused this email.
+            $followPath = ((int) $row['matched_thread']) === 0
+                ? "/forum/{$message->forum_id}/follow"
+                : "/follow/{$message->thread}";
+            $unsubUrl    = $baseUrl . $followPath . '?action=remove';
+            $bookmarkUrl = $baseUrl . $followPath . '?action=bookmark';
             $displayName = $row['display_name'] !== '' ? $row['display_name'] : $row['username'];
 
             $body = "Hello,\n\n"

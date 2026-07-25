@@ -7,6 +7,7 @@ use Phorum\Core\Auth;
 use Phorum\Http\Controllers\UserController;
 use Phorum\Http\Request;
 use Phorum\Mapper\FileMapper;
+use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
@@ -30,6 +31,7 @@ class UserControllerTest extends ControllerTestCase
             fileMapper:  $fileMapper,
             buddies:     $deps['buddies']     ?? $this->createMock(PmBuddyMapper::class),
             perms:       $deps['perms']       ?? $this->createMock(PermissionService::class),
+            forums:      $deps['forums']      ?? $this->createMock(ForumMapper::class),
         );
     }
 
@@ -152,6 +154,69 @@ class UserControllerTest extends ControllerTestCase
         $twig = $this->makeCapturingTwig(fn(array $data) => ($data['can_view_hidden'] ?? null) === false);
 
         $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'twig' => $twig]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfilePassesLastActiveForumOnOwnProfile(): void
+    {
+        $viewer = $this->makeUser(1);
+        $viewer->last_active_forum = 5;
+        Auth::setUser($viewer);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->with(5)->willReturn($this->makeForum(5, ['name' => 'General', 'active' => 1]));
+
+        $twig = $this->makeCapturingTwig(
+            fn(array $data) => ($data['last_active_forum'] ?? null)?->forum_id === 5
+        );
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'forums' => $forums, 'twig' => $twig]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfileOmitsLastActiveForumWhenViewingSomeoneElse(): void
+    {
+        Auth::setUser($this->makeUser(2));
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->expects($this->never())->method('load');
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => array_key_exists('last_active_forum', $data) && $data['last_active_forum'] === null);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'forums' => $forums, 'twig' => $twig]);
+        $ctrl->profile(new Request(tokens: ['user_id' => '1']));
+    }
+
+    public function testProfileOmitsLastActiveForumWhenForumInactive(): void
+    {
+        $viewer = $this->makeUser(1);
+        $viewer->last_active_forum = 5;
+        Auth::setUser($viewer);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->willReturn($this->makeUser(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('findByUser')->willReturn([]);
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(5, ['active' => 0]));
+
+        $twig = $this->makeCapturingTwig(fn(array $data) => array_key_exists('last_active_forum', $data) && $data['last_active_forum'] === null);
+
+        $ctrl = $this->makeController(['users' => $users, 'messages' => $messages, 'forums' => $forums, 'twig' => $twig]);
         $ctrl->profile(new Request(tokens: ['user_id' => '1']));
     }
 

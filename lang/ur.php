@@ -167,6 +167,7 @@ return [
     'profile.col_subject'    => 'موضوع',
     'profile.col_date'       => 'تاریخ',
     'profile.edit_settings'  => 'ترتیبات ترمیم کریں',
+    'profile.continue_browsing' => 'براؤزنگ جاری رکھیں: {forum}',
 
     // Settings
     'settings.title'             => 'اکاؤنٹ کی ترتیبات',
@@ -296,6 +297,13 @@ return [
     'sub.confirm_bookmark'   => 'اپنی سبسکرپشن کو بک مارک میں تبدیل کریں (کوئی ای میل اطلاعات نہیں)؟',
     'sub.confirm_yes'        => 'ہاں، تصدیق کریں',
     'sub.confirm_cancel'     => 'منسوخ کریں',
+    'sub.forum_title' => 'فورم فالو کریں',
+    'sub.forum_following_email' => 'آپ فی الحال اس فورم کو فالو کر رہے ہیں اور نئے موضوعات اور جوابات کے لیے ای میل اطلاعات موصول کریں گے۔',
+    'sub.forum_bookmarked' => 'آپ نے اس فورم کو بک مارک کیا ہے (کوئی ای میل اطلاعات نہیں)۔',
+    'sub.forum_not_following' => 'آپ اس فورم کو فالو نہیں کر رہے۔',
+    'sub.back_to_forum' => 'فورم پر واپس جائیں',
+    'sub.confirm_remove_forum' => 'کیا آپ واقعی اس فورم کی سبسکرپشن منسوخ کرنا چاہتے ہیں؟',
+    'sub.confirm_bookmark_forum' => 'اپنی فورم سبسکرپشن کو بک مارک میں تبدیل کریں (کوئی ای میل اطلاعات نہیں)؟',
 
     // Moderation
     'mod.delete_thread'            => 'دھاگہ حذف کریں',

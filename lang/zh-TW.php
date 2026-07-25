@@ -186,6 +186,7 @@ return [
     'profile.col_subject'    => '主題',
     'profile.col_date'       => '日期',
     'profile.edit_settings'  => '編輯設定',
+    'profile.continue_browsing' => '繼續瀏覽：{forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -334,6 +335,13 @@ return [
     'sub.confirm_bookmark'   => '將您的訂閱切換為書籤（不寄送電子郵件通知）？',
     'sub.confirm_yes'        => '是，確認',
     'sub.confirm_cancel'     => '取消',
+    'sub.forum_title' => '關注看板',
+    'sub.forum_following_email' => '您目前正在關注此看板，將收到新主題和回覆的郵件通知。',
+    'sub.forum_bookmarked' => '您已收藏此看板（無郵件通知）。',
+    'sub.forum_not_following' => '您尚未關注此看板。',
+    'sub.back_to_forum' => '返回看板',
+    'sub.confirm_remove_forum' => '確定要取消關注此看板嗎？',
+    'sub.confirm_bookmark_forum' => '將您的看板訂閱改為收藏（無郵件通知）？',
 
     // -------------------------------------------------------------------------
     // Moderation

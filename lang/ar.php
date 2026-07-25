@@ -167,6 +167,7 @@ return [
     'profile.col_subject'    => 'الموضوع',
     'profile.col_date'       => 'التاريخ',
     'profile.edit_settings'  => 'تعديل الإعدادات',
+    'profile.continue_browsing' => 'متابعة التصفح: {forum}',
 
     // Settings
     'settings.title'             => 'إعدادات الحساب',
@@ -307,6 +308,13 @@ return [
     'sub.confirm_bookmark'   => 'تحويل متابعتك إلى إشارة مرجعية (بدون إشعارات بريدية)؟',
     'sub.confirm_yes'        => 'نعم، تأكيد',
     'sub.confirm_cancel'     => 'إلغاء',
+    'sub.forum_title' => 'متابعة المنتدى',
+    'sub.forum_following_email' => 'أنت تتابع هذا المنتدى حاليًا وستتلقى إشعارات بريد إلكتروني للمواضيع والردود الجديدة.',
+    'sub.forum_bookmarked' => 'لقد أضفت هذا المنتدى إلى الإشارات المرجعية (بدون إشعارات بريد إلكتروني).',
+    'sub.forum_not_following' => 'أنت لا تتابع هذا المنتدى.',
+    'sub.back_to_forum' => 'العودة إلى المنتدى',
+    'sub.confirm_remove_forum' => 'هل أنت متأكد أنك تريد إلغاء الاشتراك من هذا المنتدى؟',
+    'sub.confirm_bookmark_forum' => 'هل تريد تحويل اشتراكك في المنتدى إلى إشارة مرجعية (بدون إشعارات بريد إلكتروني)؟',
 
     // Moderation
     'mod.delete_thread'            => 'حذف الموضوع',

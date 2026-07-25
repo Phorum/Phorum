@@ -277,4 +277,155 @@ class SubscriptionControllerTest extends ControllerTestCase
         $this->assertSame(302, $response->status);
         $this->assertSame('/forum/1/thread/5', $response->headers['Location']);
     }
+
+    // -------------------------------------------------------------------------
+    // followForum
+    // -------------------------------------------------------------------------
+
+    public function testFollowForumRedirectsAnonymousUser(): void
+    {
+        $ctrl     = $this->makeController();
+        $response = $ctrl->followForum(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testFollowForumReturns404WhenForumNotFound(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->followForum(new Request(tokens: ['forum_id' => '99']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testFollowForumReturns404ForFolder(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['folder_flag' => 1]));
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->followForum(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(404, $response->status);
+    }
+
+    public function testFollowForumGetReturnsForm(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $response = $ctrl->followForum(new Request(tokens: ['forum_id' => '1']));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testFollowForumPostSubscribeEmailRedirects(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+        $subs->expects($this->once())->method('subscribe')->with(1, 1, 0, SubscriberMapper::SUB_MESSAGE);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $response = $ctrl->followForum($this->makePostRequest(
+            post:   ['action' => 'subscribe_email'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/1', $response->headers['Location']);
+    }
+
+    public function testFollowForumPostSubscribeEmailIgnoredWhenForumDisallowsEmailNotify(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['allow_email_notify' => 0]));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_NONE);
+        $subs->expects($this->never())->method('subscribe');
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $response = $ctrl->followForum($this->makePostRequest(
+            post:   ['action' => 'subscribe_email'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+    }
+
+    public function testFollowForumPostUnsubscribeRedirects(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_MESSAGE);
+        $subs->expects($this->once())->method('unsubscribe')->with(1, 1, 0);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $response = $ctrl->followForum($this->makePostRequest(
+            post:   ['action' => 'unsubscribe'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/1', $response->headers['Location']);
+    }
+
+    public function testFollowForumQuickActionGetShowsConfirmForm(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_MESSAGE);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $response = $ctrl->followForum($this->makeGetRequest(
+            query:  ['action' => 'remove'],
+            tokens: ['forum_id' => '1'],
+        ));
+        $this->assertSame(200, $response->status);
+    }
+
+    public function testFollowForumQuickActionPostUnsubscribesAndRedirects(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $subs = $this->createMock(SubscriptionService::class);
+        $subs->method('getSubscription')->willReturn(SubscriberMapper::SUB_MESSAGE);
+        $subs->expects($this->once())->method('unsubscribe')->with(1, 1, 0);
+
+        $ctrl    = $this->makeController(['forums' => $forums, 'subscriptionService' => $subs]);
+        $token   = \Phorum\Core\CsrfGuard::token();
+        $request = new Request(
+            post:   [\Phorum\Core\CsrfGuard::fieldName() => $token],
+            query:  ['action' => 'remove'],
+            server: ['REQUEST_METHOD' => 'POST'],
+            tokens: ['forum_id' => '1'],
+        );
+        $response = $ctrl->followForum($request);
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/forum/1', $response->headers['Location']);
+    }
 }

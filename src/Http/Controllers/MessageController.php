@@ -168,6 +168,10 @@ class MessageController extends Controller
         $viewerUserId = $currentUser?->user_id;
         $threaded     = $this->isThreadedView($forum, $currentUser);
 
+        if ($currentUser !== null) {
+            $this->users->updateLastActiveForum($currentUser->user_id, $forumId);
+        }
+
         if ($threaded) {
             // Threaded mode always renders the whole reply tree in one page —
             // an OFFSET window could split a parent from its child.

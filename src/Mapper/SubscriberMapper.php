@@ -97,19 +97,27 @@ class SubscriberMapper extends AbstractPhorumMapper
      * forum+thread. Combines thread-level and forum-level (thread=0) subscribers
      * with sub_type = SUB_MESSAGE, excluding the post author.
      *
-     * Returns rows: [user_id, email, display_name, username]
+     * `matched_thread` tells the caller which subscription matched — 0 if the
+     * user has a forum-wide subscription (whether or not they *also* have a
+     * thread-specific one; MIN() picks 0 since it's lower than any real
+     * thread id), otherwise the specific thread they're subscribed to. Needed
+     * so notification emails link to the right unsubscribe endpoint
+     * (per-thread vs whole-forum).
+     *
+     * Returns rows: [user_id, email, display_name, username, matched_thread]
      */
     public function listEmailSubscribers(int $forumId, int $thread, int $excludeUserId): array
     {
         $prefix = defined('PHORUM_DB_PREFIX') ? PHORUM_DB_PREFIX : 'phorum';
-        $sql    = 'SELECT DISTINCT u.user_id, u.email, u.display_name, u.username'
+        $sql    = 'SELECT u.user_id, u.email, u.display_name, u.username, MIN(s.thread) AS matched_thread'
                 . ' FROM '  . $this->table()                 . ' s'
                 . ' JOIN '  . $prefix . '_users u ON u.user_id = s.user_id'
                 . ' WHERE s.forum_id  = :fid'
                 . '   AND (s.thread   = :thread OR s.thread = 0)'
                 . '   AND s.sub_type  = :type'
                 . '   AND u.active    = 1'
-                . '   AND u.user_id  != :exclude';
+                . '   AND u.user_id  != :exclude'
+                . ' GROUP BY u.user_id, u.email, u.display_name, u.username';
         return $this->crud()->runFetch($sql, [
             ':fid'     => $forumId,
             ':thread'  => $thread,

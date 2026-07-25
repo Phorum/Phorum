@@ -11,6 +11,7 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\Extension\DefaultAttributes\DefaultAttributesExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\MarkdownConverter;
+use Phorum\Core\Auth;
 use Phorum\Core\Config;
 use Phorum\Core\CsrfGuard;
 use Phorum\Core\Lang;
@@ -164,12 +165,23 @@ class PhorumExtension extends AbstractExtension
         return (string) $this->markdown->convert($text);
     }
 
+    /**
+     * Formats a timestamp for display, shifted into the viewing user's
+     * tz_offset/is_dst preference when they have one set (tz_offset stays
+     * at its -99 sentinel default of "use server time" until a user
+     * explicitly picks an offset in Account Settings). Uses gmdate() rather
+     * than date() once shifted, so the result doesn't also pick up whatever
+     * timezone the PHP runtime itself is configured with.
+     */
     public function formatDatestamp(int $timestamp, string $format = 'M j, Y g:i a'): string
     {
         if ($timestamp === 0) {
             return '&mdash;';
         }
-        return date($format, $timestamp);
+        $offsetSeconds = $this->viewerTzOffsetSeconds();
+        return $offsetSeconds === null
+            ? date($format, $timestamp)
+            : gmdate($format, $timestamp + $offsetSeconds);
     }
 
     public function relativeTime(int $timestamp): string
@@ -184,8 +196,18 @@ class PhorumExtension extends AbstractExtension
             $diff < 3600    => floor($diff / 60) . 'm ago',
             $diff < 86400   => floor($diff / 3600) . 'h ago',
             $diff < 604800  => floor($diff / 86400) . 'd ago',
-            default         => date('M j, Y', $timestamp),
+            default         => $this->formatDatestamp($timestamp, 'M j, Y'),
         };
+    }
+
+    /** Viewer's tz_offset (+1 hour if is_dst), in seconds — null if unset ("use server time"). */
+    private function viewerTzOffsetSeconds(): ?int
+    {
+        $user = Auth::user();
+        if ($user === null || $user->tz_offset <= -99.0) {
+            return null;
+        }
+        return (int) round(($user->tz_offset + ($user->is_dst ? 1 : 0)) * 3600);
     }
 
     public function path(string $url): string

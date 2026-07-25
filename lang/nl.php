@@ -193,6 +193,7 @@ return [
     'profile.col_subject'    => 'Onderwerp',
     'profile.col_date'       => 'Datum',
     'profile.edit_settings'  => 'Instellingen bewerken',
+    'profile.continue_browsing' => 'Verder bladeren: {forum}',
 
     // -------------------------------------------------------------------------
     // User settings
@@ -341,6 +342,13 @@ return [
     'sub.confirm_bookmark'   => 'Uw abonnement omzetten naar een bladwijzer (geen e-mailmeldingen)?',
     'sub.confirm_yes'        => 'Ja, bevestigen',
     'sub.confirm_cancel'     => 'Annuleren',
+    'sub.forum_title' => 'Forum volgen',
+    'sub.forum_following_email' => 'U volgt dit forum momenteel en ontvangt e-mailmeldingen voor nieuwe onderwerpen en reacties.',
+    'sub.forum_bookmarked' => 'U heeft dit forum toegevoegd aan bladwijzers (geen e-mailmeldingen).',
+    'sub.forum_not_following' => 'U volgt dit forum niet.',
+    'sub.back_to_forum' => 'Terug naar forum',
+    'sub.confirm_remove_forum' => 'Weet u zeker dat u zich wilt afmelden voor dit forum?',
+    'sub.confirm_bookmark_forum' => 'Uw forumabonnement wijzigen naar een bladwijzer (geen e-mailmeldingen)?',
 
     // -------------------------------------------------------------------------
     // Moderation

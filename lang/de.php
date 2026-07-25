@@ -166,6 +166,7 @@ return [
     'profile.col_subject'    => 'Betreff',
     'profile.col_date'       => 'Datum',
     'profile.edit_settings'  => 'Einstellungen bearbeiten',
+    'profile.continue_browsing' => 'Weiter stöbern: {forum}',
 
     // Settings
     'settings.title'             => 'Kontoeinstellungen',
@@ -304,6 +305,13 @@ return [
     'sub.confirm_bookmark'   => 'Ihr Abonnement in ein Lesezeichen umwandeln (keine E-Mail-Benachrichtigungen)?',
     'sub.confirm_yes'        => 'Ja, bestätigen',
     'sub.confirm_cancel'     => 'Abbrechen',
+    'sub.forum_title' => 'Forum folgen',
+    'sub.forum_following_email' => 'Sie folgen diesem Forum derzeit und erhalten E-Mail-Benachrichtigungen für neue Themen und Antworten.',
+    'sub.forum_bookmarked' => 'Sie haben dieses Forum als Lesezeichen gespeichert (keine E-Mail-Benachrichtigungen).',
+    'sub.forum_not_following' => 'Sie folgen diesem Forum nicht.',
+    'sub.back_to_forum' => 'Zurück zum Forum',
+    'sub.confirm_remove_forum' => 'Möchten Sie dieses Forum wirklich abbestellen?',
+    'sub.confirm_bookmark_forum' => 'Ihr Forum-Abonnement in ein Lesezeichen umwandeln (keine E-Mail-Benachrichtigungen)?',
 
     // Moderation
     'mod.delete_thread'            => 'Thread löschen',
