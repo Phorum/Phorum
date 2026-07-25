@@ -280,6 +280,7 @@ class ForumController extends AdminController
             $forum->moderation        = (int) ($request->post['moderation']   ?? 0);
             $forum->email_moderators  = !empty($request->post['email_moderators']) ? 1 : 0;
             $forum->threaded_read     = !empty($request->post['threaded_read'])    ? 1 : 0;
+            $forum->display_ip_address = !empty($request->post['display_ip_address']) ? 1 : 0;
             $forum->list_length_flat  = max(1, (int) ($request->post['list_length_flat'] ?? 25));
             $forum->pub_perms         = PermissionFlags::combine($request->post['pub_perms'] ?? []);
             $forum->reg_perms         = PermissionFlags::combine($request->post['reg_perms'] ?? []);

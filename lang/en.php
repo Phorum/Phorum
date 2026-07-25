@@ -96,6 +96,7 @@ return [
     'message.report'            => 'Report',
     'message.registered'        => 'Registered',
     'message.posts'             => 'Posts',
+    'message.ip_address'        => 'IP Address',
 
     // -------------------------------------------------------------------------
     // Post / reply form

@@ -89,6 +89,7 @@ return [
     'message.report'            => 'Signaler',
     'message.registered'        => 'Inscrit',
     'message.posts'             => 'Messages',
+    'message.ip_address'        => 'Adresse IP',
 
     // -------------------------------------------------------------------------
     // Post / reply form

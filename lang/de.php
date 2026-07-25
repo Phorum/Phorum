@@ -77,6 +77,7 @@ return [
     'message.report'            => 'Melden',
     'message.registered'        => 'Registriert',
     'message.posts'             => 'Beiträge',
+    'message.ip_address'        => 'IP-Adresse',
 
     // Post form
     'post.new_thread'        => 'Neuer Thread',

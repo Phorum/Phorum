@@ -89,6 +89,7 @@ return [
     'message.report'            => 'Laporkan',
     'message.registered'        => 'Terdaftar',
     'message.posts'             => 'Postingan',
+    'message.ip_address'        => 'Alamat IP',
 
     // -------------------------------------------------------------------------
     // Post / reply form

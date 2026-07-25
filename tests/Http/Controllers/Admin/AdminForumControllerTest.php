@@ -281,6 +281,56 @@ class AdminForumControllerTest extends ControllerTestCase
         $this->assertSame(1, $saved->folder_flag);
     }
 
+    public function testEditPostSavesDisplayIpAddressChecked(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['display_ip_address' => 0]));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')
+            ->willReturnCallback(function ($forum) use (&$saved) {
+                $saved = $forum;
+                return $forum;
+            });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['name' => 'Updated Name', 'active' => '1', 'display_ip_address' => '1'],
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(1, $saved->display_ip_address);
+    }
+
+    public function testEditPostSavesDisplayIpAddressUncheckedAsZero(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['display_ip_address' => 1]));
+        $forums->method('find')->willReturn([]);
+
+        $saved = null;
+        $forums->expects($this->once())->method('save')
+            ->willReturnCallback(function ($forum) use (&$saved) {
+                $saved = $forum;
+                return $forum;
+            });
+
+        $ctrl     = $this->makeController(['forums' => $forums]);
+        $response = $ctrl->edit($this->makePostRequest(
+            post:   ['name' => 'Updated Name', 'active' => '1'], // no display_ip_address key — box unchecked
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame(0, $saved->display_ip_address);
+    }
+
     public function testEditPostSavesAttachmentSettingsConvertingMbToBytes(): void
     {
         $this->setAdminUser($this->makeUser(1, true));

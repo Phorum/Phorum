@@ -87,6 +87,7 @@ return [
     'message.report'            => 'রিপোর্ট করুন',
     'message.registered'        => 'নিবন্ধিত',
     'message.posts'             => 'পোস্ট',
+    'message.ip_address'        => 'আইপি ঠিকানা',
 
     // -------------------------------------------------------------------------
     // Post / compose form

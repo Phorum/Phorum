@@ -89,6 +89,7 @@ return [
     'message.report'            => '举报',
     'message.registered'        => '注册时间',
     'message.posts'             => '帖子数',
+    'message.ip_address'        => 'IP 地址',
 
     // -------------------------------------------------------------------------
     // Post / reply form

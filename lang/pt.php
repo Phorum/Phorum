@@ -89,6 +89,7 @@ return [
     'message.report'            => 'Denunciar',
     'message.registered'        => 'Registrado',
     'message.posts'             => 'Mensagens',
+    'message.ip_address'        => 'Endereço IP',
 
     // -------------------------------------------------------------------------
     // Post / reply form

@@ -96,6 +96,7 @@ return [
     'message.report'            => 'Melden',
     'message.registered'        => 'Geregistreerd',
     'message.posts'             => 'Berichten',
+    'message.ip_address'        => 'IP-adres',
 
     // -------------------------------------------------------------------------
     // Post / reply form

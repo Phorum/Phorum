@@ -33,6 +33,11 @@
             {{ trans('message.posts') }}: {{ attribute(users_map, msg.user_id).posts }}
         </div>
         {% endif %}
+        {% if can_moderate|default(false) and forum.display_ip_address and msg.ip %}
+        <div class="msg-mod-info">
+            {{ trans('message.ip_address') }}: {{ msg.ip|e }}
+        </div>
+        {% endif %}
     </header>
 
     <div class="message-body">

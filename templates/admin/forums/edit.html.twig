@@ -104,6 +104,12 @@
                     </select>
                     <label>Post moderation</label>
                 </div>
+                <div class="col s12 m6">
+                    <label>
+                        <input type="checkbox" name="display_ip_address" value="1" {{ forum.display_ip_address ? 'checked' : '' }}>
+                        <span>Show poster IP address to moderators</span>
+                    </label>
+                </div>
             </div>
 
             <div class="row">

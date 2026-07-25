@@ -78,6 +78,7 @@ return [
     'message.report'            => 'رپورٹ کریں',
     'message.registered'        => 'رجسٹرڈ',
     'message.posts'             => 'پوسٹس',
+    'message.ip_address'        => 'آئی پی ایڈریس',
 
     // Post form
     'post.new_thread'        => 'نیا دھاگہ',

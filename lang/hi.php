@@ -87,6 +87,7 @@ return [
     'message.report'            => 'रिपोर्ट करें',
     'message.registered'        => 'पंजीकृत',
     'message.posts'             => 'पोस्ट',
+    'message.ip_address'        => 'आईपी पता',
 
     // -------------------------------------------------------------------------
     // Post / compose form

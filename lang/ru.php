@@ -77,6 +77,7 @@ return [
     'message.report'            => 'Пожаловаться',
     'message.registered'        => 'Зарегистрирован',
     'message.posts'             => 'Сообщений',
+    'message.ip_address'        => 'IP-адрес',
 
     // Post form
     'post.new_thread'        => 'Новая тема',

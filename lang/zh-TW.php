@@ -89,6 +89,7 @@ return [
     'message.report'            => '檢舉',
     'message.registered'        => '已註冊',
     'message.posts'             => '文章數',
+    'message.ip_address'        => 'IP 位址',
 
     // -------------------------------------------------------------------------
     // Post / reply form

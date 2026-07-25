@@ -78,6 +78,7 @@ return [
     'message.report'            => 'إبلاغ',
     'message.registered'        => 'مسجَّل',
     'message.posts'             => 'المشاركات',
+    'message.ip_address'        => 'عنوان IP',
 
     // Post form
     'post.new_thread'        => 'موضوع جديد',
