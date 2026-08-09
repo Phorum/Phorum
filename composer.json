@@ -8,7 +8,7 @@
         "aws/aws-sdk-php": "^3.0",
         "dealnews/data-mapper": "^3.4",
         "dealnews/db": "^4.1",
-        "dealnews/schema-org": "^0.1.0",
+        "dealnews/schema-org": "^1.0.0",
         "guzzlehttp/guzzle": "^7.9",
         "league/commonmark": "^2.8",
         "league/oauth2-client": "^2.9",
