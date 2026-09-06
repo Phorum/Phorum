@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18a449aeeb0aefc9d3582d285cbb657a",
+    "content-hash": "09652169754f7889cf3a73903c585a08",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -418,16 +418,16 @@
         },
         {
             "name": "dealnews/schema-org",
-            "version": "v0.1.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dealnews/schema-org.git",
-                "reference": "7fd95ac5c934c865f9d46dd085df01d5ce12ed6d"
+                "reference": "720726d8dd78b1dc810ae78eba364a6af5c4c648"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dealnews/schema-org/zipball/7fd95ac5c934c865f9d46dd085df01d5ce12ed6d",
-                "reference": "7fd95ac5c934c865f9d46dd085df01d5ce12ed6d",
+                "url": "https://api.github.com/repos/dealnews/schema-org/zipball/720726d8dd78b1dc810ae78eba364a6af5c4c648",
+                "reference": "720726d8dd78b1dc810ae78eba364a6af5c4c648",
                 "shasum": ""
             },
             "require": {
@@ -450,9 +450,9 @@
             "description": "Schema.org value objects with JSON-LD emission",
             "support": {
                 "issues": "https://github.com/dealnews/schema-org/issues",
-                "source": "https://github.com/dealnews/schema-org/tree/v0.1.0"
+                "source": "https://github.com/dealnews/schema-org/tree/v1.3.0"
             },
-            "time": "2026-07-10T22:06:10+00:00"
+            "time": "2026-08-28T17:37:15+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -1237,16 +1237,16 @@
         },
         {
             "name": "moonspot/value-objects",
-            "version": "v2.3.0",
+            "version": "v2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/brianlmoon/value-objects.git",
-                "reference": "9211544b3794e6ee4505e310a6bef4823c75d0f2"
+                "reference": "f86fb481a254693e64054eaae90cf6afe41c4c68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/brianlmoon/value-objects/zipball/9211544b3794e6ee4505e310a6bef4823c75d0f2",
-                "reference": "9211544b3794e6ee4505e310a6bef4823c75d0f2",
+                "url": "https://api.github.com/repos/brianlmoon/value-objects/zipball/f86fb481a254693e64054eaae90cf6afe41c4c68",
+                "reference": "f86fb481a254693e64054eaae90cf6afe41c4c68",
                 "shasum": ""
             },
             "require": {
@@ -1277,9 +1277,9 @@
             "description": "Base classes for creating value objects which are easy to work with in JSON apis",
             "support": {
                 "issues": "https://github.com/brianlmoon/value-objects/issues",
-                "source": "https://github.com/brianlmoon/value-objects/tree/v2.3.0"
+                "source": "https://github.com/brianlmoon/value-objects/tree/v2.4.1"
             },
-            "time": "2025-12-02T16:38:43+00:00"
+            "time": "2026-09-02T16:56:53+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
