@@ -115,6 +115,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => '登录',
+    'auth.logout_title'       => '退出登录',
+    'auth.logout_confirm'       => '确定要退出登录吗？',
+    'auth.logout_submit'       => '退出登录',
+    'auth.logout_already'       => '您尚未登录。',
     'auth.username'          => '用户名',
     'auth.password'          => '密码',
     'auth.remember_me'       => '记住我',
@@ -142,6 +146,7 @@ return [
     'auth.confirm_pending_body'   => '我们已向 {email} 发送了一封确认邮件，请点击链接激活您的账户。',
     'auth.confirm_pending_resend' => '重新发送确认邮件',
     'auth.confirm_invalid'        => '此确认链接无效或已过期。',
+    'auth.confirm_success_login'        => '您的邮箱地址已确认。请登录。',
     'auth.resend_title'           => '重新发送确认邮件',
     'auth.resend_email_label'     => '电子邮箱',
     'auth.resend_submit'          => '重新发送',
@@ -150,6 +155,7 @@ return [
     'auth.pending_approval_body'  => '谢谢！您的账户现在正在等待版主审核和批准。审核通过后您就可以登录了。',
     'auth.error_missing_credentials'  => '请输入用户名和密码。',
     'auth.error_invalid_credentials'  => '用户名或密码无效。',
+    'auth.error_throttled'  => '尝试次数过多。请等待 {seconds} 秒后重试。',
     'auth.error_registration_blocked' => '您的账户不允许进行注册。',
     'auth.error_invalid_email'        => '请输入有效的电子邮箱地址。',
     'auth.error_password_min_length'  => '密码至少需要 6 个字符。',
@@ -158,6 +164,7 @@ return [
     'auth.error_username_length'      => '用户名长度必须在 2 到 50 个字符之间。',
     'auth.error_email_required'       => '需要提供有效的电子邮箱地址。',
     'auth.error_username_taken'       => '该用户名已被使用。',
+    'auth.error_email_taken'       => '该邮箱地址已被注册。请尝试登录，或使用“忘记密码”。',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -170,6 +177,7 @@ return [
     'oauth.error_email_not_verified'    => '您的电子邮件地址未在该提供商处验证，因此我们无法为您登录。请在提供商处验证您的电子邮件后重试。',
     'oauth.error_login_failed'          => '登录时出现问题。请重试。',
     'oauth.error_account_inactive'      => '您的账户尚未激活。请查看您的电子邮件以获取确认链接。',
+    'oauth.error_account_exists'      => '本站已有账户使用该邮箱地址。请用密码登录，或先通过“忘记密码”确认该地址，之后即可使用此登录方式。',
     'oauth.error_not_configured'        => '该登录选项目前不可用。',
 
     // -------------------------------------------------------------------------
@@ -199,6 +207,8 @@ return [
     'settings.hide_email'        => '在个人资料中隐藏我的邮箱地址',
     'settings.password_section'  => '密码',
     'settings.password_hint'     => '留空则保持当前密码不变。',
+    'settings.current_password'      => '当前密码',
+    'settings.current_password_hint'      => '仅在更改密码或邮箱地址时需要。',
     'settings.new_password'      => '新密码',
     'settings.confirm_password'  => '确认新密码',
     'settings.signature_section' => '个性签名',
@@ -226,6 +236,7 @@ return [
     'settings.error_email_required'        => '需要提供有效的电子邮箱地址。',
     'settings.error_email_taken'           => '该电子邮箱地址已被其他账户使用。',
     'settings.error_password_min_length'   => '新密码至少需要 6 个字符。',
+    'settings.error_current_password'   => '请输入当前密码以更改密码或邮箱地址。如果您通过 Google 或 GitHub 注册且从未设置过密码，请先使用“忘记密码”链接设置一个。',
     'settings.error_passwords_mismatch'    => '两次输入的密码不一致。',
     'settings.error_tz_offset'             => '时区偏移必须在 -12 至 +14 之间，或使用 -99 表示服务器时间。',
     'settings.error_email_notify'          => '请选择一个有效的关注选项。',

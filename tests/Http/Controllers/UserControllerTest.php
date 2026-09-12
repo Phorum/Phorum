@@ -11,6 +11,7 @@ use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Model\User;
 use Phorum\Service\FileService;
 use Phorum\Service\PermissionService;
 use Phorum\Tests\Http\ControllerTestCase;
@@ -415,10 +416,11 @@ class UserControllerTest extends ControllerTestCase
 
         $ctrl     = $this->makeController(['users' => $users]);
         $response = $ctrl->settings($this->makePostRequest([
-            'display_name' => 'New Name',
-            'email'        => 'user1@example.com',
-            'password'     => 'newsecret',
-            'password2'    => 'newsecret',
+            'display_name'     => 'New Name',
+            'email'            => 'user1@example.com',
+            'current_password' => 'secret',
+            'password'         => 'newsecret',
+            'password2'        => 'newsecret',
         ]));
         $this->assertSame(200, $response->status);
         $this->assertSame(0, $saved->force_password_change);
@@ -499,5 +501,173 @@ class UserControllerTest extends ControllerTestCase
             server: ['REQUEST_METHOD' => 'POST'],
         ));
         $this->assertSame(403, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Settings — re-authentication and session invalidation
+    // -------------------------------------------------------------------------
+
+    /**
+     * Build a users mock that records the last saved User.
+     *
+     * @param mixed $saved Receives the saved User, by reference.
+     */
+    private function makeCapturingUsers(&$saved, ?User $emailOwner = null): UserMapper
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn($emailOwner);
+        $users->method('save')->willReturnCallback(function ($u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+        return $users;
+    }
+
+    /**
+     * A new password without the current one must be refused: otherwise a
+     * borrowed or hijacked session is enough to take the account over.
+     */
+    public function testSettingsRejectsPasswordChangeWithoutCurrentPassword(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name' => 'User 1',
+            'email'        => 'user1@example.com',
+            'password'     => 'newsecret',
+            'password2'    => 'newsecret',
+        ]));
+
+        $this->assertNull($saved, 'the change was saved without re-authentication');
+    }
+
+    /** A wrong current password is refused too. */
+    public function testSettingsRejectsPasswordChangeWithWrongCurrentPassword(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name'     => 'User 1',
+            'email'            => 'user1@example.com',
+            'current_password' => 'not-the-password',
+            'password'         => 'newsecret',
+            'password2'        => 'newsecret',
+        ]));
+
+        $this->assertNull($saved);
+    }
+
+    /**
+     * Changing the email address needs it as well — a new address can be used
+     * to request a password reset, so it takes the account over just as surely.
+     */
+    public function testSettingsRejectsEmailChangeWithoutCurrentPassword(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name' => 'User 1',
+            'email'        => 'attacker@example.com',
+        ]));
+
+        $this->assertNull($saved, 'the email was changed without re-authentication');
+    }
+
+    /** Everything else on the page still saves without re-authenticating. */
+    public function testSettingsSavesOtherFieldsWithoutCurrentPassword(): void
+    {
+        Auth::setUser($this->makeUser());
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name' => 'Renamed',
+            'email'        => 'user1@example.com',
+            'signature'    => 'hello',
+        ]));
+
+        $this->assertNotNull($saved);
+        $this->assertSame('Renamed', $saved->display_name);
+    }
+
+    /**
+     * Changing the password must end every other session on the account,
+     * including the year-long remember-me token.
+     */
+    public function testSettingsPasswordChangeClearsExistingSessionTokens(): void
+    {
+        $user                    = $this->makeUser();
+        $user->sessid_lt         = 'stolen-long-term-token';
+        $user->sessid_st         = 'stolen-short-term-token';
+        $user->sessid_st_timeout = time() + 3600;
+        Auth::setUser($user);
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name'     => 'User 1',
+            'email'            => 'user1@example.com',
+            'current_password' => 'secret',
+            'password'         => 'newsecret',
+            'password2'        => 'newsecret',
+        ]));
+
+        $this->assertNotNull($saved);
+        $this->assertSame('', $saved->sessid_lt, 'remember-me token survived the password change');
+        $this->assertNotSame('stolen-short-term-token', $saved->sessid_st);
+    }
+
+    /**
+     * A changed address is unproven again. Without this, someone could verify
+     * one address, switch to a victim's, and keep the flag — handing OAuth
+     * exactly the link the verification check exists to refuse.
+     */
+    public function testChangingEmailClearsTheVerifiedFlag(): void
+    {
+        $user                 = $this->makeUser();
+        $user->email_verified = 1;
+        Auth::setUser($user);
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name'     => 'User 1',
+            'email'            => 'somewhere-else@example.com',
+            'current_password' => 'secret',
+        ]));
+
+        $this->assertNotNull($saved);
+        $this->assertSame(0, $saved->email_verified);
+    }
+
+    /** Saving other fields leaves an already-verified address verified. */
+    public function testSavingWithoutChangingEmailKeepsTheVerifiedFlag(): void
+    {
+        $user                 = $this->makeUser();
+        $user->email_verified = 1;
+        Auth::setUser($user);
+
+        $saved = null;
+        $ctrl  = $this->makeController(['users' => $this->makeCapturingUsers($saved)]);
+
+        $ctrl->settings($this->makePostRequest([
+            'display_name' => 'Renamed',
+            'email'        => 'user1@example.com',
+        ]));
+
+        $this->assertNotNull($saved);
+        $this->assertSame(1, $saved->email_verified);
     }
 }

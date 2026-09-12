@@ -267,6 +267,65 @@ class MessageMapperTest extends MapperTestCase
     }
 
     // -------------------------------------------------------------------------
+    // findByThread / findRoot — forum scoping
+    // -------------------------------------------------------------------------
+
+    /**
+     * A thread id says nothing about which forum it belongs to, so a caller
+     * that resolved read permission from a forum must be able to require the
+     * messages to come from that same forum. Without it, permission granted on
+     * one forum could be used to read any other forum's threads.
+     */
+    public function testFindByThreadScopedToForumExcludesAnotherForumsThread(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 2, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 2, 'datestamp' => 2]);
+
+        $mapper = $this->makeMapper();
+
+        $this->assertNull($mapper->findByThread($t, forumId: 1), 'thread from forum 2 leaked into forum 1');
+        $this->assertCount(2, $mapper->findByThread($t, forumId: 2));
+    }
+
+    /** Omitting the forum scope keeps the previous unscoped behavior. */
+    public function testFindByThreadWithoutForumScopeIsUnchanged(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 2, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $this->assertCount(1, $this->makeMapper()->findByThread($t));
+    }
+
+    /** The forum scope composes with the limit/offset paging clause. */
+    public function testFindByThreadScopedToForumStillPages(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 2, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+        for ($i = 2; $i <= 5; $i++) {
+            $this->seedMessage(['thread' => $t, 'parent_id' => $t, 'forum_id' => 2, 'datestamp' => $i]);
+        }
+
+        $mapper = $this->makeMapper();
+
+        $this->assertCount(2, $mapper->findByThread($t, limit: 2, offset: 0, forumId: 2));
+        $this->assertNull($mapper->findByThread($t, limit: 2, offset: 0, forumId: 1));
+    }
+
+    /** findRoot() scopes by forum the same way findByThread() does. */
+    public function testFindRootScopedToForumExcludesAnotherForumsThread(): void
+    {
+        $t = $this->seedMessage(['thread' => 0, 'parent_id' => 0, 'forum_id' => 2, 'datestamp' => 1]);
+        self::$pdo->exec("UPDATE phorum_messages SET thread = {$t} WHERE message_id = {$t}");
+
+        $mapper = $this->makeMapper();
+
+        $this->assertNull($mapper->findRoot($t, forumId: 1), 'root from forum 2 leaked into forum 1');
+        $this->assertNotNull($mapper->findRoot($t, forumId: 2));
+        $this->assertNotNull($mapper->findRoot($t), 'unscoped lookup should be unchanged');
+    }
+
+    // -------------------------------------------------------------------------
     // findRoot
     // -------------------------------------------------------------------------
 

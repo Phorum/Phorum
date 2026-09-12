@@ -32,6 +32,7 @@ class UserMapper extends AbstractPhorumMapper
         'sessid_st'         => [],
         'sessid_st_timeout' => [],
         'email'             => [],
+        'email_verified'    => [],
         'email_temp'        => [],
         'hide_email'        => [],
         'active'            => [],

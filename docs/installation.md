@@ -78,9 +78,19 @@ return [
     'db_prefix'      => 'phorum',   // table prefix: phorum_messages, phorum_users, …
     'base_url'       => 'https://example.com',   // used in notification emails
     'session_secure' => true,       // set true on HTTPS sites
-    'admin_secret'   => 'replace-with-a-long-random-string',
+    'admin_secret'   => '',         // REQUIRED: see below
     // ... other settings
 ];
+```
+
+`admin_secret` signs the admin-session and impersonation cookies. Those carry
+no server-side state, so anyone who knows the value can forge an admin session.
+It must be a unique random string of at least 32 characters — Phorum refuses to
+log an admin in while it is blank, still an example placeholder, or too short.
+Generate one with:
+
+```bash
+php -r 'echo bin2hex(random_bytes(32));'
 ```
 
 Both files are excluded from version control by `.gitignore`.
@@ -263,7 +273,10 @@ The installer is automatically blocked for all subsequent requests once the
 | Task | Why |
 |------|-----|
 | Set `'session_secure' => true` in `etc/phorum.php` | Prevents session cookies being sent over HTTP |
-| Set a unique, long `admin_secret` | Signs admin session tokens — the default placeholder is public |
+| Set `trusted_proxies` if behind a CDN/reverse proxy | Otherwise every visitor shares one rate-limit bucket |
+| Set `hsts_max_age` once HTTPS is confirmed working | Stops browsers being downgraded to HTTP; start small, it cannot be withdrawn early |
+| If upgrading a site that always ran with `require_confirmation` on, mark existing accounts verified | `UPDATE phorum_users SET email_verified = 1 WHERE active = 1;` — the upgrade backfills everyone to *un*verified, which blocks OAuth from linking to those accounts until they confirm or reset |
+| Set a unique, long `admin_secret` | Signs admin session tokens; admin login is refused until it is set |
 | Set `'twig_cache' => true` (or a path string) | Enables compiled template caching for better performance |
 | Set `'require_confirmation' => true` | Enables email confirmation on new registrations |
 | Configure `mail_host`, `mail_port`, `mail_from` | Required for password resets and subscription emails |

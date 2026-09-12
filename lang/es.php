@@ -115,6 +115,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => 'Iniciar sesión',
+    'auth.logout_title'       => 'Cerrar sesión',
+    'auth.logout_confirm'       => '¿Seguro que quiere cerrar la sesión?',
+    'auth.logout_submit'       => 'Cerrar sesión',
+    'auth.logout_already'       => 'No ha iniciado sesión.',
     'auth.username'          => 'Nombre de usuario',
     'auth.password'          => 'Contraseña',
     'auth.remember_me'       => 'Recordarme',
@@ -142,6 +146,7 @@ return [
     'auth.confirm_pending_body'   => 'Enviamos un enlace de confirmación a {email}. Haz clic en él para activar tu cuenta.',
     'auth.confirm_pending_resend' => 'Reenviar correo de confirmación',
     'auth.confirm_invalid'        => 'Este enlace de confirmación no es válido o ha expirado.',
+    'auth.confirm_success_login'        => 'Su dirección de correo está confirmada. Inicie sesión.',
     'auth.resend_title'           => 'Reenviar correo de confirmación',
     'auth.resend_email_label'     => 'Correo electrónico',
     'auth.resend_submit'          => 'Reenviar',
@@ -150,6 +155,7 @@ return [
     'auth.pending_approval_body'  => '¡Gracias! Tu cuenta ahora está esperando a que un moderador la revise y apruebe. Podrás iniciar sesión en cuanto eso ocurra.',
     'auth.error_missing_credentials'  => 'Por favor, introduce tu nombre de usuario y contraseña.',
     'auth.error_invalid_credentials'  => 'Nombre de usuario o contraseña no válidos.',
+    'auth.error_throttled'  => 'Demasiados intentos. Espere {seconds} segundo(s) e inténtelo de nuevo.',
     'auth.error_registration_blocked' => 'No se permite el registro desde tu cuenta.',
     'auth.error_invalid_email'        => 'Por favor, introduce una dirección de correo electrónico válida.',
     'auth.error_password_min_length'  => 'La contraseña debe tener al menos 6 caracteres.',
@@ -158,6 +164,7 @@ return [
     'auth.error_username_length'      => 'El nombre de usuario debe tener entre 2 y 50 caracteres.',
     'auth.error_email_required'       => 'Se requiere una dirección de correo electrónico válida.',
     'auth.error_username_taken'       => 'Ese nombre de usuario ya está en uso.',
+    'auth.error_email_taken'       => 'Esa dirección de correo ya está registrada. Inicie sesión o use «¿Olvidó su contraseña?».',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -170,6 +177,7 @@ return [
     'oauth.error_email_not_verified'    => 'Tu dirección de correo electrónico no está verificada con ese proveedor, por lo que no podemos iniciar tu sesión. Verifica tu correo electrónico con el proveedor e inténtalo de nuevo.',
     'oauth.error_login_failed'          => 'Algo salió mal al iniciar tu sesión. Inténtalo de nuevo.',
     'oauth.error_account_inactive'      => 'Tu cuenta aún no está activa. Revisa tu correo electrónico para encontrar un enlace de confirmación.',
+    'oauth.error_account_exists'      => 'Ya existe una cuenta en este sitio con esa dirección de correo. Inicie sesión con su contraseña, o use «¿Olvidó su contraseña?» para confirmar primero la dirección; después podrá usar este proveedor.',
     'oauth.error_not_configured'        => 'Esa opción de inicio de sesión no está disponible actualmente.',
 
     // -------------------------------------------------------------------------
@@ -199,6 +207,8 @@ return [
     'settings.hide_email'        => 'Ocultar mi correo electrónico en mi perfil',
     'settings.password_section'  => 'Contraseña',
     'settings.password_hint'     => 'Déjalo en blanco para conservar tu contraseña actual.',
+    'settings.current_password'      => 'Contraseña actual',
+    'settings.current_password_hint'      => 'Solo se necesita al cambiar la contraseña o la dirección de correo.',
     'settings.new_password'      => 'Nueva contraseña',
     'settings.confirm_password'  => 'Confirmar nueva contraseña',
     'settings.signature_section' => 'Firma',
@@ -226,6 +236,7 @@ return [
     'settings.error_email_required'        => 'Se requiere una dirección de correo electrónico válida.',
     'settings.error_email_taken'           => 'Esa dirección de correo electrónico ya está en uso por otra cuenta.',
     'settings.error_password_min_length'   => 'La nueva contraseña debe tener al menos 6 caracteres.',
+    'settings.error_current_password'   => 'Introduzca su contraseña actual para cambiar la contraseña o el correo electrónico. Si se registró con Google o GitHub y nunca ha establecido una contraseña, use el enlace «¿Olvidó su contraseña?» para establecer una primero.',
     'settings.error_passwords_mismatch'    => 'Las contraseñas no coinciden.',
     'settings.error_tz_offset'             => 'El desfase horario debe estar entre -12 y +14, o -99 para la hora del servidor.',
     'settings.error_email_notify'          => 'Selecciona una opción de seguimiento válida.',

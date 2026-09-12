@@ -5,8 +5,9 @@
 -- a module's own tables.
 --
 -- events is a JSON array of event names (e.g. ["message.created"]).
--- payload_template is an optional Twig template producing the raw request
--- body; blank means the module's standard JSON envelope is sent instead.
+-- payload_template is an optional request body with {{ event }}, {{ timestamp }}
+-- and {{ data.<field> }} placeholders substituted in; blank means the module's
+-- standard JSON envelope is sent instead.
 -- -------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS {PREFIX}_webhooks (
     id                       int unsigned       NOT NULL AUTO_INCREMENT,

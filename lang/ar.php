@@ -100,6 +100,10 @@ return [
 
     // Authentication
     'auth.login_title'       => 'تسجيل الدخول',
+    'auth.logout_title'       => 'تسجيل الخروج',
+    'auth.logout_confirm'       => 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+    'auth.logout_submit'       => 'تسجيل الخروج',
+    'auth.logout_already'       => 'أنت لست مسجّلاً للدخول.',
     'auth.username'          => 'اسم المستخدم',
     'auth.password'          => 'كلمة المرور',
     'auth.remember_me'       => 'تذكّرني',
@@ -127,6 +131,7 @@ return [
     'auth.confirm_pending_body'   => 'أرسلنا رابط تأكيد إلى {email}. انقر عليه لتفعيل حسابك.',
     'auth.confirm_pending_resend' => 'إعادة إرسال بريد التأكيد',
     'auth.confirm_invalid'        => 'رابط التأكيد هذا غير صالح أو منتهي الصلاحية.',
+    'auth.confirm_success_login'        => 'تم تأكيد عنوان بريدك الإلكتروني. يرجى تسجيل الدخول.',
     'auth.resend_title'           => 'إعادة إرسال بريد التأكيد',
     'auth.resend_email_label'     => 'عنوان البريد الإلكتروني',
     'auth.resend_submit'          => 'إعادة الإرسال',
@@ -135,6 +140,7 @@ return [
     'auth.pending_approval_body'  => 'شكرًا! حسابك الآن بانتظار مراجعة المشرف والموافقة عليه. ستتمكن من تسجيل الدخول بعد ذلك.',
     'auth.error_missing_credentials'  => 'يرجى إدخال اسم المستخدم وكلمة المرور.',
     'auth.error_invalid_credentials'  => 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+    'auth.error_throttled'  => 'محاولات كثيرة جدًا. يرجى الانتظار {seconds} ثانية والمحاولة مرة أخرى.',
     'auth.error_registration_blocked' => 'التسجيل غير مسموح به من حسابك.',
     'auth.error_invalid_email'        => 'يرجى إدخال عنوان بريد إلكتروني صالح.',
     'auth.error_password_min_length'  => 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
@@ -143,6 +149,7 @@ return [
     'auth.error_username_length'      => 'يجب أن يتراوح اسم المستخدم بين حرفين و50 حرفًا.',
     'auth.error_email_required'       => 'عنوان بريد إلكتروني صالح مطلوب.',
     'auth.error_username_taken'       => 'اسم المستخدم هذا مُستخدَم بالفعل.',
+    'auth.error_email_taken'       => 'عنوان البريد الإلكتروني هذا مسجّل بالفعل. حاول تسجيل الدخول، أو استخدم "نسيت كلمة المرور".',
 
     // OAuth login
     'oauth.button_google' => 'المتابعة باستخدام Google',
@@ -153,6 +160,7 @@ return [
     'oauth.error_email_not_verified'    => 'عنوان بريدك الإلكتروني غير موثّق لدى هذا المزوّد، لذا لا يمكننا تسجيل دخولك. يرجى توثيق بريدك الإلكتروني لدى المزوّد والمحاولة مرة أخرى.',
     'oauth.error_login_failed'          => 'حدث خطأ ما أثناء تسجيل دخولك. يرجى المحاولة مرة أخرى.',
     'oauth.error_account_inactive'      => 'حسابك غير مُفعّل بعد. تحقّق من بريدك الإلكتروني للحصول على رابط التأكيد.',
+    'oauth.error_account_exists'      => 'يوجد بالفعل حساب على هذا الموقع يستخدم عنوان البريد الإلكتروني هذا. سجّل الدخول بكلمة المرور، أو استخدم "نسيت كلمة المرور" لتأكيد العنوان أولاً — بعد ذلك يمكنك استخدام هذا المزوّد.',
     'oauth.error_not_configured'        => 'خيار تسجيل الدخول هذا غير متوفر حاليًا.',
 
     // Profile
@@ -178,6 +186,8 @@ return [
     'settings.hide_email'        => 'إخفاء عنوان بريدي الإلكتروني من ملفي الشخصي',
     'settings.password_section'  => 'كلمة المرور',
     'settings.password_hint'     => 'اتركه فارغًا للإبقاء على كلمة المرور الحالية.',
+    'settings.current_password'      => 'كلمة المرور الحالية',
+    'settings.current_password_hint'      => 'مطلوبة فقط عند تغيير كلمة المرور أو عنوان البريد الإلكتروني.',
     'settings.new_password'      => 'كلمة المرور الجديدة',
     'settings.confirm_password'  => 'تأكيد كلمة المرور الجديدة',
     'settings.signature_section' => 'التوقيع',
@@ -205,6 +215,7 @@ return [
     'settings.error_email_required'        => 'عنوان بريد إلكتروني صالح مطلوب.',
     'settings.error_email_taken'           => 'عنوان البريد الإلكتروني هذا مُستخدَم بالفعل من قِبل حساب آخر.',
     'settings.error_password_min_length'   => 'يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.',
+    'settings.error_current_password'   => 'يرجى إدخال كلمة المرور الحالية لتغيير كلمة المرور أو البريد الإلكتروني. إذا سجّلت عبر Google أو GitHub ولم تعيّن كلمة مرور مطلقًا، فاستخدم رابط "نسيت كلمة المرور" لتعيين واحدة أولاً.',
     'settings.error_passwords_mismatch'    => 'كلمتا المرور غير متطابقتين.',
     'settings.error_tz_offset'             => 'يجب أن يكون فارق التوقيت بين -12 و+14، أو -99 لتوقيت الخادم.',
     'settings.error_email_notify'          => 'يرجى اختيار خيار متابعة صالح.',

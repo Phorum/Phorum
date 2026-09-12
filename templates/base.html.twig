@@ -74,7 +74,12 @@
                         <li><a href="{{ path('/groups') }}"><i class="fa fa-users"></i>{{ trans('nav.groups') }}</a></li>
                         <li><a href="{{ path('/user/' ~ user.user_id) }}"><i class="fa fa-user"></i>{{ user.display_name ?: user.username }}</a></li>
                         <li><a href="{{ path('/user/settings') }}"><i class="fa fa-cog"></i>{{ trans('nav.settings') }}</a></li>
-                        <li><a href="{{ path('/logout') }}"><i class="fa fa-sign-out"></i>{{ trans('nav.log_out') }}</a></li>
+                        <li>
+                            <form method="post" action="{{ path('/logout') }}" class="nav-form">
+                                {{ csrf_field() }}
+                                <button type="submit" class="nav-linkish"><i class="fa fa-sign-out"></i>{{ trans('nav.log_out') }}</button>
+                            </form>
+                        </li>
                     {% else %}
                         <li><a href="{{ path('/login') }}"><i class="fa fa-sign-in"></i>{{ trans('nav.log_in') }}</a></li>
                         <li><a href="{{ path('/register') }}"><i class="fa fa-user-plus"></i>{{ trans('nav.register') }}</a></li>

@@ -17,6 +17,7 @@ use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\PmBuddyMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Mapper\UserPermissionMapper;
+use Phorum\Service\AuthService;
 use Phorum\Service\FileService;
 use Phorum\Service\PermissionService;
 use Twig\Environment;
@@ -30,6 +31,7 @@ class UserController extends Controller
     private readonly PmBuddyMapper    $buddies;
     private readonly PermissionService $perms;
     private readonly ForumMapper      $forums;
+    private readonly AuthService      $authService;
 
     public function __construct(
         Config              $config,
@@ -41,6 +43,7 @@ class UserController extends Controller
         ?PmBuddyMapper      $buddies     = null,
         ?PermissionService  $perms       = null,
         ?ForumMapper        $forums      = null,
+        ?AuthService        $authService = null,
     ) {
         parent::__construct($config, $twig);
         $this->fileMapper  = $fileMapper  ?? new FileMapper();
@@ -50,6 +53,11 @@ class UserController extends Controller
         $this->buddies     = $buddies     ?? new PmBuddyMapper();
         $this->perms       = $perms       ?? new PermissionService(new UserPermissionMapper());
         $this->forums      = $forums      ?? new ForumMapper();
+        $this->authService = $authService ?? new AuthService(
+            users:         $this->users,
+            secureCookies: (bool) $config->get('session_secure', false),
+            config:        $config,
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -181,6 +189,19 @@ class UserController extends Controller
                 }
             }
 
+            // Changing either the password or the email address is enough to
+            // take the account over for good — a new email address can be used
+            // to request a password reset. Both therefore need the current
+            // password, so a borrowed or hijacked session isn't sufficient on
+            // its own. Everything else on this page saves without it.
+            $emailChanged = $email !== $currentUser->email;
+            if ($password !== '' || $emailChanged) {
+                $currentPassword = $request->post['current_password'] ?? '';
+                if (!$this->authService->verifyCurrentPassword($currentUser, $currentPassword)) {
+                    $errors[] = Lang::get('settings.error_current_password');
+                }
+            }
+
             if ($tzOffset !== -99.0 && ($tzOffset < -12.0 || $tzOffset > 14.0)) {
                 $errors[] = Lang::get('settings.error_tz_offset');
             }
@@ -190,6 +211,14 @@ class UserController extends Controller
             }
 
             if (empty($errors)) {
+                // A changed address is unproven, whatever the old one was.
+                // Without this, verifying one address and then switching to a
+                // victim's would carry the flag across and hand OAuth exactly
+                // the link it's meant to refuse.
+                if ($emailChanged) {
+                    $currentUser->email_verified = 0;
+                }
+
                 $currentUser->display_name    = $displayName;
                 $currentUser->email           = $email;
                 $currentUser->signature       = $signature;
@@ -202,12 +231,14 @@ class UserController extends Controller
                 $currentUser->user_language   = $userLanguage;
                 $currentUser->user_template   = $userTemplate;
 
+                $this->users->save($currentUser);
+
+                // Goes through AuthService so the password change also ends
+                // any other session on the account and issues a fresh one here.
                 if ($password !== '') {
-                    $currentUser->password = password_hash($password, PASSWORD_BCRYPT);
-                    $currentUser->force_password_change = 0;
+                    $this->authService->applyNewPassword($currentUser, $password);
                 }
 
-                $this->users->save($currentUser);
                 Auth::setUser($currentUser);
 
                 if ($deleteAvatar || $phpAvatar !== null) {
@@ -259,9 +290,11 @@ class UserController extends Controller
             }
 
             if (empty($errors)) {
-                $currentUser->password               = password_hash($password, PASSWORD_BCRYPT);
-                $currentUser->force_password_change   = 0;
-                $this->users->save($currentUser);
+                // No current-password prompt here: this page is only reached
+                // straight after a successful login, so knowledge of the old
+                // password has just been proven. The session rotation inside
+                // applyNewPassword() still applies.
+                $this->authService->applyNewPassword($currentUser, $password);
                 Auth::setUser($currentUser);
 
                 return $this->redirect($redirect);

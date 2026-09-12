@@ -122,6 +122,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => 'Log In',
+    'auth.logout_title'       => 'Log out',
+    'auth.logout_confirm'       => 'Are you sure you want to log out?',
+    'auth.logout_submit'       => 'Log out',
+    'auth.logout_already'       => 'You are not logged in.',
     'auth.username'          => 'Username',
     'auth.password'          => 'Password',
     'auth.remember_me'       => 'Remember me',
@@ -149,6 +153,7 @@ return [
     'auth.confirm_pending_body'   => 'We sent a confirmation link to {email}. Click it to activate your account.',
     'auth.confirm_pending_resend' => 'Resend confirmation email',
     'auth.confirm_invalid'        => 'This confirmation link is invalid or has expired.',
+    'auth.confirm_success_login'        => 'Your email address is confirmed. Please log in.',
     'auth.resend_title'           => 'Resend Confirmation Email',
     'auth.resend_email_label'     => 'Email Address',
     'auth.resend_submit'          => 'Resend',
@@ -157,6 +162,7 @@ return [
     'auth.pending_approval_body'  => 'Thanks! Your account is now waiting for a moderator to review and approve it. You will be able to log in once that happens.',
     'auth.error_missing_credentials'  => 'Please enter your username and password.',
     'auth.error_invalid_credentials'  => 'Invalid username or password.',
+    'auth.error_throttled'            => 'Too many attempts. Please wait {seconds} second(s) and try again.',
     'auth.error_registration_blocked' => 'Registration is not allowed from your account.',
     'auth.error_invalid_email'        => 'Please enter a valid email address.',
     'auth.error_password_min_length'  => 'Password must be at least 6 characters.',
@@ -165,6 +171,7 @@ return [
     'auth.error_username_length'      => 'Username must be between 2 and 50 characters.',
     'auth.error_email_required'       => 'A valid email address is required.',
     'auth.error_username_taken'       => 'That username is already taken.',
+    'auth.error_email_taken'       => 'That email address is already registered. Try logging in, or use "Forgot password".',
 
     // -------------------------------------------------------------------------
     // OAuth login (mods/oauth)
@@ -177,6 +184,7 @@ return [
     'oauth.error_email_not_verified'    => 'Your email address is not verified with that provider, so we cannot sign you in. Please verify your email with the provider and try again.',
     'oauth.error_login_failed'          => 'Something went wrong signing you in. Please try again.',
     'oauth.error_account_inactive'      => 'Your account is not active yet. Check your email for a confirmation link.',
+    'oauth.error_account_exists'      => 'An account on this site already uses that email address. Sign in with your password, or use "Forgot password" to confirm the address first — after that you can use this provider.',
     'oauth.error_not_configured'        => 'That login option is not currently available.',
 
     // -------------------------------------------------------------------------
@@ -206,6 +214,8 @@ return [
     'settings.hide_email'        => 'Hide my email address from my profile',
     'settings.password_section'  => 'Password',
     'settings.password_hint'     => 'Leave blank to keep your current password.',
+    'settings.current_password'            => 'Current password',
+    'settings.current_password_hint'       => 'Required only when changing your password or email address.',
     'settings.new_password'      => 'New Password',
     'settings.confirm_password'  => 'Confirm New Password',
     'settings.signature_section' => 'Signature',
@@ -233,6 +243,7 @@ return [
     'settings.error_email_required'        => 'A valid email address is required.',
     'settings.error_email_taken'           => 'That email address is already in use by another account.',
     'settings.error_password_min_length'   => 'New password must be at least 6 characters.',
+    'settings.error_current_password'      => 'Please enter your current password to change your password or email address. If you signed up with Google or GitHub and have never set a password, use the "Forgot password" link to set one first.',
     'settings.error_passwords_mismatch'    => 'Passwords do not match.',
     'settings.error_tz_offset'             => 'Timezone offset must be between -12 and +14, or -99 for server time.',
     'settings.error_email_notify'          => 'Please choose a valid follow-on-post option.',

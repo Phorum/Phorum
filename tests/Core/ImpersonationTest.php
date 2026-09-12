@@ -13,6 +13,9 @@ use PHPUnit\Framework\TestCase;
 
 class ImpersonationTest extends TestCase
 {
+    /** A realistic admin_secret: AdminSecret rejects short or placeholder values. */
+    private const SECRET = 'a1b2c3d4e5f6071829304a5b6c7d8e9f00112233445566778899aabbccddeeff';
+
     private Config $config;
 
     protected function setUp(): void
@@ -20,7 +23,7 @@ class ImpersonationTest extends TestCase
         $this->config = $this->createMock(Config::class);
         $this->config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
             return match ($key) {
-                'admin_secret'   => 'testsecretvalue',
+                'admin_secret'   => self::SECRET,
                 'session_secure' => false,
                 default          => $default,
             };
@@ -150,7 +153,7 @@ class ImpersonationTest extends TestCase
         $adminId   = 1;
         $targetId  = 2;
         $timestamp = time() - 3600;
-        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", self::SECRET);
         $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
 
         Impersonation::initialize($this->config);
@@ -174,7 +177,7 @@ class ImpersonationTest extends TestCase
         $adminId   = 1;
         $targetId  = 2;
         $timestamp = time();
-        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", self::SECRET);
         $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
 
         // No AdminAuth session active at all
@@ -192,7 +195,7 @@ class ImpersonationTest extends TestCase
         $adminId   = 1;
         $targetId  = 2;
         $timestamp = time();
-        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", self::SECRET);
         $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
 
         AdminAuth::login($this->makeUser($adminId, admin: true), $this->config);
@@ -213,7 +216,7 @@ class ImpersonationTest extends TestCase
         $adminId   = 1;
         $targetId  = 2;
         $timestamp = time();
-        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", self::SECRET);
         $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
 
         AdminAuth::login($this->makeUser($adminId, admin: true), $this->config);
@@ -232,7 +235,7 @@ class ImpersonationTest extends TestCase
         $adminId   = 1;
         $targetId  = 2;
         $timestamp = time();
-        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", 'testsecretvalue');
+        $hmac      = hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", self::SECRET);
         $_COOKIE['phorum_impersonate'] = base64_encode("{$adminId}:{$targetId}:{$timestamp}:{$hmac}");
 
         AdminAuth::login($this->makeUser($adminId, admin: true), $this->config);

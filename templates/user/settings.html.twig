@@ -49,6 +49,12 @@
         <p class="form-hint">{{ trans('settings.password_hint') }}</p>
 
         <div class="form-row">
+            <label for="current_password">{{ trans('settings.current_password') }}</label>
+            <input type="password" id="current_password" name="current_password" autocomplete="current-password">
+            <small class="form-hint">{{ trans('settings.current_password_hint') }}</small>
+        </div>
+
+        <div class="form-row">
             <label for="password">{{ trans('settings.new_password') }}</label>
             <input type="password" id="password" name="password" autocomplete="new-password">
         </div>

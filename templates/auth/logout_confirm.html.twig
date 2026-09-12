@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trans('auth.logout_title') }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ trans('auth.logout_title') }}</h1>
+
+{% if user %}
+    <p>{{ trans('auth.logout_confirm') }}</p>
+
+    <form method="post" action="{{ path('/logout') }}">
+        {{ csrf_field() }}
+        <div class="form-row">
+            <button type="submit">{{ trans('auth.logout_submit') }}</button>
+            <a href="{{ path('/') }}" class="btn-cancel">{{ trans('mod.cancel') }}</a>
+        </div>
+    </form>
+{% else %}
+    <p>{{ trans('auth.logout_already') }}</p>
+    <p><a href="{{ path('/login') }}">{{ trans('nav.log_in') }}</a></p>
+{% endif %}
+{% endblock %}

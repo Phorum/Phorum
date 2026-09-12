@@ -106,13 +106,15 @@ class OauthService
     /**
      * Resolve (find-or-create) the local User for this provider + token.
      * Order: existing oauth_identities row -> existing users.email match
-     * (only if the provider confirms the email is verified) -> auto-register
-     * a new User. Persists a new identity link on the "found by email" and
-     * "auto-register" paths so the next login goes straight through
-     * findByProviderAndId().
+     * (only when the provider confirms the email is verified AND the local
+     * account has itself verified that address) -> auto-register a new User.
+     * Persists a new identity link on the "found by email" and "auto-register"
+     * paths so the next login goes straight through findByProviderAndId().
      *
      * @throws OauthEmailNotVerifiedException when the provider has no
      *         verified email to link or register against.
+     * @throws OauthUnverifiedLocalAccountException when a local account holds
+     *         the address but has never proved it.
      */
     public function resolveUser(string $provider, AccessToken $token): User
     {
@@ -129,8 +131,12 @@ class OauthService
             if ($user !== null) {
                 return $user;
             }
-            // Identity row is orphaned (the linked user was deleted) — fall
-            // through and re-link/create as if this were a first-time login.
+            // Identity row is orphaned (the linked user was deleted). Drop it
+            // before falling through: oauth_identities has a UNIQUE key on
+            // (provider, provider_user_id), so leaving it would make the
+            // re-link below fail on that constraint and lock this provider
+            // identity out of the site permanently.
+            $this->identities->delete($identity->oauth_identity_id);
         }
 
         if (!$profile['email_verified'] || $profile['email'] === '') {
@@ -138,6 +144,15 @@ class OauthService
         }
 
         $user = $this->users->findByEmail($profile['email']);
+
+        if ($user !== null && !$user->email_verified) {
+            // The provider verified its side; nothing verified the local one.
+            // Linking here would hand this provider identity whatever account
+            // happens to hold the address — including one registered on it by
+            // someone else while require_confirmation was off.
+            throw new OauthUnverifiedLocalAccountException($profile['email']);
+        }
+
         if ($user === null) {
             $user = $this->registerFromProfile($profile);
         }
@@ -216,8 +231,10 @@ class OauthService
         // the password-login form can never authenticate this account.
         $user->password         = password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT);
         // Provider already verified the email, so this account is active
-        // immediately regardless of the site's require_confirmation setting.
+        // immediately regardless of the site's require_confirmation setting —
+        // and the address counts as proved for future provider links.
         $user->active           = 1;
+        $user->email_verified   = 1;
         $user->date_added       = time();
         $user->date_last_active = time();
         $user->reg_ip           = $_SERVER['REMOTE_ADDR'] ?? '';

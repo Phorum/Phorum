@@ -9,6 +9,7 @@ use Phorum\Core\Config;
 // Phorum\ => src/), so this module requires its own sibling files —
 // exactly like mods/webhooks/webhooks.php and mods/s3storage/s3storage.php do.
 require_once __DIR__ . '/OauthEmailNotVerifiedException.php';
+require_once __DIR__ . '/OauthUnverifiedLocalAccountException.php';
 require_once __DIR__ . '/OauthIdentity.php';
 require_once __DIR__ . '/OauthIdentityMapper.php';
 require_once __DIR__ . '/OauthService.php';

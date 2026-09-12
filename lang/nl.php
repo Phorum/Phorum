@@ -122,6 +122,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => 'Inloggen',
+    'auth.logout_title'       => 'Uitloggen',
+    'auth.logout_confirm'       => 'Weet je zeker dat je wilt uitloggen?',
+    'auth.logout_submit'       => 'Uitloggen',
+    'auth.logout_already'       => 'Je bent niet ingelogd.',
     'auth.username'          => 'Gebruikersnaam',
     'auth.password'          => 'Wachtwoord',
     'auth.remember_me'       => 'Onthoud mij',
@@ -149,6 +153,7 @@ return [
     'auth.confirm_pending_body'   => 'We hebben een bevestigingslink gestuurd naar {email}. Klik erop om uw account te activeren.',
     'auth.confirm_pending_resend' => 'Bevestigings-e-mail opnieuw versturen',
     'auth.confirm_invalid'        => 'Deze bevestigingslink is ongeldig of verlopen.',
+    'auth.confirm_success_login'        => 'Je e-mailadres is bevestigd. Log in om door te gaan.',
     'auth.resend_title'           => 'Bevestigings-e-mail opnieuw versturen',
     'auth.resend_email_label'     => 'E-mailadres',
     'auth.resend_submit'          => 'Opnieuw versturen',
@@ -157,6 +162,7 @@ return [
     'auth.pending_approval_body'  => 'Bedankt! Uw account wacht nu op beoordeling en goedkeuring door een moderator. U kunt inloggen zodra dat is gebeurd.',
     'auth.error_missing_credentials'  => 'Voer uw gebruikersnaam en wachtwoord in.',
     'auth.error_invalid_credentials'  => 'Ongeldige gebruikersnaam of wachtwoord.',
+    'auth.error_throttled'  => 'Te veel pogingen. Wacht {seconds} seconde(n) en probeer het opnieuw.',
     'auth.error_registration_blocked' => 'Registreren is niet toegestaan vanaf uw account.',
     'auth.error_invalid_email'        => 'Voer een geldig e-mailadres in.',
     'auth.error_password_min_length'  => 'Wachtwoord moet minimaal 6 tekens bevatten.',
@@ -165,6 +171,7 @@ return [
     'auth.error_username_length'      => 'Gebruikersnaam moet tussen 2 en 50 tekens lang zijn.',
     'auth.error_email_required'       => 'Een geldig e-mailadres is verplicht.',
     'auth.error_username_taken'       => 'Deze gebruikersnaam is al in gebruik.',
+    'auth.error_email_taken'       => 'Dat e-mailadres is al geregistreerd. Probeer in te loggen of gebruik "Wachtwoord vergeten".',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -177,6 +184,7 @@ return [
     'oauth.error_email_not_verified'    => 'Uw e-mailadres is niet geverifieerd bij deze provider, dus we kunnen u niet aanmelden. Verifieer uw e-mail bij de provider en probeer het opnieuw.',
     'oauth.error_login_failed'          => 'Er is iets misgegaan bij het inloggen. Probeer het opnieuw.',
     'oauth.error_account_inactive'      => 'Uw account is nog niet actief. Controleer uw e-mail voor een bevestigingslink.',
+    'oauth.error_account_exists'      => 'Er bestaat op deze site al een account met dat e-mailadres. Log in met je wachtwoord, of gebruik "Wachtwoord vergeten" om het adres eerst te bevestigen — daarna kun je deze provider gebruiken.',
     'oauth.error_not_configured'        => 'Die inlogoptie is momenteel niet beschikbaar.',
 
     // -------------------------------------------------------------------------
@@ -206,6 +214,8 @@ return [
     'settings.hide_email'        => 'Verberg mijn e-mailadres in mijn profiel',
     'settings.password_section'  => 'Wachtwoord',
     'settings.password_hint'     => 'Laat leeg om uw huidige wachtwoord te behouden.',
+    'settings.current_password'      => 'Huidig wachtwoord',
+    'settings.current_password_hint'      => 'Alleen nodig bij het wijzigen van je wachtwoord of e-mailadres.',
     'settings.new_password'      => 'Nieuw wachtwoord',
     'settings.confirm_password'  => 'Nieuw wachtwoord bevestigen',
     'settings.signature_section' => 'Handtekening',
@@ -233,6 +243,7 @@ return [
     'settings.error_email_required'        => 'Een geldig e-mailadres is verplicht.',
     'settings.error_email_taken'           => 'Dit e-mailadres is al in gebruik bij een ander account.',
     'settings.error_password_min_length'   => 'Nieuw wachtwoord moet minimaal 6 tekens bevatten.',
+    'settings.error_current_password'   => 'Voer je huidige wachtwoord in om je wachtwoord of e-mailadres te wijzigen. Als je je hebt aangemeld met Google of GitHub en nooit een wachtwoord hebt ingesteld, stel er dan eerst een in via "Wachtwoord vergeten".',
     'settings.error_passwords_mismatch'    => 'Wachtwoorden komen niet overeen.',
     'settings.error_tz_offset'             => 'Tijdzoneverschuiving moet tussen -12 en +14 liggen, of -99 voor servertijd.',
     'settings.error_email_notify'          => 'Kies een geldige volg-optie.',

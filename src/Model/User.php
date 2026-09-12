@@ -16,6 +16,8 @@ class User
     public int    $sessid_st_timeout = 0;
     public string $email             = '';
     public string $email_temp        = '';
+    /** 1 once the account has proved control of $email; see AuthService. */
+    public int    $email_verified    = 0;
     public int    $hide_email        = 1;
     public int    $active            = 0;
     public string $signature         = '';

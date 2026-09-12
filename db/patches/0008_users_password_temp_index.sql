@@ -1,0 +1,16 @@
+-- -------------------------------------------------------------------------
+-- Indexes users.password_temp, which holds the one-time token for password
+-- resets and email confirmations. Every /reset-password and /confirm-email
+-- request looks a user up by this column, and Phorum 6 never indexed it — so
+-- each attempt, including an unauthenticated one with a made-up token, meant
+-- a full scan of {PREFIX}_users.
+--
+-- Phorum 10 also stores a sha256 digest here rather than the raw token (see
+-- AuthService::hashToken), so any reset or confirmation link issued before
+-- the upgrade stops matching. Those links expire in an hour and 48 hours
+-- respectively; anyone caught mid-flow just requests a new one.
+--
+-- Applied by SchemaPatcher against databases that already have the
+-- {PREFIX}_users table — a fresh install gets this index from db/mysql.sql.
+-- -------------------------------------------------------------------------
+ALTER TABLE {PREFIX}_users ADD INDEX password_temp (password_temp);

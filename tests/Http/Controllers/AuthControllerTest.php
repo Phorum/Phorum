@@ -11,12 +11,27 @@ use Phorum\Mapper\SettingMapper;
 use Phorum\Mapper\UserMapper;
 use Phorum\Service\AuthService;
 use Phorum\Service\BanService;
+use Phorum\Service\LoginThrottleService;
 use Phorum\Tests\Http\ControllerTestCase;
 
 class AuthControllerTest extends ControllerTestCase
 {
+    /**
+     * Build an AuthController with mocked collaborators. The throttle defaults
+     * to "not throttled" and must be mocked — the real one reaches for the
+     * login_attempts table.
+     *
+     * @param array $deps Optional overrides, plus `retryAfter` to simulate a
+     *                    throttled caller.
+     */
     private function makeController(array $deps = []): AuthController
     {
+        $throttle = $deps['throttle'] ?? $this->createMock(LoginThrottleService::class);
+        if (!isset($deps['throttle'])) {
+            $throttle->method('loginRetryAfter')->willReturn($deps['retryAfter'] ?? 0);
+            $throttle->method('resetRetryAfter')->willReturn($deps['retryAfter'] ?? 0);
+        }
+
         return new AuthController(
             config:      $this->makeConfig(),
             twig:        $this->makeTwig(),
@@ -24,6 +39,7 @@ class AuthControllerTest extends ControllerTestCase
             banService:  $deps['banService']  ?? $this->createMock(BanService::class),
             users:       $deps['users']       ?? $this->createMock(UserMapper::class),
             settings:    $deps['settings']    ?? $this->createMock(SettingMapper::class),
+            throttle:    $throttle,
         );
     }
 
@@ -135,7 +151,7 @@ class AuthControllerTest extends ControllerTestCase
         $authService->expects($this->once())->method('logout')->with($user);
 
         $ctrl     = $this->makeController(['authService' => $authService]);
-        $response = $ctrl->logout(new Request());
+        $response = $ctrl->logout($this->makePostRequest());
         $this->assertSame(302, $response->status);
         $this->assertSame('/', $response->headers['Location']);
     }
@@ -146,8 +162,42 @@ class AuthControllerTest extends ControllerTestCase
         $authService->expects($this->never())->method('logout');
 
         $ctrl     = $this->makeController(['authService' => $authService]);
-        $response = $ctrl->logout(new Request());
+        $response = $ctrl->logout($this->makePostRequest());
         $this->assertSame(302, $response->status);
+    }
+
+    /**
+     * A GET must not log anyone out. Any site could otherwise force it with a
+     * top-level navigation — window.location, a meta refresh, a 302 — which
+     * also destroys the year-long remember-me cookie. (SameSite=Lax already
+     * stopped the silent <img src="/logout"> variant, but not a navigation.)
+     */
+    public function testLogoutOnGetShowsConfirmationInsteadOfLoggingOut(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('logout');
+        Auth::setUser($this->makeUser());
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->logout($this->makeGetRequest());
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** A POST without a valid CSRF token is refused. */
+    public function testLogoutPostWithoutCsrfIsRefused(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('logout');
+        Auth::setUser($this->makeUser());
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->logout(new Request(
+            post:   ['csrf_token' => 'wrong'],
+            server: ['REQUEST_METHOD' => 'POST'],
+        ));
+
+        $this->assertSame(403, $response->status);
     }
 
     // -------------------------------------------------------------------------
@@ -300,7 +350,12 @@ class AuthControllerTest extends ControllerTestCase
     // confirmEmail
     // -------------------------------------------------------------------------
 
-    public function testConfirmEmailRedirectsOnSuccess(): void
+    /**
+     * Confirming activates the account and sends the visitor to the login
+     * form — it no longer logs them in, since the link is long-lived and
+     * ends up in access logs.
+     */
+    public function testConfirmEmailRedirectsToLoginOnSuccess(): void
     {
         $authService = $this->createMock(AuthService::class);
         $authService->method('confirmEmail')->willReturn($this->makeUser());
@@ -308,7 +363,7 @@ class AuthControllerTest extends ControllerTestCase
         $ctrl     = $this->makeController(['authService' => $authService]);
         $response = $ctrl->confirmEmail(new Request(query: ['token' => 'validtoken']));
         $this->assertSame(302, $response->status);
-        $this->assertSame('/', $response->headers['Location']);
+        $this->assertSame('/login?confirmed=1', $response->headers['Location']);
     }
 
     public function testConfirmEmailShowsPendingApprovalPageWhenStillPendingModApproval(): void
@@ -382,5 +437,178 @@ class AuthControllerTest extends ControllerTestCase
             server: ['REQUEST_METHOD' => 'POST'],
         ));
         $this->assertSame(403, $response->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Rate limiting
+    // -------------------------------------------------------------------------
+
+    /**
+     * A throttled caller must not reach password verification at all —
+     * otherwise the limit would only change the message, not the work done.
+     */
+    public function testThrottledLoginDoesNotAttemptAuthentication(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('login');
+
+        $ctrl = $this->makeController(['authService' => $authService, 'retryAfter' => 42]);
+
+        $response = $ctrl->login($this->makePostRequest(['username' => 'alice', 'password' => 'secret']));
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** A failed login is recorded against the throttle. */
+    public function testFailedLoginIsRecorded(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('login')->willReturn(null);
+
+        $throttle = $this->createMock(LoginThrottleService::class);
+        $throttle->method('loginRetryAfter')->willReturn(0);
+        $throttle->expects($this->once())->method('recordFailedLogin');
+
+        $ctrl = $this->makeController(['authService' => $authService, 'throttle' => $throttle]);
+        $ctrl->login($this->makePostRequest(['username' => 'alice', 'password' => 'wrong']));
+    }
+
+    /** A successful login clears that account's bucket. */
+    public function testSuccessfulLoginClearsTheAccountBucket(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('login')->willReturn($this->makeUser());
+
+        $throttle = $this->createMock(LoginThrottleService::class);
+        $throttle->method('loginRetryAfter')->willReturn(0);
+        $throttle->expects($this->once())->method('clearAccount')->with('alice');
+        $throttle->expects($this->never())->method('recordFailedLogin');
+
+        $ctrl = $this->makeController(['authService' => $authService, 'throttle' => $throttle]);
+        $ctrl->login($this->makePostRequest(['username' => 'alice', 'password' => 'secret']));
+    }
+
+    /**
+     * The reset endpoint sends mail to an address the caller chooses, so a
+     * throttled caller must not trigger a send.
+     */
+    public function testThrottledForgotPasswordDoesNotSendMail(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('requestPasswordReset');
+
+        $ctrl = $this->makeController(['authService' => $authService, 'retryAfter' => 30]);
+
+        $response = $ctrl->forgotPassword($this->makePostRequest(['email' => 'victim@example.com']));
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** Resend-confirmation is the same shape and shares the limit. */
+    public function testThrottledResendConfirmationDoesNotSendMail(): void
+    {
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('resendConfirmation');
+
+        $ctrl = $this->makeController(['authService' => $authService, 'retryAfter' => 30]);
+
+        $response = $ctrl->resendConfirmation($this->makePostRequest(['email' => 'victim@example.com']));
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** An accepted reset request is recorded so repeats count toward the limit. */
+    public function testForgotPasswordRecordsTheRequest(): void
+    {
+        $throttle = $this->createMock(LoginThrottleService::class);
+        $throttle->method('resetRetryAfter')->willReturn(0);
+        $throttle->expects($this->once())->method('recordResetRequest');
+
+        $ctrl = $this->makeController(['throttle' => $throttle]);
+        $ctrl->forgotPassword($this->makePostRequest(['email' => 'someone@example.com']));
+    }
+
+    // -------------------------------------------------------------------------
+    // Reset token is taken out of the URL
+    // -------------------------------------------------------------------------
+
+    /**
+     * A token arriving in the query string is stashed in the session and the
+     * visitor is bounced to a clean URL, so it stops being a working URL in
+     * browser history and the form POST doesn't carry it into the access log
+     * a second time.
+     */
+    public function testResetPasswordMovesUrlTokenIntoSessionAndRedirects(): void
+    {
+        unset($_SESSION['phorum_reset_token']);
+
+        $ctrl     = $this->makeController();
+        $response = $ctrl->resetPassword(new Request(query: ['token' => 'a-real-token']));
+
+        $this->assertSame(302, $response->status);
+        $this->assertSame('/reset-password', $response->headers['Location']);
+        $this->assertSame('a-real-token', $_SESSION['phorum_reset_token'] ?? null);
+    }
+
+    /** The clean URL then validates using the stashed token. */
+    public function testResetPasswordValidatesTheStashedToken(): void
+    {
+        $_SESSION['phorum_reset_token'] = 'a-real-token';
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->once())->method('validateResetToken')
+            ->with('a-real-token')->willReturn($this->makeUser());
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->resetPassword($this->makeGetRequest());
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** Landing on the clean URL with nothing stashed shows the invalid page. */
+    public function testResetPasswordWithNoStashedTokenIsInvalid(): void
+    {
+        unset($_SESSION['phorum_reset_token']);
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->expects($this->never())->method('validateResetToken');
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->resetPassword($this->makeGetRequest());
+
+        $this->assertSame(200, $response->status);
+    }
+
+    /** A completed reset clears the stashed token so it can't be replayed. */
+    public function testSuccessfulResetClearsTheStashedToken(): void
+    {
+        $_SESSION['phorum_reset_token'] = 'a-real-token';
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('validateResetToken')->willReturn($this->makeUser());
+        $authService->expects($this->once())->method('resetPassword');
+
+        $ctrl     = $this->makeController(['authService' => $authService]);
+        $response = $ctrl->resetPassword($this->makePostRequest([
+            'password'  => 'newsecret',
+            'password2' => 'newsecret',
+        ]));
+
+        $this->assertSame(302, $response->status);
+        $this->assertArrayNotHasKey('phorum_reset_token', $_SESSION);
+    }
+
+    /** An invalid stashed token is discarded rather than retried forever. */
+    public function testInvalidStashedTokenIsDiscarded(): void
+    {
+        $_SESSION['phorum_reset_token'] = 'expired-token';
+
+        $authService = $this->createMock(AuthService::class);
+        $authService->method('validateResetToken')->willReturn(null);
+
+        $ctrl = $this->makeController(['authService' => $authService]);
+        $ctrl->resetPassword($this->makeGetRequest());
+
+        $this->assertArrayNotHasKey('phorum_reset_token', $_SESSION);
     }
 }

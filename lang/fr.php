@@ -115,6 +115,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => 'Se connecter',
+    'auth.logout_title'       => 'Se déconnecter',
+    'auth.logout_confirm'       => 'Voulez-vous vraiment vous déconnecter ?',
+    'auth.logout_submit'       => 'Se déconnecter',
+    'auth.logout_already'       => 'Vous n\'êtes pas connecté.',
     'auth.username'          => 'Nom d\'utilisateur',
     'auth.password'          => 'Mot de passe',
     'auth.remember_me'       => 'Se souvenir de moi',
@@ -142,6 +146,7 @@ return [
     'auth.confirm_pending_body'   => 'Nous avons envoyé un lien de confirmation à {email}. Cliquez dessus pour activer votre compte.',
     'auth.confirm_pending_resend' => 'Renvoyer l\'e-mail de confirmation',
     'auth.confirm_invalid'        => 'Ce lien de confirmation est invalide ou a expiré.',
+    'auth.confirm_success_login'        => 'Votre adresse e-mail est confirmée. Veuillez vous connecter.',
     'auth.resend_title'           => 'Renvoyer l\'e-mail de confirmation',
     'auth.resend_email_label'     => 'Adresse e-mail',
     'auth.resend_submit'          => 'Renvoyer',
@@ -150,6 +155,7 @@ return [
     'auth.pending_approval_body'  => 'Merci ! Votre compte attend maintenant qu\'un modérateur l\'examine et l\'approuve. Vous pourrez vous connecter une fois cela fait.',
     'auth.error_missing_credentials'  => 'Veuillez saisir votre nom d\'utilisateur et votre mot de passe.',
     'auth.error_invalid_credentials'  => 'Nom d\'utilisateur ou mot de passe invalide.',
+    'auth.error_throttled'  => 'Trop de tentatives. Veuillez patienter {seconds} seconde(s) et réessayer.',
     'auth.error_registration_blocked' => 'L\'inscription n\'est pas autorisée depuis votre compte.',
     'auth.error_invalid_email'        => 'Veuillez saisir une adresse e-mail valide.',
     'auth.error_password_min_length'  => 'Le mot de passe doit comporter au moins 6 caractères.',
@@ -158,6 +164,7 @@ return [
     'auth.error_username_length'      => 'Le nom d\'utilisateur doit comporter entre 2 et 50 caractères.',
     'auth.error_email_required'       => 'Une adresse e-mail valide est requise.',
     'auth.error_username_taken'       => 'Ce nom d\'utilisateur est déjà pris.',
+    'auth.error_email_taken'       => 'Cette adresse e-mail est déjà enregistrée. Connectez-vous ou utilisez « Mot de passe oublié ».',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -170,6 +177,7 @@ return [
     'oauth.error_email_not_verified'    => 'Votre adresse e-mail n\'est pas vérifiée auprès de ce fournisseur, nous ne pouvons donc pas vous connecter. Veuillez vérifier votre e-mail auprès du fournisseur et réessayer.',
     'oauth.error_login_failed'          => 'Une erreur s\'est produite lors de la connexion. Veuillez réessayer.',
     'oauth.error_account_inactive'      => 'Votre compte n\'est pas encore actif. Consultez votre e-mail pour un lien de confirmation.',
+    'oauth.error_account_exists'      => 'Un compte de ce site utilise déjà cette adresse e-mail. Connectez-vous avec votre mot de passe, ou utilisez « Mot de passe oublié » pour confirmer d\'abord l\'adresse — vous pourrez ensuite utiliser ce fournisseur.',
     'oauth.error_not_configured'        => 'Cette option de connexion n\'est pas disponible actuellement.',
 
     // -------------------------------------------------------------------------
@@ -199,6 +207,8 @@ return [
     'settings.hide_email'        => 'Masquer mon adresse e-mail sur mon profil',
     'settings.password_section'  => 'Mot de passe',
     'settings.password_hint'     => 'Laisser vide pour conserver votre mot de passe actuel.',
+    'settings.current_password'      => 'Mot de passe actuel',
+    'settings.current_password_hint'      => 'Requis uniquement pour modifier le mot de passe ou l\'adresse e-mail.',
     'settings.new_password'      => 'Nouveau mot de passe',
     'settings.confirm_password'  => 'Confirmer le nouveau mot de passe',
     'settings.signature_section' => 'Signature',
@@ -226,6 +236,7 @@ return [
     'settings.error_email_required'        => 'Une adresse e-mail valide est requise.',
     'settings.error_email_taken'           => 'Cette adresse e-mail est déjà utilisée par un autre compte.',
     'settings.error_password_min_length'   => 'Le nouveau mot de passe doit comporter au moins 6 caractères.',
+    'settings.error_current_password'   => 'Veuillez saisir votre mot de passe actuel pour modifier votre mot de passe ou votre adresse e-mail. Si vous vous êtes inscrit avec Google ou GitHub et n\'avez jamais défini de mot de passe, utilisez le lien « Mot de passe oublié » pour en définir un.',
     'settings.error_passwords_mismatch'    => 'Les mots de passe ne correspondent pas.',
     'settings.error_tz_offset'             => 'Le décalage horaire doit être compris entre -12 et +14, ou -99 pour l\'heure du serveur.',
     'settings.error_email_notify'          => 'Veuillez choisir une option de suivi valide.',

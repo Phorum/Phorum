@@ -159,6 +159,13 @@ class UserController extends AdminController
             if (empty($errors)) {
                 $wasShadowBanned = (bool) $user->shadow_banned;
 
+                // An address an admin typed in is no more proved than one the
+                // user typed in — see UserController::settings(). The account
+                // re-earns the flag by confirming or completing a reset.
+                if ($email !== $user->email) {
+                    $user->email_verified = 0;
+                }
+
                 $user->display_name = $displayName;
                 $user->email        = $email;
                 $user->active       = $activeState;

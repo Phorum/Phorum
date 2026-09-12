@@ -216,6 +216,25 @@ class FeedControllerTest extends ControllerTestCase
         $this->assertSame(404, $response->status);
     }
 
+    /**
+     * The thread feed resolves read permission from the forum id in the URL,
+     * so its message lookup must be scoped to that forum — otherwise the feed
+     * hands out any forum's thread to anyone who can read one public forum.
+     */
+    public function testThreadFeedScopesLookupToTheForumInTheUrl(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findByThread')->with(2, null, null, 0, 1)->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '2', 'format' => 'rss']));
+
+        $this->assertSame(404, $response->status);
+    }
+
     public function testThreadReturns404WhenRootMessageMissingFromResults(): void
     {
         $forums = $this->createMock(ForumMapper::class);

@@ -10,6 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 class AdminAuthTest extends TestCase
 {
+    /** A realistic admin_secret: AdminSecret rejects short or placeholder values. */
+    private const SECRET = 'a1b2c3d4e5f6071829304a5b6c7d8e9f00112233445566778899aabbccddeeff';
+
     private Config $config;
 
     protected function setUp(): void
@@ -17,7 +20,7 @@ class AdminAuthTest extends TestCase
         $this->config = $this->createMock(Config::class);
         $this->config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
             return match ($key) {
-                'admin_secret'   => 'testsecretvalue',
+                'admin_secret'   => self::SECRET,
                 'session_secure' => false,
                 default          => $default,
             };
@@ -103,7 +106,7 @@ class AdminAuthTest extends TestCase
         // Build a cookie that is older than 1800 seconds
         $userId    = 1;
         $timestamp = time() - 3600; // 1 hour ago
-        $secret    = 'testsecretvalue';
+        $secret    = self::SECRET;
         $hmac      = hash_hmac('sha256', "{$userId}:{$timestamp}", $secret);
         $cookie    = base64_encode("{$userId}:{$timestamp}:{$hmac}");
 
@@ -134,5 +137,29 @@ class AdminAuthTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('admin_secret');
         AdminAuth::login($user, $emptyConfig);
+    }
+
+    /**
+     * A cookie signed with a since-invalidated secret must not authenticate,
+     * and must not throw either — a misconfigured secret would otherwise 500
+     * every request for anyone still holding an admin cookie.
+     */
+    public function testInitializeFailsClosedWhenSecretIsUnusable(): void
+    {
+        $userId    = 5;
+        $timestamp = time();
+        $hmac      = hash_hmac('sha256', "{$userId}:{$timestamp}", self::SECRET);
+        $_COOKIE['phorum_admin_session'] = base64_encode("{$userId}:{$timestamp}:{$hmac}");
+
+        $weakConfig = $this->createMock(Config::class);
+        $weakConfig->method('get')->willReturnCallback(fn(string $k, mixed $d = null) => match ($k) {
+            'admin_secret'   => 'change-me-to-a-long-random-string',
+            'session_secure' => false,
+            default          => $d,
+        });
+
+        AdminAuth::initialize($weakConfig);
+
+        $this->assertNull(AdminAuth::user());
     }
 }

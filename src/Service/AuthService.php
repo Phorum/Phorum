@@ -5,6 +5,7 @@ namespace Phorum\Service;
 
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\CsrfGuard;
 use Phorum\Core\SiteSettings;
 use Phorum\Mapper\UserMapper;
 use Phorum\Model\User;
@@ -85,6 +86,7 @@ class AuthService
 
         $this->deleteCookie(Auth::COOKIE_ST);
         $this->deleteCookie(Auth::COOKIE_LT);
+        CsrfGuard::rotate();
         Auth::clear();
         phorum_api_hook('after_logout', $user);
     }
@@ -122,6 +124,10 @@ class AuthService
         $user->date_added       = time();
         $user->date_last_active = time();
         $user->reg_ip           = $_SERVER['REMOTE_ADDR'] ?? '';
+        // Self-declared at signup and proved only by confirmEmail() below.
+        // Left 0 when require_confirmation is off, which is the case the
+        // OAuth link check depends on being able to tell apart.
+        $user->email_verified   = 0;
 
         $this->users->save($user);
         phorum_api_hook('after_register', $user);
@@ -137,11 +143,10 @@ class AuthService
      * Activate an account via its confirmation token.
      *
      * Returns the User on success, null if the token is invalid or expired.
-     * If the account was only pending email confirmation, it becomes fully
-     * ACTIVE and a session is created (as before). If it was PENDING_BOTH,
-     * it moves to PENDING_MOD instead — still not allowed to log in — so
-     * callers must check the returned user's `active` value rather than
-     * assuming a non-null return means the caller is now logged in.
+     * If the account was only pending email confirmation it becomes fully
+     * ACTIVE; if it was PENDING_BOTH it moves to PENDING_MOD instead. No
+     * session is created either way, so callers must check the returned
+     * user's `active` value and send them to the login form.
      */
     public function confirmEmail(string $token): ?User
     {
@@ -149,7 +154,7 @@ class AuthService
             return null;
         }
 
-        $user = $this->users->findByPasswordTemp($token);
+        $user = $this->users->findByPasswordTemp(self::hashToken($token));
 
         if ($user === null || !in_array($user->active, [UserMapper::PENDING_EMAIL, UserMapper::PENDING_BOTH], true)) {
             return null;
@@ -164,11 +169,15 @@ class AuthService
         $user->active          = $stillNeedsModApproval ? UserMapper::PENDING_MOD : UserMapper::ACTIVE;
         $user->password_temp   = '';
         $user->email_temp      = '';
+        // Following a link only this mailbox received is the proof.
+        $user->email_verified  = 1;
         $this->users->save($user);
 
-        if (!$stillNeedsModApproval) {
-            $this->createSession($user, remember: false);
-        }
+        // Deliberately no session here. This link lives for 48 hours in the
+        // recipient's mailbox and in every access log that recorded the
+        // request; logging the visitor in would make it a two-day login
+        // credential rather than an activation link. The account is now
+        // active and the caller sends them to the login form.
         return $user;
     }
 
@@ -209,7 +218,12 @@ class AuthService
 
         $token = bin2hex(random_bytes(32));
 
-        $user->password_temp = $token;
+        // Only the hash is stored. password_temp used to hold the raw token,
+        // which made any database read — a backup, a replica, a SQL injection
+        // elsewhere — a working password reset for every account with one
+        // pending. The column is varchar(255), so a sha256 hex digest fits
+        // without touching the Phorum 6 schema.
+        $user->password_temp = self::hashToken($token);
         $user->email_temp    = (string) (time() + self::RESET_TTL);
         $this->users->save($user);
 
@@ -244,7 +258,7 @@ class AuthService
             return null;
         }
 
-        $user = $this->users->findByPasswordTemp($token);
+        $user = $this->users->findByPasswordTemp(self::hashToken($token));
 
         // Require a fully active account — non-active accounts use
         // password_temp for email confirmation tokens, not password reset.
@@ -266,13 +280,45 @@ class AuthService
      */
     public function resetPassword(User $user, string $newPassword): void
     {
-        $user->password               = password_hash($newPassword, PASSWORD_BCRYPT);
-        $user->password_temp          = '';
-        $user->email_temp             = '';
-        $user->force_password_change  = 0;
+        // Completing a reset means this mailbox received the link, which is
+        // the same proof confirmEmail() accepts. It's also the route by which
+        // accounts backfilled as unverified become verified again.
+        $user->email_verified = 1;
+
+        $this->applyNewPassword($user, $newPassword);
+    }
+
+    /**
+     * Set a new password and end every session the account currently has.
+     *
+     * The single place a password changes, so the session consequences can't
+     * be forgotten at one call site and remembered at another. sessid_st and
+     * sessid_lt are single-valued columns, so clearing them logs out whoever
+     * else is holding a cookie — which matters most for sessid_lt, the
+     * year-long remember-me token that a password change previously left
+     * working. A fresh session is then issued for the person making the
+     * change, so they stay logged in on this device only.
+     *
+     * @param bool $startSession False when the caller isn't the account owner
+     *                           acting in their own browser (an admin reset,
+     *                           say) and no new session should be created.
+     */
+    public function applyNewPassword(User $user, string $newPassword, bool $startSession = true): void
+    {
+        $user->password              = password_hash($newPassword, PASSWORD_BCRYPT);
+        $user->password_temp         = '';
+        $user->email_temp            = '';
+        $user->force_password_change = 0;
+
+        $user->sessid_st         = '';
+        $user->sessid_st_timeout = 0;
+        $user->sessid_lt         = '';
+
         $this->users->save($user);
 
-        $this->createSession($user, remember: false);
+        if ($startSession) {
+            $this->createSession($user, remember: false);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -281,8 +327,8 @@ class AuthService
 
     private function sendConfirmationEmail(User $user, string $baseUrl): void
     {
-        $token            = bin2hex(random_bytes(32));
-        $user->password_temp = $token;
+        $token               = bin2hex(random_bytes(32));
+        $user->password_temp = self::hashToken($token);
         $user->email_temp    = (string) (time() + self::CONFIRM_TTL);
         $this->users->save($user);
 
@@ -305,6 +351,32 @@ class AuthService
         }
     }
 
+    /**
+     * Confirm $user really knows $password — the re-authentication check for
+     * changes that would let someone take the account over permanently.
+     *
+     * Note this shares the legacy-MD5 upgrade path with login(), so a
+     * successful check on an un-migrated account rehashes it to bcrypt.
+     */
+    public function verifyCurrentPassword(User $user, string $password): bool
+    {
+        return $password !== '' && $this->verifyPassword($password, $user);
+    }
+
+    /**
+     * The stored form of an emailed one-time token.
+     *
+     * A plain sha256 rather than a password hash: these are 32 bytes of
+     * `random_bytes` output, so there is nothing to brute-force and no need
+     * for a slow KDF — the point is only that what sits in the database isn't
+     * usable as-is. Unsalted so the lookup stays a single indexed equality
+     * match rather than a scan-and-compare.
+     */
+    private static function hashToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
     private function verifyPassword(string $password, User $user): bool
     {
         // Modern bcrypt password
@@ -324,6 +396,11 @@ class AuthService
 
     private function createSession(User $user, bool $remember): void
     {
+        // New identity, new session id and CSRF token — so a session an
+        // attacker fixed before login can't carry into the authenticated one,
+        // and any token they already read stops working.
+        CsrfGuard::rotate();
+
         $stToken = bin2hex(random_bytes(16));
 
         $user->sessid_st         = $stToken;

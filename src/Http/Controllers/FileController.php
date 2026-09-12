@@ -20,6 +20,14 @@ use Twig\Environment;
 
 class FileController extends Controller
 {
+    /**
+     * MIME types an avatar may be served inline as. An avatar is only ever a
+     * raster image, so anything else — markup that finfo sniffs as text/html,
+     * an SVG carrying inline script, or an unrecognized blob — is handed back
+     * as a download rather than rendered inside the site's own origin.
+     */
+    private const AVATAR_INLINE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
     private readonly FileMapper        $fileMapper;
     private readonly MessageMapper     $messages;
     private readonly ForumMapper       $forums;
@@ -87,15 +95,10 @@ class FileController extends Controller
         // column), since this feeds the security check right below.
         $mimeType = MimeDetector::detect($rawData, $file->filename);
 
-        // Force download for anything that could execute in the browser:
-        // HTML/script tags in the first 1 KB, or SVG (which allows inline JS)
-        $forceDownload = false;
-        if (
-            preg_match('/<(html|script|iframe|object|embed|form)\b/i', substr($rawData, 0, 1024)) ||
-            $mimeType === 'image/svg+xml'
-        ) {
-            $forceDownload = true;
-            $mimeType      = 'application/octet-stream';
+        // Force download for anything that could execute in the browser.
+        $forceDownload = $this->isDangerousInline($rawData, $mimeType);
+        if ($forceDownload) {
+            $mimeType = 'application/octet-stream';
         }
 
         // Strip characters that would break the Content-Disposition header
@@ -140,17 +143,43 @@ class FileController extends Controller
             return $this->redirect($redirectUrl);
         }
 
-        $rawData  = $this->fileService->retrieve($file);
+        $rawData = $this->fileService->retrieve($file);
+
+        // Re-sniffed on the actual bytes, never the stored mime_type column —
+        // upload-time validation can be bypassed by a later storage-hook write,
+        // and this is the check that decides whether the response renders.
         $mimeType = MimeDetector::detect($rawData, $file->filename);
+
+        $forceDownload = $this->isDangerousInline($rawData, $mimeType)
+            || !in_array($mimeType, self::AVATAR_INLINE_TYPES, strict: true);
+        if ($forceDownload) {
+            $mimeType = 'application/octet-stream';
+        }
+
         $safeName = preg_replace('/[\r\n";]/', '_', $file->filename);
 
         return new Response($rawData, 200, [
             'Content-Type'           => $mimeType,
-            'Content-Disposition'    => 'inline; filename="' . $safeName . '"',
+            'Content-Disposition'    => ($forceDownload ? 'attachment' : 'inline')
+                                        . '; filename="' . $safeName . '"',
             'Content-Length'         => (string) strlen($rawData),
             'Cache-Control'          => 'public, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /**
+     * True when $rawData could execute script if the browser rendered it
+     * inline: HTML/script markup in the first 1 KB, or an SVG (which allows
+     * inline JS). Shared by serve() and avatar() so content that is unsafe on
+     * one route can't be served inline by the other — avatar() previously had
+     * no such check at all, which let a .png full of markup be sniffed as
+     * text/html and rendered as a page in the site's origin.
+     */
+    private function isDangerousInline(string $rawData, string $mimeType): bool
+    {
+        return MimeDetector::containsExecutableMarkup($rawData)
+            || $mimeType === 'image/svg+xml';
     }
 
     /**

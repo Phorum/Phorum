@@ -9,6 +9,7 @@ use Phorum\Core\Url;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
 
@@ -19,12 +20,16 @@ class SubscriptionService
     public const SUB_DIGEST   = SubscriberMapper::SUB_DIGEST;
     public const SUB_BOOKMARK = SubscriberMapper::SUB_BOOKMARK;
 
+    private readonly PermissionService $perms;
+
     public function __construct(
         private readonly SubscriberMapper $subscribers,
         private readonly UserMapper       $users,
         private readonly MailService      $mailer,
         private readonly Config           $config,
+        ?PermissionService                $perms = null,
     ) {
+        $this->perms = $perms ?? new PermissionService(new UserPermissionMapper());
     }
 
     public function subscribe(int $userId, int $forumId, int $thread, int $type): void
@@ -54,10 +59,9 @@ class SubscriptionService
      */
     public function notifySubscribers(Message $message, Forum $forum, int $excludeUserId): void
     {
-        $recipients = $this->subscribers->listEmailSubscribers(
-            $message->forum_id,
-            $message->thread,
-            $excludeUserId
+        $recipients = $this->readableBy(
+            $this->subscribers->listEmailSubscribers($message->forum_id, $message->thread, $excludeUserId),
+            $forum,
         );
 
         if (empty($recipients)) {
@@ -96,6 +100,38 @@ class SubscriptionService
                 body:      $body,
             );
         }
+    }
+
+    /**
+     * Drop subscribers who can no longer read the forum.
+     *
+     * A subscription row outlives the permission that allowed it — a user
+     * removed from a group, or a forum made private after the fact, would
+     * otherwise keep receiving the subject line of every new post in it. This
+     * check belongs here as well as at subscribe time, because only this side
+     * sees the permissions as they are when the mail actually goes out.
+     *
+     * @param  array<int, array<string, mixed>> $recipients Rows from listEmailSubscribers().
+     * @return array<int, array<string, mixed>>
+     */
+    private function readableBy(array $recipients, Forum $forum): array
+    {
+        if (empty($recipients)) {
+            return [];
+        }
+
+        $users = $this->users->findByIds(array_map(
+            static fn(array $row): int => (int) $row['user_id'],
+            $recipients
+        ));
+
+        return array_values(array_filter(
+            $recipients,
+            function (array $row) use ($users, $forum): bool {
+                $user = $users[(int) $row['user_id']] ?? null;
+                return $user !== null && $this->perms->canRead($forum, $user);
+            }
+        ));
     }
 
     /**
