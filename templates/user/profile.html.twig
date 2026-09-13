@@ -40,7 +40,7 @@
         </tr>
         <tr>
             <th scope="row">{{ trans('profile.posts') }}</th>
-            <td>{{ profile.posts }}</td>
+            <td>{{ profile.posts|number }}</td>
         </tr>
         {% if not profile.hide_activity or can_view_hidden %}
         <tr>

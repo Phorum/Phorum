@@ -8,6 +8,10 @@ declare(strict_types=1);
 return [
     '_name' => 'اردو',
     '_dir'  => 'rtl',
+    // Without ext-intl these group in threes; NumberFormatter applies the Indian
+    // lakh/crore grouping (12,34,567) when the extension is available.
+    '_thousands_sep' => ',',
+    '_decimal_sep'   => '.',
 
     // Navigation
     'nav.forum_index'   => 'فورم انڈیکس',

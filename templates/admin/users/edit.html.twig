@@ -90,7 +90,7 @@
                 <div class="col s12 grey-text" style="font-size:.85rem">
                     User ID: {{ profile.user_id }} &nbsp;|&nbsp;
                     Joined: {{ profile.date_added|datestamp }} &nbsp;|&nbsp;
-                    Posts: {{ profile.posts }} &nbsp;|&nbsp;
+                    Posts: {{ profile.posts|number }} &nbsp;|&nbsp;
                     Last active: {{ profile.date_last_active|datestamp }} &nbsp;|&nbsp;
                     Registration IP: {{ profile.reg_ip|default('') != '' ? profile.reg_ip : '—' }}
                 </div>

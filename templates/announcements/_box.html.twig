@@ -14,7 +14,7 @@
                         <i class="fa fa-info-circle"></i>{{- thread.subject -}}
                     </a>
                     {% if announcements.new_counts[thread.message_id] is defined %}
-                        <span class="new-badge">{{ announcements.new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
+                        <span class="new-badge">{{ announcements.new_counts[thread.message_id]|number }} {{ trans('forum.new') }}</span>
                     {% endif %}
                 </td>
                 <td class="col-last">{{ thread.modifystamp|relative_time }}</td>

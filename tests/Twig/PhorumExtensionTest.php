@@ -6,6 +6,7 @@ namespace Phorum\Tests\Twig;
 use DealNews\SchemaOrg\Type\WebPage;
 use Phorum\Core\Auth;
 use Phorum\Core\Config;
+use Phorum\Core\Lang;
 use Phorum\Hook\HookDispatcher;
 use Phorum\Model\User;
 use Phorum\Twig\PhorumExtension;
@@ -15,6 +16,10 @@ class PhorumExtensionTest extends TestCase
 {
     protected function setUp(): void
     {
+        // Lang::load() reads the lang/ directory relative to ROOT_PATH
+        if (!defined('ROOT_PATH')) {
+            define('ROOT_PATH', dirname(__DIR__, 2));
+        }
         HookDispatcher::reset();
         require_once dirname(__DIR__, 2) . '/src/Hook/functions.php';
         Auth::clear();
@@ -24,6 +29,8 @@ class PhorumExtensionTest extends TestCase
     {
         HookDispatcher::reset();
         Auth::clear();
+        // Lang holds static state; put it back to the default for other tests
+        Lang::load('en');
     }
 
     private function makeUser(float $tzOffset, bool $isDst = false): User
@@ -506,5 +513,59 @@ class PhorumExtensionTest extends TestCase
         $ext    = $this->makeExt();
         $result = $ext->jsonLd(['not a node', 42]);
         $this->assertSame('', $result);
+    }
+
+    // -------------------------------------------------------------------------
+    // formatNumber
+    // -------------------------------------------------------------------------
+
+    /**
+     * The 'number' filter groups thousands using the active locale.
+     */
+    public function testFormatNumberGroupsThousands(): void
+    {
+        Lang::load('en');
+        $ext = $this->makeExt();
+        $this->assertSame('15,619', $ext->formatNumber(15619));
+    }
+
+    /**
+     * Values arriving from the database as numeric strings are formatted the
+     * same as native ints, with no stray decimal digits.
+     */
+    public function testFormatNumberAcceptsNumericStrings(): void
+    {
+        Lang::load('en');
+        $ext = $this->makeExt();
+        $this->assertSame('15,619', $ext->formatNumber('15619'));
+        $this->assertSame('15,619.5', $ext->formatNumber('15619.5', 1));
+    }
+
+    /**
+     * A null value (an absent count) renders as zero rather than an empty cell.
+     */
+    public function testFormatNumberTreatsNullAsZero(): void
+    {
+        Lang::load('en');
+        $ext = $this->makeExt();
+        $this->assertSame('0', $ext->formatNumber(null));
+    }
+
+    /**
+     * The filter follows Lang's active locale, so switching locales switches
+     * the separators without re-registering the extension.
+     */
+    public function testFormatNumberFollowsActiveLocale(): void
+    {
+        $ext = $this->makeExt();
+
+        Lang::load('de');
+        $german = $ext->formatNumber(15619);
+
+        Lang::load('en');
+        $english = $ext->formatNumber(15619);
+
+        $this->assertSame('15.619', $german);
+        $this->assertSame('15,619', $english);
     }
 }

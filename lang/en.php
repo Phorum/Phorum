@@ -16,6 +16,10 @@ return [
 
     // Metadata (not rendered as UI text)
     '_name' => 'English',
+    // Thousands/decimal separators for the number filter. Only consulted when
+    // ext-intl is missing; NumberFormatter handles the locale otherwise.
+    '_thousands_sep' => ',',
+    '_decimal_sep'   => '.',
 
     // -------------------------------------------------------------------------
     // Navigation

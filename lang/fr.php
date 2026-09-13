@@ -9,6 +9,9 @@ return [
 
     // Metadata (not rendered as UI text)
     '_name' => 'Français',
+    // Narrow no-break space (U+202F) is the CLDR group separator for French.
+    '_thousands_sep' => "\u{202F}",
+    '_decimal_sep'   => ',',
 
     // -------------------------------------------------------------------------
     // Navigation

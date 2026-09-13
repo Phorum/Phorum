@@ -19,6 +19,9 @@ declare(strict_types=1);
  */
 return [
     '_name' => 'Português (Portugal)',
+    // pt.php (Brazil) uses '.'; Portugal uses a no-break space (U+00A0).
+    '_thousands_sep' => "\u{00A0}",
+    '_decimal_sep'   => ',',
 
     // -------------------------------------------------------------------------
     // Navigation

@@ -90,7 +90,7 @@
                                 {{- thread.subject -}}
                             </a>
                             {% if thread_new_counts[thread.message_id] is defined %}
-                                <span class="new-badge">{{ thread_new_counts[thread.message_id] }} {{ trans('forum.new') }}</span>
+                                <span class="new-badge">{{ thread_new_counts[thread.message_id]|number }} {{ trans('forum.new') }}</span>
                             {% endif %}
                             <small class="thread-author">{{ trans('forum.by') }}
                                 {% if thread.user_id > 0 %}
@@ -102,7 +102,7 @@
                         </div>
                     </div>
                 </td>
-                <td class="col-replies">{{ thread.thread_count }}</td>
+                <td class="col-replies">{{ thread.thread_count|number }}</td>
                 <td class="col-lastpost">
                     {% if thread.recent_author %}
                         <span class="lastpost-time">{{ thread.modifystamp|relative_time }}</span>

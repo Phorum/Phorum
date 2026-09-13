@@ -86,6 +86,7 @@ class PhorumExtension extends AbstractExtension
             new TwigFilter('relative_time', [$this, 'relativeTime']),
             new TwigFilter('decode_meta',     static fn($raw) => MessageMeta::decode(is_string($raw) ? $raw : null)),
             new TwigFilter('decode_file_meta', static fn($raw) => FileMeta::decode(is_string($raw) ? $raw : null)),
+            new TwigFilter('number',          [$this, 'formatNumber']),
             new TwigFilter('filesizeformat',  static fn($bytes) => self::formatFilesize((int) $bytes)),
             new TwigFilter('url_encode',      static fn($s) => rawurlencode((string) $s)),
         ];
@@ -198,6 +199,27 @@ class PhorumExtension extends AbstractExtension
             $diff < 604800  => floor($diff / 86400) . 'd ago',
             default         => $this->formatDatestamp($timestamp, 'M j, Y'),
         };
+    }
+
+    /**
+     * Format a number using the active locale's grouping and decimal
+     * separators — 15619 renders as "15,619" in English and "15.619" in
+     * German. Delegates to Lang::number(), which prefers ext-intl's
+     * NumberFormatter and falls back to number_format() with the separators
+     * declared in the locale file.
+     *
+     * @param int|float|string|null $value    The number to format.
+     * @param int                   $decimals Digits to show after the decimal point.
+     */
+    public function formatNumber(int|float|string|null $value, int $decimals = 0): string
+    {
+        $number = $value ?? 0;
+
+        if (is_string($number)) {
+            $number = str_contains($number, '.') ? (float) $number : (int) $number;
+        }
+
+        return Lang::number($number, $decimals);
     }
 
     /** Viewer's tz_offset (+1 hour if is_dst), in seconds — null if unset ("use server time"). */

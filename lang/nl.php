@@ -16,6 +16,8 @@ return [
 
     // Metadata (not rendered as UI text)
     '_name' => 'Nederlands',
+    '_thousands_sep' => '.',
+    '_decimal_sep'   => ',',
 
     // -------------------------------------------------------------------------
     // Navigation

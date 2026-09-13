@@ -78,8 +78,8 @@
         <p class="search-no-results">{{ trans('search.no_results') }}</p>
     {% else %}
         <p class="search-count">
-            {{ trans('search.showing') }} {{ (page - 1) * 20 + 1 }}&ndash;{{ min((page - 1) * 20 + messages|length, total) }}
-            {{ trans('search.of') }} {{ total }} {{ total != 1 ? trans('search.results') : trans('search.result') }}
+            {{ trans('search.showing') }} {{ ((page - 1) * 20 + 1)|number }}&ndash;{{ min((page - 1) * 20 + messages|length, total)|number }}
+            {{ trans('search.of') }} {{ total|number }} {{ total != 1 ? trans('search.results') : trans('search.result') }}
         </p>
 
         <table class="search-results">
