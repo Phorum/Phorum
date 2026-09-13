@@ -51,4 +51,18 @@ class MimeDetector
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         return self::MIME_MAP[$ext] ?? 'application/octet-stream';
     }
+
+    /**
+     * True when $data carries markup a browser would execute if it ever
+     * rendered the bytes as a document — the tags below in the first 1 KB.
+     *
+     * Lives here, next to detect(), because both the upload-time validation in
+     * FileService and the serve-time guard in FileController need exactly this
+     * answer; a second copy of the pattern is the kind of drift that let
+     * avatars be served inline without the check attachments already had.
+     */
+    public static function containsExecutableMarkup(string $data): bool
+    {
+        return preg_match('/<(html|script|iframe|object|embed|form|svg)\b/i', substr($data, 0, 1024)) === 1;
+    }
 }

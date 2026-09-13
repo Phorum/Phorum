@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace Phorum\Mod\Oauth\Controllers;
 
 use Phorum\Core\Config;
+use Phorum\Core\CsrfGuard;
 use Phorum\Core\RedirectGuard;
 use Phorum\Http\Controller;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\UserMapper;
 use Phorum\Mod\Oauth\OauthEmailNotVerifiedException;
+use Phorum\Mod\Oauth\OauthUnverifiedLocalAccountException;
 use Phorum\Mod\Oauth\OauthService;
 use Phorum\Service\AuthService;
 use Twig\Environment;
@@ -91,6 +93,8 @@ class OauthController extends Controller
             $user = $this->oauth->resolveUser($provider, $token);
         } catch (OauthEmailNotVerifiedException) {
             return $this->redirect('/login?oauth_error=email_not_verified');
+        } catch (OauthUnverifiedLocalAccountException) {
+            return $this->redirect('/login?oauth_error=account_exists');
         } catch (\Throwable) {
             return $this->redirect('/login?oauth_error=login_failed');
         }
@@ -106,15 +110,15 @@ class OauthController extends Controller
         return $this->redirect($redirect);
     }
 
+    /**
+     * Delegates to CsrfGuard, which owns this application's session settings —
+     * a second copy here would miss `session.use_strict_mode` and the Secure
+     * flag, leaving the OAuth `state` value fixable even once the CSRF token
+     * isn't.
+     */
     private function startSession(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_set_cookie_params([
-                'httponly' => true,
-                'samesite' => 'Lax',
-            ]);
-            session_start();
-        }
+        CsrfGuard::ensureSession();
     }
 
     private function clearSessionState(): void

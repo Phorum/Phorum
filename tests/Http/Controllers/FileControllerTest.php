@@ -10,6 +10,7 @@ use Phorum\Mapper\FileMapper;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Model\File;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Phorum\Service\FileService;
 use Phorum\Service\PermissionService;
 use Phorum\Tests\Http\ControllerTestCase;
@@ -317,5 +318,78 @@ class FileControllerTest extends ControllerTestCase
 
         $this->assertSame(200, $response->status);
         $this->assertSame('avatar bytes', $response->body);
+    }
+
+    // -------------------------------------------------------------------------
+    // avatar() — inline-rendering safety
+    // -------------------------------------------------------------------------
+
+    /**
+     * Build a controller whose /avatar/9 lookup returns $bytes under $filename.
+     *
+     * @param string $bytes    The stored avatar bytes to serve back.
+     * @param string $filename The stored filename, which feeds MIME fallback.
+     */
+    private function makeControllerForAvatar(string $bytes, string $filename = 'avatar.png'): FileController
+    {
+        $file           = new File();
+        $file->file_id  = 5;
+        $file->link     = File::LINK_USER;
+        $file->filename = $filename;
+
+        $fileMapper = $this->createMock(FileMapper::class);
+        $fileMapper->method('findAvatarForUser')->with(9)->willReturn($file);
+
+        $fileService = $this->createMock(FileService::class);
+        $fileService->method('retrieve')->willReturn($bytes);
+
+        return $this->makeController(['fileMapper' => $fileMapper, 'fileService' => $fileService]);
+    }
+
+    /**
+     * An avatar whose bytes are really a document must never come back as
+     * something the browser will render in the site's origin. Upload
+     * validation rejects these, but the serve path is the boundary that has to
+     * hold for rows already in the database or written by a storage module.
+     *
+     * @param string $bytes Hostile avatar content.
+     */
+    #[DataProvider('hostileAvatarProvider')]
+    public function testHostileAvatarIsNotServedInline(string $bytes): void
+    {
+        $response = $this->makeControllerForAvatar($bytes)->avatar(new Request(tokens: ['user_id' => '9']));
+
+        $this->assertSame('application/octet-stream', $response->headers['Content-Type']);
+        $this->assertStringStartsWith('attachment;', $response->headers['Content-Disposition']);
+    }
+
+    /**
+     * Avatar payloads that a browser would execute if it rendered them: a full
+     * HTML document and a bare script tag (both sniffed as text/html), and an
+     * SVG (which can carry inline JS) stored under an image extension.
+     *
+     * @return array<string, array{0: string}>
+     */
+    public static function hostileAvatarProvider(): array
+    {
+        return [
+            'html document' => ['<html><body><script>alert(document.domain)</script></body></html>'],
+            'bare script'   => ['<script>alert(1)</script>'],
+            'svg with js'   => ['<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'],
+            'gif polyglot'  => ["GIF89a<html><script>alert(1)</script></html>"],
+            'plain text'    => ['just some text, not an image at all'],
+        ];
+    }
+
+    /** A real image still renders inline, with its own content type. */
+    public function testRealImageAvatarIsStillServedInline(): void
+    {
+        $png = (string) file_get_contents(__DIR__ . '/../../fixtures/pixel.png');
+
+        $response = $this->makeControllerForAvatar($png)->avatar(new Request(tokens: ['user_id' => '9']));
+
+        $this->assertSame('image/png', $response->headers['Content-Type']);
+        $this->assertStringStartsWith('inline;', $response->headers['Content-Disposition']);
+        $this->assertSame($png, $response->body);
     }
 }

@@ -100,6 +100,10 @@ return [
 
     // Authentication
     'auth.login_title'       => 'لاگ ان',
+    'auth.logout_title'       => 'لاگ آؤٹ',
+    'auth.logout_confirm'       => 'کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟',
+    'auth.logout_submit'       => 'لاگ آؤٹ',
+    'auth.logout_already'       => 'آپ لاگ ان نہیں ہیں۔',
     'auth.username'          => 'صارف نام',
     'auth.password'          => 'پاس ورڈ',
     'auth.remember_me'       => 'مجھے یاد رکھیں',
@@ -127,6 +131,7 @@ return [
     'auth.confirm_pending_body'   => 'ہم نے {email} پر ایک تصدیقی لنک بھیجا ہے۔ اپنا اکاؤنٹ فعال کرنے کے لیے اس پر کلک کریں۔',
     'auth.confirm_pending_resend' => 'تصدیقی ای میل دوبارہ بھیجیں',
     'auth.confirm_invalid'        => 'یہ تصدیقی لنک غلط ہے یا میعاد ختم ہو گئی ہے۔',
+    'auth.confirm_success_login'        => 'آپ کا ای میل ایڈریس تصدیق شدہ ہے۔ براہ کرم لاگ ان کریں۔',
     'auth.resend_title'           => 'تصدیقی ای میل دوبارہ بھیجیں',
     'auth.resend_email_label'     => 'ای میل پتہ',
     'auth.resend_submit'          => 'دوبارہ بھیجیں',
@@ -135,6 +140,7 @@ return [
     'auth.pending_approval_body'  => 'شکریہ! آپ کا اکاؤنٹ اب ایک ماڈریٹر کے جائزے اور منظوری کا منتظر ہے۔ ایسا ہونے کے بعد آپ لاگ ان کر سکیں گے۔',
     'auth.error_missing_credentials'  => 'براہ کرم اپنا صارف نام اور پاس ورڈ درج کریں۔',
     'auth.error_invalid_credentials'  => 'غلط صارف نام یا پاس ورڈ۔',
+    'auth.error_throttled'  => 'بہت زیادہ کوششیں۔ براہ کرم {seconds} سیکنڈ انتظار کریں اور دوبارہ کوشش کریں۔',
     'auth.error_registration_blocked' => 'آپ کے اکاؤنٹ سے رجسٹریشن کی اجازت نہیں ہے۔',
     'auth.error_invalid_email'        => 'براہ کرم ایک درست ای میل پتہ درج کریں۔',
     'auth.error_password_min_length'  => 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
@@ -143,6 +149,7 @@ return [
     'auth.error_username_length'      => 'صارف نام 2 سے 50 حروف کے درمیان ہونا چاہیے۔',
     'auth.error_email_required'       => 'ایک درست ای میل پتہ درکار ہے۔',
     'auth.error_username_taken'       => 'یہ صارف نام پہلے سے استعمال میں ہے۔',
+    'auth.error_email_taken'       => 'یہ ای میل ایڈریس پہلے سے رجسٹرڈ ہے۔ لاگ ان کرنے کی کوشش کریں، یا "پاس ورڈ بھول گئے" استعمال کریں۔',
 
     // OAuth login
     'oauth.button_google' => 'Google کے ساتھ جاری رکھیں',
@@ -153,6 +160,7 @@ return [
     'oauth.error_email_not_verified'    => 'آپ کا ای میل ایڈریس اس فراہم کنندہ کے ساتھ تصدیق شدہ نہیں ہے، اس لیے ہم آپ کو سائن ان نہیں کر سکتے۔ براہ کرم فراہم کنندہ کے ساتھ اپنا ای میل تصدیق کریں اور دوبارہ کوشش کریں۔',
     'oauth.error_login_failed'          => 'آپ کو سائن ان کرنے میں کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔',
     'oauth.error_account_inactive'      => 'آپ کا اکاؤنٹ ابھی فعال نہیں ہے۔ تصدیقی لنک کے لیے اپنا ای میل چیک کریں۔',
+    'oauth.error_account_exists'      => 'اس سائٹ پر ایک اکاؤنٹ پہلے ہی یہ ای میل ایڈریس استعمال کر رہا ہے۔ اپنے پاس ورڈ سے سائن ان کریں، یا پہلے ایڈریس کی تصدیق کے لیے "پاس ورڈ بھول گئے" استعمال کریں — اس کے بعد آپ یہ فراہم کنندہ استعمال کر سکتے ہیں۔',
     'oauth.error_not_configured'        => 'یہ لاگ ان آپشن فی الحال دستیاب نہیں ہے۔',
 
     // Profile
@@ -178,6 +186,8 @@ return [
     'settings.hide_email'        => 'اپنے پروفائل سے ای میل پتہ چھپائیں',
     'settings.password_section'  => 'پاس ورڈ',
     'settings.password_hint'     => 'موجودہ پاس ورڈ برقرار رکھنے کے لیے خالی چھوڑیں۔',
+    'settings.current_password'      => 'موجودہ پاس ورڈ',
+    'settings.current_password_hint'      => 'صرف پاس ورڈ یا ای میل ایڈریس تبدیل کرتے وقت درکار ہے۔',
     'settings.new_password'      => 'نیا پاس ورڈ',
     'settings.confirm_password'  => 'نئے پاس ورڈ کی تصدیق کریں',
     'settings.signature_section' => 'دستخط',
@@ -205,6 +215,7 @@ return [
     'settings.error_email_required'        => 'ایک درست ای میل پتہ درکار ہے۔',
     'settings.error_email_taken'           => 'یہ ای میل پتہ پہلے سے کسی دوسرے اکاؤنٹ کے زیر استعمال ہے۔',
     'settings.error_password_min_length'   => 'نیا پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔',
+    'settings.error_current_password'   => 'پاس ورڈ یا ای میل ایڈریس تبدیل کرنے کے لیے اپنا موجودہ پاس ورڈ درج کریں۔ اگر آپ نے Google یا GitHub سے سائن اپ کیا اور کبھی پاس ورڈ مقرر نہیں کیا، تو پہلے "پاس ورڈ بھول گئے" لنک استعمال کریں۔',
     'settings.error_passwords_mismatch'    => 'پاس ورڈز مماثل نہیں ہیں۔',
     'settings.error_tz_offset'             => 'ٹائم زون آفسیٹ -12 اور +14 کے درمیان ہونا چاہیے، یا سرور وقت کے لیے -99۔',
     'settings.error_email_notify'          => 'براہ کرم ایک درست فالو کا اختیار منتخب کریں۔',

@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS phorum_users (
     sessid_st_timeout INTEGER NOT NULL DEFAULT 0,
     email             TEXT    NOT NULL DEFAULT '',
     email_temp        TEXT    NOT NULL DEFAULT '',
+    email_verified   INTEGER NOT NULL DEFAULT 0,
     hide_email        INTEGER NOT NULL DEFAULT 1,
     active            INTEGER NOT NULL DEFAULT 0,
     signature         TEXT    NOT NULL DEFAULT '',
@@ -201,6 +202,12 @@ CREATE TABLE IF NOT EXISTS phorum_mod_log (
     object_id   INTEGER NOT NULL DEFAULT 0,
     details     TEXT    NOT NULL DEFAULT '',
     time        INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS phorum_login_attempts (
+    login_attempt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    attempt_key      TEXT    NOT NULL DEFAULT '',
+    attempted_at     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS phorum_reports (

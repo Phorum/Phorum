@@ -159,6 +159,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     sessid_st_timeout        int unsigned       NOT NULL DEFAULT 0,
     email                    varchar(100)       NOT NULL DEFAULT '',
     email_temp               varchar(110)       NOT NULL DEFAULT '',
+    email_verified           tinyint(1)         NOT NULL DEFAULT 0,
     hide_email               tinyint(1)         NOT NULL DEFAULT 1,
     active                   tinyint(1)         NOT NULL DEFAULT 0,
     signature                text               NOT NULL,
@@ -194,6 +195,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     KEY activity (date_last_active, hide_activity, last_active_forum),
     KEY date_added (date_added),
     KEY email_temp (email_temp),
+    KEY password_temp (password_temp),
     KEY shadow_banned (shadow_banned)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -300,6 +302,25 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_mod_log (
     PRIMARY KEY (mod_log_id),
     KEY user_id (user_id),
     KEY time (time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------------------
+-- Failed login / password-reset attempts, for rate limiting.
+--
+-- One row per failed attempt. attempt_key is a namespaced bucket —
+-- 'ip:1.2.3.4' or 'user:alice' — so the same table throttles both a single
+-- source address and a single targeted account. Rows are pruned on write
+-- (there is no scheduled job in this application), so the table only ever
+-- holds roughly one limiting window's worth of attempts.
+-- -------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS {PREFIX}_login_attempts (
+    login_attempt_id         int unsigned       NOT NULL AUTO_INCREMENT,
+    attempt_key              varchar(255)       NOT NULL DEFAULT '',
+    attempted_at             int unsigned       NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (login_attempt_id),
+    KEY attempt_key (attempt_key, attempted_at),
+    KEY attempted_at (attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------------

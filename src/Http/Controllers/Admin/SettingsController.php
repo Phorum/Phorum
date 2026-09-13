@@ -8,6 +8,7 @@ use Phorum\Core\Lang;
 use Phorum\Http\Request;
 use Phorum\Http\Response;
 use Phorum\Mapper\SettingMapper;
+use Phorum\Service\LoginThrottleService;
 use Twig\Environment;
 
 class SettingsController extends AdminController
@@ -42,11 +43,45 @@ class SettingsController extends AdminController
             'type'  => 'number',
             'hint'  => '0 = disabled',
         ],
+        'login_throttle_window' => [
+            'label' => 'Login Rate-Limit Window (seconds)',
+            'type'  => 'number',
+            'hint'  => 'How long failed logins are counted for. Blank/0 uses the default of 900.',
+        ],
+        'login_max_per_ip' => [
+            'label' => 'Max Failed Logins per IP per Window',
+            'type'  => 'number',
+            'hint'  => 'Blocks password spraying from one address. 0 = disabled.',
+        ],
+        'login_max_per_account' => [
+            'label' => 'Max Failed Logins per Account per Window',
+            'type'  => 'number',
+            'hint'  => 'Blocks guessing at one account. Kept looser than the per-IP limit so it '
+                     . 'cannot be used to lock someone out. 0 = disabled.',
+        ],
+        'login_max_resets' => [
+            'label' => 'Max Password-Reset Emails per IP per Window',
+            'type'  => 'number',
+            'hint'  => 'Also covers resend-confirmation. 0 = disabled.',
+        ],
         'karma_threshold_percent' => [
             'label' => 'Karma Threshold %',
             'type'  => 'number',
             'hint'  => 'Hold future posts once this share of a user\'s messages are moderator-deleted. 0 = disabled.',
         ],
+    ];
+
+    /**
+     * Fallback values for the rate-limit fields, mirroring
+     * LoginThrottleService's own defaults. Used only to populate the form —
+     * the service still falls back to the same numbers on its own if these
+     * settings are absent.
+     */
+    private const THROTTLE_DEFAULTS = [
+        'login_throttle_window' => LoginThrottleService::DEFAULT_WINDOW,
+        'login_max_per_ip'      => LoginThrottleService::DEFAULT_MAX_PER_IP,
+        'login_max_per_account' => LoginThrottleService::DEFAULT_MAX_PER_ACCOUNT,
+        'login_max_resets'      => LoginThrottleService::DEFAULT_MAX_RESETS,
     ];
 
     private readonly SettingMapper $settings;
@@ -105,6 +140,16 @@ class SettingsController extends AdminController
         foreach ([...array_keys(self::FIELDS), 'template', 'language'] as $key) {
             if (!array_key_exists($key, $stored)) {
                 $stored[$key] = $this->config->get($key, '');
+            }
+        }
+
+        // Show the rate-limit defaults as real numbers rather than blanks.
+        // Every number field here saves as (int), and 0 means "disabled" — so
+        // a blank box would turn the login throttle off the first time an
+        // admin saved this page for an unrelated reason.
+        foreach (self::THROTTLE_DEFAULTS as $key => $default) {
+            if (($stored[$key] ?? '') === '') {
+                $stored[$key] = $default;
             }
         }
 

@@ -9,6 +9,7 @@ use Phorum\Model\File;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
 use Phorum\Service\FileService;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class FileServiceTest extends TestCase
@@ -269,5 +270,84 @@ class FileServiceTest extends TestCase
 
         $svc = new FileService($mapper);
         $svc->deleteForMessages([10, 20]);
+    }
+
+    // -------------------------------------------------------------------------
+    // validateAvatarUpload() — content, not just extension
+    // -------------------------------------------------------------------------
+
+    /**
+     * Write $bytes to a temp file and validate it as an avatar named $name.
+     * Returns the validation error, or null when the upload is acceptable.
+     *
+     * @param string $bytes Raw file content to stand in for the uploaded bytes.
+     * @param string $name  Client-supplied filename, which drives the extension check.
+     */
+    private function validateAvatarBytes(string $bytes, string $name): ?string
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'avtest');
+        file_put_contents($tmp, $bytes);
+
+        try {
+            $result = (new FileService($this->createMock(FileMapper::class)))->validateAvatarUpload(
+                ['name' => $name, 'size' => strlen($bytes), 'error' => UPLOAD_ERR_OK, 'tmp_name' => $tmp],
+                102400,
+            );
+        } finally {
+            @unlink($tmp);
+        }
+
+        return $result;
+    }
+
+    /**
+     * An allowed extension must not be enough on its own — the bytes decide.
+     * Storing one of these under a .png name is what let an avatar be served
+     * back as text/html from the site's own origin.
+     *
+     * @param string $bytes Content that is not a real raster image.
+     * @param string $name  Filename with an otherwise-allowed image extension.
+     */
+    #[DataProvider('nonImageAvatarProvider')]
+    public function testValidateAvatarUploadRejectsNonImageContent(string $bytes, string $name): void
+    {
+        $this->assertNotNull($this->validateAvatarBytes($bytes, $name));
+    }
+
+    /**
+     * Non-image payloads that all carry an allowed image extension: HTML, a
+     * bare script tag, an SVG, plain text, and a GIF-header polyglot whose
+     * body is markup.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function nonImageAvatarProvider(): array
+    {
+        return [
+            'html as png'    => ['<html><body><script>alert(1)</script></body></html>', 'a.png'],
+            'script as png'  => ['<script>alert(1)</script>', 'a.png'],
+            'svg as png'     => ['<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', 'a.png'],
+            'text as png'    => ['just some text', 'a.png'],
+            'gif polyglot'   => ["GIF89a<html><script>alert(1)</script></html>", 'a.gif'],
+        ];
+    }
+
+    /** A genuine PNG under a matching extension is still accepted. */
+    public function testValidateAvatarUploadAcceptsRealImage(): void
+    {
+        $png = (string) file_get_contents(dirname(__DIR__) . '/fixtures/pixel.png');
+
+        $this->assertNull($this->validateAvatarBytes($png, 'avatar.png'));
+    }
+
+    /** A real image whose extension names a different format is rejected. */
+    public function testValidateAvatarUploadRejectsExtensionContentMismatch(): void
+    {
+        $png = (string) file_get_contents(dirname(__DIR__) . '/fixtures/pixel.png');
+
+        $this->assertSame(
+            'Avatar file extension does not match its contents.',
+            $this->validateAvatarBytes($png, 'avatar.gif'),
+        );
     }
 }

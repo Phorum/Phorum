@@ -136,22 +136,37 @@ class MessageMapper extends AbstractPhorumMapper
      * entire thread, unchanged from before pagination existed — required for
      * threaded-mode rendering and feed generation, which still need the whole
      * thread in one call.
+     *
+     * $forumId, when given, additionally requires the messages to live in that
+     * forum. Any caller that resolved read permission from a forum id must
+     * pass it: a thread id alone says nothing about which forum it belongs to,
+     * so checking permission against a URL's forum while fetching by thread id
+     * alone let a readable forum be used to read any other forum's threads.
      */
-    public function findByThread(int $threadId, ?int $viewerUserId = null, ?int $limit = null, int $offset = 0): ?array
-    {
+    public function findByThread(
+        int  $threadId,
+        ?int $viewerUserId = null,
+        ?int $limit = null,
+        int  $offset = 0,
+        ?int $forumId = null,
+    ): ?array {
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE thread = :thread'
-                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
-                . ' ORDER BY datestamp ASC, message_id ASC';
-        if ($limit !== null) {
-            $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
-        }
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))';
         $params = [
             ':thread'       => $threadId,
             ':status'       => self::STATUS_APPROVED,
             ':shadow_status' => self::STATUS_SHADOW,
             ':viewer_id'    => $viewerUserId ?? 0,
         ];
+        if ($forumId !== null) {
+            $sql .= ' AND forum_id = :forum_id';
+            $params[':forum_id'] = $forumId;
+        }
+        $sql .= ' ORDER BY datestamp ASC, message_id ASC';
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+        }
         $rows = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : array_map(fn($r) => $this->setData($r), $rows);
     }
@@ -162,19 +177,25 @@ class MessageMapper extends AbstractPhorumMapper
      * the flat, paginated thread view to resolve the header/subject/actions
      * without needing the root to be inside the current page's LIMIT/OFFSET
      * window.
+     *
+     * $forumId scopes the lookup to one forum — see findByThread().
      */
-    public function findRoot(int $threadId, ?int $viewerUserId = null): ?Message
+    public function findRoot(int $threadId, ?int $viewerUserId = null, ?int $forumId = null): ?Message
     {
         $sql    = 'SELECT * FROM ' . $this->table()
                 . ' WHERE message_id = :id'
-                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))'
-                . ' LIMIT 1';
+                . '   AND (status = :status OR (status = :shadow_status AND user_id = :viewer_id))';
         $params = [
             ':id'            => $threadId,
             ':status'        => self::STATUS_APPROVED,
             ':shadow_status' => self::STATUS_SHADOW,
             ':viewer_id'     => $viewerUserId ?? 0,
         ];
+        if ($forumId !== null) {
+            $sql .= ' AND forum_id = :forum_id';
+            $params[':forum_id'] = $forumId;
+        }
+        $sql .= ' LIMIT 1';
         $rows = $this->crud()->runFetch($sql, $params);
         return empty($rows) ? null : $this->setData($rows[0]);
     }

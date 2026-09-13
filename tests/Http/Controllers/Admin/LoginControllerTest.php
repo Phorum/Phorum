@@ -7,16 +7,29 @@ use Phorum\Core\AdminAuth;
 use Phorum\Http\Controllers\Admin\LoginController;
 use Phorum\Http\Request;
 use Phorum\Mapper\UserMapper;
+use Phorum\Service\LoginThrottleService;
 use Phorum\Tests\Http\ControllerTestCase;
 
 class LoginControllerTest extends ControllerTestCase
 {
+    /**
+     * Build an admin LoginController with mocked collaborators. The throttle
+     * defaults to "not throttled"; pass `retryAfter` to simulate one.
+     *
+     * @param array $deps Optional overrides: users, throttle, retryAfter.
+     */
     private function makeController(array $deps = []): LoginController
     {
+        $throttle = $deps['throttle'] ?? $this->createMock(LoginThrottleService::class);
+        if (!isset($deps['throttle'])) {
+            $throttle->method('loginRetryAfter')->willReturn($deps['retryAfter'] ?? 0);
+        }
+
         return new LoginController(
-            config: $this->makeConfig(),
-            twig:   $this->makeTwig(),
-            users:  $deps['users'] ?? $this->createMock(UserMapper::class),
+            config:   $this->makeConfig(),
+            twig:     $this->makeTwig(),
+            users:    $deps['users'] ?? $this->createMock(UserMapper::class),
+            throttle: $throttle,
         );
     }
 
@@ -164,5 +177,61 @@ class LoginControllerTest extends ControllerTestCase
             server: ['REQUEST_METHOD' => 'POST'],
         ));
         $this->assertSame(403, $response->status);
+    }
+
+    /**
+     * With an unusable admin_secret, admin login is refused with an
+     * explanation rather than attempting auth (which would throw on signing
+     * and surface as an unexplained 500).
+     */
+    public function testLoginIsRefusedWhenAdminSecretIsPlaceholder(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->never())->method('findByUsername');
+
+        $throttle = $this->createMock(LoginThrottleService::class);
+        $throttle->method('loginRetryAfter')->willReturn(0);
+
+        $ctrl = new LoginController(
+            config:   $this->makeConfig(['admin_secret' => 'change-me-to-a-long-random-string']),
+            twig:     $this->makeTwig(),
+            users:    $users,
+            throttle: $throttle,
+        );
+
+        $response = $ctrl->login($this->makePostRequest(['username' => 'admin', 'password' => 'secret']));
+
+        $this->assertSame(503, $response->status);
+    }
+
+    /**
+     * The admin form checks passwords independently of the front-end login,
+     * so it needs the same limit — throttling one and not the other leaves a
+     * second unlimited oracle for the same accounts.
+     */
+    public function testThrottledAdminLoginDoesNotLookUpTheUser(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->expects($this->never())->method('findByUsername');
+
+        $ctrl = $this->makeController(['users' => $users, 'retryAfter' => 60]);
+
+        $response = $ctrl->login($this->makePostRequest(['username' => 'admin', 'password' => 'secret']));
+
+        $this->assertSame(429, $response->status);
+    }
+
+    /** A failed admin login is recorded against the same buckets. */
+    public function testFailedAdminLoginIsRecorded(): void
+    {
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByUsername')->willReturn(null);
+
+        $throttle = $this->createMock(LoginThrottleService::class);
+        $throttle->method('loginRetryAfter')->willReturn(0);
+        $throttle->expects($this->once())->method('recordFailedLogin');
+
+        $ctrl = $this->makeController(['users' => $users, 'throttle' => $throttle]);
+        $ctrl->login($this->makePostRequest(['username' => 'admin', 'password' => 'wrong']));
     }
 }

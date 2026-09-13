@@ -60,9 +60,15 @@
                 <div class="col s12">
                     <small class="grey-text">
                         Leave blank to send the standard payload: <code>{"event": "...", "timestamp": ..., "data": {...}}</code>.
-                        Otherwise, enter a Twig template rendering the raw request body — available variables are
-                        <code>event</code> (string), <code>timestamp</code> (unix time), and <code>data</code> (event-specific fields).
+                        Otherwise, enter the raw request body with <code>{% verbatim %}{{ placeholder }}{% endverbatim %}</code> markers
+                        filled in — available placeholders are <code>{% verbatim %}{{ event }}{% endverbatim %}</code> (string),
+                        <code>{% verbatim %}{{ timestamp }}{% endverbatim %}</code> (unix time), and
+                        <code>{% verbatim %}{{ data.<em>field</em> }}{% endverbatim %}</code> (event-specific fields).
                         Example for Slack: <code>{% verbatim %}{"text": "New post *{{ data.subject }}* by {{ data.author }}"}{% endverbatim %}</code>
+                        <br>
+                        This is plain placeholder substitution, not a template language — there are no tags, filters, loops or
+                        conditionals. When the Content-Type above names JSON, values are escaped so quotes and backslashes in a
+                        subject or author name still produce valid JSON. Unknown placeholders render as empty.
                     </small>
                 </div>
             </div>

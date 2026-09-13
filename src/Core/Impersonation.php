@@ -29,6 +29,11 @@ class Impersonation
             return;
         }
 
+        // Fail closed on a misconfigured secret — see AdminAuth::initialize().
+        if (!AdminSecret::isUsable($config)) {
+            return;
+        }
+
         $decoded = base64_decode($cookie, strict: true);
         if ($decoded === false) {
             return;
@@ -139,10 +144,6 @@ class Impersonation
 
     private static function makeHmac(int $adminId, int $targetId, int $timestamp, Config $config): string
     {
-        $secret = (string) ($config->get('admin_secret') ?? '');
-        if ($secret === '') {
-            throw new \RuntimeException('admin_secret must be set in etc/phorum.php');
-        }
-        return hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", $secret);
+        return hash_hmac('sha256', "{$adminId}:{$targetId}:{$timestamp}", AdminSecret::get($config));
     }
 }

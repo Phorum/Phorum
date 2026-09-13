@@ -12,6 +12,17 @@ use Phorum\Model\Message;
 
 class FileService
 {
+    /**
+     * Raster image formats accepted as an avatar, as getimagesize() IMAGETYPE_*
+     * constants mapped to the file extension each one is expected to carry.
+     */
+    protected const AVATAR_IMAGE_TYPES = [
+        IMAGETYPE_JPEG => ['jpg', 'jpeg'],
+        IMAGETYPE_PNG  => ['png'],
+        IMAGETYPE_GIF  => ['gif'],
+        IMAGETYPE_WEBP => ['webp'],
+    ];
+
     public function __construct(protected FileMapper $mapper) {}
 
     /**
@@ -221,8 +232,34 @@ class FileService
             return 'Avatar must be smaller than ' . $this->formatBytes($maxBytes) . '.';
         }
 
-        $ext = strtolower(pathinfo($phpFile['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+        $ext     = strtolower(pathinfo($phpFile['name'], PATHINFO_EXTENSION));
+        $allowed = array_merge(...array_values(self::AVATAR_IMAGE_TYPES));
+        if (!in_array($ext, $allowed, true)) {
+            return 'Avatar must be a JPG, PNG, GIF, or WebP image.';
+        }
+
+        // The extension proves nothing on its own — it's chosen by the
+        // uploader. getimagesize() parses the real image header and fails on
+        // anything that isn't one of these raster formats, which is what stops
+        // a file of HTML or SVG being stored under a .png name and later
+        // sniffed back as text/html when it's served.
+        $info = @getimagesize($phpFile['tmp_name']);
+        if ($info === false || !array_key_exists($info[2], self::AVATAR_IMAGE_TYPES)) {
+            return 'Avatar must be a JPG, PNG, GIF, or WebP image.';
+        }
+
+        // Extension and content must also agree, so the stored filename can't
+        // misrepresent the bytes to anything downstream that trusts it.
+        if (!in_array($ext, self::AVATAR_IMAGE_TYPES[$info[2]], true)) {
+            return 'Avatar file extension does not match its contents.';
+        }
+
+        // A polyglot passes getimagesize() on its header alone while still
+        // carrying markup in its body (e.g. "GIF89a" + "<html><script>").
+        // FileController refuses to serve those inline; reject them here too so
+        // the two layers agree and the bytes never get stored at all.
+        $rawData = @file_get_contents($phpFile['tmp_name']);
+        if ($rawData === false || MimeDetector::containsExecutableMarkup($rawData)) {
             return 'Avatar must be a JPG, PNG, GIF, or WebP image.';
         }
 

@@ -179,6 +179,33 @@ p { margin: 0.5em 0; }
     text-decoration: underline;
 }
 
+/* Log out submits a POST form rather than following a link, so it can't be
+   triggered by a cross-site navigation. These rules make its button read as
+   another nav item — `font: inherit` keeps it on the surrounding type scale
+   without introducing a new size, and the id selector is needed to outrank
+   the global button[type="submit"] styling further down. */
+.nav-form {
+    display: inline;
+    margin: 0;
+}
+
+#phorum-nav .nav-linkish {
+    display: inline;
+    padding: 0;
+    margin-right: 2px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font: inherit;
+    color: var(--accent-dark);
+    cursor: pointer;
+}
+
+#phorum-nav .nav-linkish:hover {
+    text-decoration: underline;
+}
+
 .pm-badge,
 .sticky-badge,
 .closed-badge,

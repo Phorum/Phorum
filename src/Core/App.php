@@ -5,6 +5,8 @@ namespace Phorum\Core;
 
 use PageMill\Router\Router;
 use Phorum\Core\AdminAuth;
+use Phorum\Core\ClientIp;
+use Phorum\Core\CsrfGuard;
 use Phorum\Core\Impersonation;
 use Phorum\Core\Lang;
 use Phorum\Core\RedirectGuard;
@@ -40,6 +42,16 @@ class App
         if ($basePath !== '' && str_starts_with((string) $uri, $basePath)) {
             $uri = substr((string) $uri, strlen($basePath)) ?: '/';
         }
+
+        // Before anything can render a form or read a token — the install and
+        // upgrade flows have CSRF-protected forms of their own.
+        CsrfGuard::initialize($this->config);
+        ClientIp::initialize($this->config);
+
+        // Sent once, up front, so they cover every exit from run() — the
+        // install/upgrade redirects and the 404 below included, not just
+        // responses that reach sendResponse().
+        SecurityHeaders::send($this->config);
 
         $state     = $this->bootState();
         $installed = $state === 'installed';

@@ -20,7 +20,23 @@ use Phorum\Service\Autolinker;
  */
 class BbcodeFormatter
 {
-    private const SAFE_SCHEMES = ['http', 'https', 'ftp', ''];
+    /**
+     * URL schemes allowed in [url]/[img] hrefs. A URL with no scheme at all
+     * (a relative or protocol-relative link) is allowed too, but that case is
+     * an explicit branch in safeUrl() rather than an '' entry here — folding
+     * it into the list is what let an unparseable scheme through as "empty".
+     */
+    private const SAFE_SCHEMES = ['http', 'https', 'ftp'];
+
+    /**
+     * How many levels of nested [quote] to resolve.
+     *
+     * Real quote chains are a handful deep; this only bites on markup built to
+     * be expensive. Tags past the limit are left as the literal text they came
+     * in as — already HTML-escaped by the first pass of render() — so they show
+     * up as visible [quote] markers rather than disappearing.
+     */
+    private const MAX_QUOTE_DEPTH = 20;
 
     public function render(string $body): string
     {
@@ -73,10 +89,20 @@ class BbcodeFormatter
 
         $text = strtr($text, $protected);
 
-        // [quote] — iterate to resolve nesting (inner-most first each pass)
-        $prev = null;
-        while ($prev !== $text) {
+        // [quote] — iterate to resolve nesting (inner-most first each pass).
+        // Each pass resolves exactly one level, because the lazy `.*?` only
+        // ever matches the innermost pair, so the pass count is the nesting
+        // depth — and each pass rescans a string that has grown about fivefold
+        // per level. That made cost quadratic in depth: 4,369 levels, which is
+        // what fits in the 64 KB TEXT body column, took ~185 ms of CPU on
+        // every render, with no output cache and the feed path rendering
+        // bodies too. Capping the depth caps the pass count directly and puts
+        // the same input under a millisecond.
+        $prev  = null;
+        $depth = 0;
+        while ($prev !== $text && $depth < self::MAX_QUOTE_DEPTH) {
             $prev = $text;
+            $depth++;
             $text = preg_replace_callback(
                 '/\[quote([^\]]*)\](.*?)\[\/quote\]/si',
                 function (array $m): string {
@@ -155,12 +181,16 @@ class BbcodeFormatter
         $text = preg_replace_callback(
             '/\[url(?:=([^\]]*))?\](.*?)\[\/url\]/si',
             function (array $m): string {
-                $href = trim($m[1] !== '' ? $m[1] : $m[2]);
+                $href  = trim($m[1] !== '' ? $m[1] : $m[2]);
                 $label = $m[2] !== '' ? $m[2] : $href;
-                if (!$this->isSafeUrl($href)) {
+                $safe  = $this->safeUrl($href);
+                if ($safe === null) {
                     return $label; // already HTML-escaped
                 }
-                return '<a href="' . $href . '" rel="nofollow">' . $label . '</a>';
+                // Emit the normalized URL, not the raw one — the scheme check
+                // only means anything if what reaches the browser is what was
+                // checked.
+                return '<a href="' . $this->escapeAttr($safe) . '" rel="nofollow">' . $label . '</a>';
             },
             $text
         );
@@ -169,11 +199,11 @@ class BbcodeFormatter
         $text = preg_replace_callback(
             '/\[img\](.*?)\[\/img\]/si',
             function (array $m): string {
-                $url = trim($m[1]);
-                if (!$this->isSafeUrl($url)) {
+                $safe = $this->safeUrl(trim($m[1]));
+                if ($safe === null) {
                     return '';
                 }
-                return '<img src="' . $url . '" class="bbcode" alt=""/>';
+                return '<img src="' . $this->escapeAttr($safe) . '" class="bbcode" alt=""/>';
             },
             $text
         );
@@ -195,12 +225,58 @@ class BbcodeFormatter
         return strtr($text, $blocks);
     }
 
-    private function isSafeUrl(string $url): bool
+    /**
+     * Vet a [url]/[img] target and return the exact string to put in the
+     * href/src attribute, or null if it must not be linked at all.
+     *
+     * Returns the normalized URL rather than a bool so the caller emits the
+     * same string that was vetted. parse_url() is deliberately not used: it
+     * returns null for a scheme containing a control character (and false for
+     * other malformed input), which the previous `?? ''` collapsed into the
+     * "no scheme, therefore relative, therefore safe" case — so
+     * "java<TAB>script:alert(1)" passed the check and browsers, which strip
+     * tabs and newlines out of URLs before parsing them, then ran it.
+     */
+    private function safeUrl(string $url): ?string
     {
-        // Decode HTML entities first (body was pre-escaped), then check scheme
-        $decoded = html_entity_decode($url, ENT_QUOTES, 'UTF-8');
-        $scheme  = strtolower(parse_url($decoded, PHP_URL_SCHEME) ?? '');
-        return in_array($scheme, self::SAFE_SCHEMES, strict: true);
+        $normalized = $this->normalizeUrl($url);
+        $safe       = null;
+
+        if ($normalized !== null) {
+            $scheme = preg_match('~^([A-Za-z][A-Za-z0-9+.\-]*):~', $normalized, $m) === 1
+                ? strtolower($m[1])
+                : '';
+            // No scheme at all is a relative/protocol-relative link, which
+            // can't carry script the way a bare "javascript:" can.
+            if ($scheme === '' || in_array($scheme, self::SAFE_SCHEMES, strict: true)) {
+                $safe = $normalized;
+            }
+        }
+
+        return $safe;
+    }
+
+    /**
+     * Put a URL into the form a browser will actually parse, so the scheme
+     * check below can't disagree with it: decode the HTML entities the
+     * pre-escape pass added, drop the ASCII tab/CR/LF that browsers strip
+     * from anywhere in a URL, and trim the leading/trailing C0 controls and
+     * spaces they ignore. Returns null when any other control character
+     * survives — that isn't a URL worth emitting, and rejecting it beats
+     * reasoning about how each browser normalizes it.
+     */
+    private function normalizeUrl(string $url): ?string
+    {
+        $decoded    = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalized = trim(str_replace(["\t", "\r", "\n"], '', $decoded), "\x00..\x20");
+
+        return preg_match('/[\x00-\x1F\x7F]/', $normalized) === 1 ? null : $normalized;
+    }
+
+    /** Escape a value for use inside a double-quoted HTML attribute. */
+    private function escapeAttr(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 }
 

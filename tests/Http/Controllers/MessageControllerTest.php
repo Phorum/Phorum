@@ -118,6 +118,74 @@ class MessageControllerTest extends ControllerTestCase
         $this->assertSame(404, $response->status);
     }
 
+    /**
+     * Read permission is resolved from the forum id in the URL, so the thread
+     * lookup must be scoped to that same forum. Otherwise a forum the viewer
+     * can read is enough to read any other forum's threads by id.
+     */
+    public function testThreadScopesFlatLookupToTheForumInTheUrl(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum());
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findRoot')->with(10, null, 1)->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+
+        $this->assertSame(404, $response->status);
+    }
+
+    /** Threaded mode fetches the whole tree, and must scope it the same way. */
+    public function testThreadScopesThreadedLookupToTheForumInTheUrl(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1, ['threaded_read' => 1]));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->expects($this->once())->method('findByThread')->with(10, null, null, 0, 1)->willReturn(null);
+
+        $ctrl     = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+        $response = $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']));
+
+        $this->assertSame(404, $response->status);
+    }
+
+    /**
+     * End-to-end shape of the same rule: a mapper that honors the forum scope
+     * (as the real one now does) turns a cross-forum request into a 404, even
+     * though the viewer can read the forum named in the URL.
+     */
+    public function testThreadFromAnotherForumIsNotReadableViaAReadableForum(): void
+    {
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        // Thread 10 really lives in forum 2.
+        $root = $this->makeMessage(10, 2, 10);
+
+        $messages = $this->createMock(MessageMapper::class);
+        // Models the real mapper: an unscoped lookup finds the thread wherever
+        // it lives, a scoped one only within the forum asked for. Returning
+        // null for the unscoped case would make this test pass even unfixed.
+        $messages->method('findRoot')->willReturnCallback(
+            static fn(int $t, ?int $v = null, ?int $f = null) => ($f === null || $f === 2) ? $root : null
+        );
+        $messages->method('findByThread')->willReturnCallback(
+            static fn(int $t, ?int $v = null, ?int $l = null, int $o = 0, ?int $f = null)
+                => ($f === null || $f === 2) ? [$root] : null
+        );
+
+        $ctrl = $this->makeController(['forums' => $forums, 'messages' => $messages]);
+
+        // Requested through forum 1, which the viewer can read.
+        $this->assertSame(
+            404,
+            $ctrl->thread(new Request(tokens: ['forum_id' => '1', 'thread_id' => '10']))->status,
+        );
+    }
+
     public function testThreadReturns404WhenRootNotInThreadedTree(): void
     {
         $forums = $this->createMock(ForumMapper::class);

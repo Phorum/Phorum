@@ -167,6 +167,7 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_users (
     sessid_st_timeout        INTEGER         NOT NULL DEFAULT 0,
     email                    VARCHAR(100)    NOT NULL DEFAULT '',
     email_temp               VARCHAR(110)    NOT NULL DEFAULT '',
+    email_verified           SMALLINT        NOT NULL DEFAULT 0,
     hide_email               SMALLINT        NOT NULL DEFAULT 1,
     active                   SMALLINT        NOT NULL DEFAULT 0,
     signature                TEXT            NOT NULL DEFAULT '',
@@ -204,6 +205,7 @@ CREATE INDEX IF NOT EXISTS {PREFIX}_users_sessid_lt     ON {PREFIX}_users (sessi
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_activity      ON {PREFIX}_users (date_last_active, hide_activity, last_active_forum);
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_date_added    ON {PREFIX}_users (date_added);
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_email_temp    ON {PREFIX}_users (email_temp);
+CREATE INDEX IF NOT EXISTS {PREFIX}_users_password_temp ON {PREFIX}_users (password_temp);
 CREATE INDEX IF NOT EXISTS {PREFIX}_users_shadow_banned ON {PREFIX}_users (shadow_banned);
 
 -- -------------------------------------------------------------------------
@@ -316,6 +318,22 @@ CREATE TABLE IF NOT EXISTS {PREFIX}_mod_log (
 
 CREATE INDEX IF NOT EXISTS {PREFIX}_mod_log_user_id ON {PREFIX}_mod_log (user_id);
 CREATE INDEX IF NOT EXISTS {PREFIX}_mod_log_time ON {PREFIX}_mod_log (time);
+
+-- -------------------------------------------------------------------------
+-- Failed login / password-reset attempts, for rate limiting.
+-- attempt_key is a namespaced bucket ('ip:...' or 'user:...'); rows are
+-- pruned on write, so only about one limiting window is ever retained.
+-- -------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS {PREFIX}_login_attempts (
+    login_attempt_id         SERIAL          NOT NULL,
+    attempt_key              VARCHAR(255)    NOT NULL DEFAULT '',
+    attempted_at             INTEGER         NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (login_attempt_id)
+);
+
+CREATE INDEX IF NOT EXISTS {PREFIX}_login_attempts_key ON {PREFIX}_login_attempts (attempt_key, attempted_at);
+CREATE INDEX IF NOT EXISTS {PREFIX}_login_attempts_at ON {PREFIX}_login_attempts (attempted_at);
 
 -- -------------------------------------------------------------------------
 -- User-submitted content reports

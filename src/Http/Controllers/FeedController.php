@@ -109,7 +109,9 @@ class FeedController extends Controller
             return $this->forbidden();
         }
 
-        $threadMessages = $this->messages->findByThread($threadId);
+        // Scoped to $forumId: canRead() above was resolved from the forum in the
+        // URL, so the thread has to actually be in that forum.
+        $threadMessages = $this->messages->findByThread($threadId, forumId: $forumId);
         if ($threadMessages === null) {
             return $this->notFound();
         }

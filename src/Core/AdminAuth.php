@@ -24,6 +24,13 @@ class AdminAuth
             return;
         }
 
+        // Fail closed rather than throwing: a misconfigured secret shouldn't
+        // 500 every page for anyone still holding an admin cookie. No admin
+        // session is established, and Admin\LoginController explains why.
+        if (!AdminSecret::isUsable($config)) {
+            return;
+        }
+
         $decoded = base64_decode($cookie, strict: true);
         if ($decoded === false) {
             return;
@@ -60,6 +67,9 @@ class AdminAuth
 
     public static function login(User $user, Config $config): void
     {
+        // Elevating to an admin session is an identity change too.
+        CsrfGuard::rotate();
+
         self::$admin = $user;
         self::setAdminCookie($user->user_id, $config);
     }
@@ -98,10 +108,6 @@ class AdminAuth
 
     private static function makeHmac(int $userId, int $timestamp, Config $config): string
     {
-        $secret = (string) ($config->get('admin_secret') ?? '');
-        if ($secret === '') {
-            throw new \RuntimeException('admin_secret must be set in etc/phorum.php');
-        }
-        return hash_hmac('sha256', "{$userId}:{$timestamp}", $secret);
+        return hash_hmac('sha256', "{$userId}:{$timestamp}", AdminSecret::get($config));
     }
 }

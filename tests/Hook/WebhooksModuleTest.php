@@ -30,7 +30,8 @@ class WebhooksModuleTest extends TestCase
             $base = dirname(__DIR__, 2) . '/mods/webhooks';
             require_once $base . '/Webhook.php';
             require_once $base . '/WebhookMapper.php';
-            require_once $base . '/WebhookDispatcher.php';
+            require_once $base . '/WebhookUrlGuard.php';
+        require_once $base . '/WebhookDispatcher.php';
             require_once $base . '/WebhookHooks.php';
             self::$moduleLoaded = true;
         }

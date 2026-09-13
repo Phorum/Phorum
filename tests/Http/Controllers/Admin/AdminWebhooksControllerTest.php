@@ -8,6 +8,7 @@ use Phorum\Mapper\ModLogMapper;
 use Phorum\Mod\Webhooks\Admin\WebhooksController;
 use Phorum\Mod\Webhooks\Webhook;
 use Phorum\Mod\Webhooks\WebhookMapper;
+use Phorum\Mod\Webhooks\WebhookUrlGuard;
 use Phorum\Tests\Http\ControllerTestCase;
 
 class AdminWebhooksControllerTest extends ControllerTestCase
@@ -17,10 +18,19 @@ class AdminWebhooksControllerTest extends ControllerTestCase
         $base = dirname(__DIR__, 4) . '/mods/webhooks';
         require_once $base . '/Webhook.php';
         require_once $base . '/WebhookMapper.php';
+        require_once $base . '/WebhookUrlGuard.php';
         require_once $base . '/WebhookDispatcher.php';
         require_once $base . '/Admin/WebhooksController.php';
     }
 
+    /**
+     * Build the admin controller with mocked collaborators.
+     *
+     * The URL guard defaults to allowing private targets, which short-circuits
+     * before any DNS lookup — these tests cover CRUD, not address policy, and
+     * must not depend on name resolution to save a webhook. Pass `urlGuard` to
+     * exercise the restrictive behaviour.
+     */
     private function makeController(array $deps = []): WebhooksController
     {
         return new WebhooksController(
@@ -28,6 +38,7 @@ class AdminWebhooksControllerTest extends ControllerTestCase
             twig:     $this->makeTwig(),
             webhooks: $deps['webhooks'] ?? $this->createMock(WebhookMapper::class),
             modLog:   $deps['modLog']   ?? $this->createMock(ModLogMapper::class),
+            urlGuard: $deps['urlGuard'] ?? new WebhookUrlGuard(allowPrivateTargets: true),
         );
     }
 
@@ -366,5 +377,29 @@ class AdminWebhooksControllerTest extends ControllerTestCase
         $response = $ctrl->delete($this->makePostRequest(tokens: ['webhook_id' => '1']));
         $this->assertSame(302, $response->status);
         $this->assertSame('/admin/webhooks', $response->headers['Location']);
+    }
+
+    /**
+     * Saving an internal target is rejected in the form, so the admin gets
+     * told why rather than configuring a webhook that silently never fires.
+     */
+    public function testCreateRejectsAnInternalTargetUrl(): void
+    {
+        $this->setAdminUser($this->makeUser(1, true));
+
+        $webhooks = $this->createMock(WebhookMapper::class);
+        $webhooks->expects($this->never())->method('save');
+
+        $ctrl = $this->makeController([
+            'webhooks' => $webhooks,
+            'urlGuard' => new WebhookUrlGuard(),   // restrictive, as shipped
+        ]);
+
+        $response = $ctrl->create($this->makePostRequest([
+            'url'    => 'http://169.254.169.254/latest/meta-data/',
+            'events' => ['message.created'],
+        ]));
+
+        $this->assertSame(200, $response->status);
     }
 }

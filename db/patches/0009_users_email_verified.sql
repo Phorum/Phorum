@@ -1,0 +1,26 @@
+-- -------------------------------------------------------------------------
+-- Adds users.email_verified, recording whether an account has ever proved
+-- control of its own email address.
+--
+-- Needed because the OAuth module links a provider identity to an existing
+-- local account when the email addresses match. The provider verifies its
+-- side, but nothing verified the local side — and with require_confirmation
+-- off (the default) a local address is never proved at all. That let someone
+-- register an account on a victim's address and wait: when the victim later
+-- signed in with Google or GitHub, they were handed the attacker's account.
+--
+-- Existing rows deliberately backfill to 0 (unverified) rather than 1. There
+-- is no signal in the schema that distinguishes an account that confirmed its
+-- address from one created while require_confirmation was off, and guessing
+-- "verified" would preserve exactly the hole this closes. Accounts become
+-- verified again as they confirm an address or complete a password reset,
+-- both of which prove mailbox control.
+--
+-- A site that has always run with require_confirmation on may mark its
+-- existing accounts verified in one statement:
+--     UPDATE {PREFIX}_users SET email_verified = 1 WHERE active = 1;
+--
+-- Applied by SchemaPatcher against databases that already have the
+-- {PREFIX}_users table — a fresh install gets this column from db/mysql.sql.
+-- -------------------------------------------------------------------------
+ALTER TABLE {PREFIX}_users ADD COLUMN email_verified tinyint(1) NOT NULL DEFAULT 0;

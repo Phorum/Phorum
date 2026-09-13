@@ -5,6 +5,10 @@
 {% block content %}
 <h1>{{ trans('auth.login_title') }}</h1>
 
+{% if confirmed %}
+    <p class="notice" role="status">{{ trans('auth.confirm_success_login') }}</p>
+{% endif %}
+
 {% include '_form_errors.html.twig' %}
 
 <form method="post" action="{{ path('/login') }}">

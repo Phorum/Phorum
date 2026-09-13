@@ -9,19 +9,31 @@ use Phorum\Http\Request;
 use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\SubscriberMapper;
+use Phorum\Service\PermissionService;
 use Phorum\Service\SubscriptionService;
 use Phorum\Tests\Http\ControllerTestCase;
 
 class SubscriptionControllerTest extends ControllerTestCase
 {
+    /**
+     * Build a SubscriptionController with mocked collaborators. `canRead`
+     * defaults to true; pass `canRead => false` for the permission tests.
+     *
+     * @param array $deps Optional overrides: subscriptionService, messages,
+     *                    forums, perms, canRead.
+     */
     private function makeController(array $deps = []): SubscriptionController
     {
+        $perms = $deps['perms'] ?? $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn($deps['canRead'] ?? true);
+
         return new SubscriptionController(
             config:              $this->makeConfig(),
             twig:                $this->makeTwig(),
             subscriptionService: $deps['subscriptionService'] ?? $this->createMock(SubscriptionService::class),
             messages:            $deps['messages']            ?? $this->createMock(MessageMapper::class),
             forums:              $deps['forums']              ?? $this->createMock(ForumMapper::class),
+            perms:               $perms,
         );
     }
 
@@ -427,5 +439,66 @@ class SubscriptionControllerTest extends ControllerTestCase
         $response = $ctrl->followForum($request);
         $this->assertSame(302, $response->status);
         $this->assertSame('/forum/1', $response->headers['Location']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Read-permission gating
+    // -------------------------------------------------------------------------
+
+    /**
+     * Following a thread in a forum the user can't read must be refused: the
+     * page prints the subject, and an email subscription would go on
+     * delivering the subject of every future reply.
+     */
+    public function testFollowIsForbiddenWhenForumNotReadable(): void
+    {
+        Auth::setUser($this->makeUser(5));
+
+        $messages = $this->createMock(MessageMapper::class);
+        $messages->method('load')->willReturn($this->makeMessage(10, 1, 10));
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $service = $this->createMock(SubscriptionService::class);
+        $service->expects($this->never())->method('subscribe');
+
+        $ctrl = $this->makeController([
+            'messages'            => $messages,
+            'forums'              => $forums,
+            'subscriptionService' => $service,
+            'canRead'             => false,
+        ]);
+
+        $response = $ctrl->follow($this->makePostRequest(
+            ['action' => 'subscribe_email'],
+            tokens: ['thread_id' => '10'],
+        ));
+
+        $this->assertSame(403, $response->status);
+    }
+
+    /** Forum-wide follow is gated the same way — it mails every new thread. */
+    public function testFollowForumIsForbiddenWhenForumNotReadable(): void
+    {
+        Auth::setUser($this->makeUser(5));
+
+        $forums = $this->createMock(ForumMapper::class);
+        $forums->method('load')->willReturn($this->makeForum(1));
+
+        $service = $this->createMock(SubscriptionService::class);
+        $service->expects($this->never())->method('subscribe');
+
+        $ctrl = $this->makeController([
+            'forums'              => $forums,
+            'subscriptionService' => $service,
+            'canRead'             => false,
+        ]);
+
+        $response = $ctrl->followForum($this->makePostRequest(
+            ['action' => 'subscribe_email'],
+            tokens: ['forum_id' => '1'],
+        ));
+
+        $this->assertSame(403, $response->status);
     }
 }

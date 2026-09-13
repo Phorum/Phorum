@@ -12,23 +12,29 @@ use Phorum\Mapper\ModLogMapper;
 use Phorum\Mod\Webhooks\Webhook;
 use Phorum\Mod\Webhooks\WebhookDispatcher;
 use Phorum\Mod\Webhooks\WebhookMapper;
+use Phorum\Mod\Webhooks\WebhookUrlGuard;
 use Twig\Environment;
 
 /** Admin CRUD for outgoing webhook subscriptions. Routed via a fully-qualified action in etc/routes.php. */
 class WebhooksController extends AdminController
 {
-    private readonly WebhookMapper $webhooks;
-    private readonly ModLogMapper  $modLog;
+    private readonly WebhookMapper   $webhooks;
+    private readonly ModLogMapper    $modLog;
+    private readonly WebhookUrlGuard $urlGuard;
 
     public function __construct(
-        Config          $config,
-        Environment     $twig,
-        ?WebhookMapper  $webhooks = null,
-        ?ModLogMapper   $modLog   = null,
+        Config            $config,
+        Environment       $twig,
+        ?WebhookMapper    $webhooks = null,
+        ?ModLogMapper     $modLog   = null,
+        ?WebhookUrlGuard  $urlGuard = null,
     ) {
         parent::__construct($config, $twig);
         $this->webhooks = $webhooks ?? new WebhookMapper();
         $this->modLog   = $modLog   ?? new ModLogMapper();
+        $this->urlGuard = $urlGuard ?? new WebhookUrlGuard(
+            (bool) $config->get('webhook_allow_private_targets', false)
+        );
     }
 
     public function index(Request $request): Response
@@ -133,9 +139,13 @@ class WebhooksController extends AdminController
     {
         $errors = [];
 
-        $url = trim($request->post['url'] ?? '');
-        if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL) || !preg_match('!^https?://!i', $url)) {
-            $errors[] = 'A valid http:// or https:// URL is required.';
+        // The guard covers scheme and shape as well as the target address, so
+        // it replaces the old filter_var/preg_match pair rather than adding to
+        // it — one place decides what this server is willing to call.
+        $url         = trim($request->post['url'] ?? '');
+        $urlProblem  = $this->urlGuard->problem($url);
+        if ($urlProblem !== null) {
+            $errors[] = $urlProblem;
         }
 
         $selectedEvents = array_values(array_intersect(

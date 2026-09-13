@@ -15,6 +15,7 @@ use Phorum\Mod\Oauth\OauthEmailNotVerifiedException;
 use Phorum\Mod\Oauth\OauthIdentity;
 use Phorum\Mod\Oauth\OauthIdentityMapper;
 use Phorum\Mod\Oauth\OauthService;
+use Phorum\Mod\Oauth\OauthUnverifiedLocalAccountException;
 use Phorum\Model\User;
 use PHPUnit\Framework\TestCase;
 
@@ -25,6 +26,7 @@ class OauthServiceTest extends TestCase
         require_once dirname(__DIR__, 2) . '/src/Hook/functions.php';
         $base = dirname(__DIR__, 2) . '/mods/oauth';
         require_once $base . '/OauthEmailNotVerifiedException.php';
+        require_once $base . '/OauthUnverifiedLocalAccountException.php';
         require_once $base . '/OauthIdentity.php';
         require_once $base . '/OauthIdentityMapper.php';
         require_once $base . '/OauthService.php';
@@ -78,12 +80,18 @@ class OauthServiceTest extends TestCase
         );
     }
 
-    private function makeUser(int $id = 1, string $email = 'alice@example.com'): User
+    /**
+     * @param bool $emailVerified Whether the local account has proved control
+     *                            of $email. Linking a provider identity to an
+     *                            existing account now requires it.
+     */
+    private function makeUser(int $id = 1, string $email = 'alice@example.com', bool $emailVerified = true): User
     {
-        $user          = new User();
-        $user->user_id = $id;
-        $user->email   = $email;
-        $user->active  = 1;
+        $user                 = new User();
+        $user->user_id        = $id;
+        $user->email          = $email;
+        $user->active         = 1;
+        $user->email_verified = $emailVerified ? 1 : 0;
         return $user;
     }
 
@@ -431,5 +439,128 @@ class OauthServiceTest extends TestCase
 
         $token = $service->exchangeCode('google', 'auth-code');
         $this->assertSame('abc123', $token->getToken());
+    }
+
+    // -------------------------------------------------------------------------
+    // resolveUser — linking requires the local account to be verified too
+    // -------------------------------------------------------------------------
+
+    /**
+     * The provider vouches for its own side only. If the matching local
+     * account never proved it owns that address, linking would hand this
+     * provider identity whatever account happens to hold it — including one
+     * someone else registered on the victim's address while
+     * require_confirmation was off.
+     */
+    public function testResolveUserRefusesToLinkToAnUnverifiedLocalAccount(): void
+    {
+        $squatted = $this->makeUser(9, 'alice@example.com', emailVerified: false);
+
+        $identities = $this->createMock(OauthIdentityMapper::class);
+        $identities->method('findByProviderAndId')->willReturn(null);
+        $identities->expects($this->never())->method('save');
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn($squatted);
+        $users->expects($this->never())->method('save');
+
+        $service = $this->makeService(
+            $this->enabledSettings('google'),
+            [$this->googleUserinfoResponse()],
+            $users,
+            $identities,
+        );
+
+        $this->expectException(OauthUnverifiedLocalAccountException::class);
+        $service->resolveUser('google', new AccessToken(['access_token' => 'tok']));
+    }
+
+    /** The refusal must not quietly create a second account on the address. */
+    public function testRefusalDoesNotRegisterADuplicateAccount(): void
+    {
+        $squatted = $this->makeUser(9, 'alice@example.com', emailVerified: false);
+
+        $identities = $this->createMock(OauthIdentityMapper::class);
+        $identities->method('findByProviderAndId')->willReturn(null);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn($squatted);
+        $users->expects($this->never())->method('save');
+
+        $service = $this->makeService(
+            $this->enabledSettings('google'),
+            [$this->googleUserinfoResponse()],
+            $users,
+            $identities,
+        );
+
+        try {
+            $service->resolveUser('google', new AccessToken(['access_token' => 'tok']));
+            $this->fail('expected the link to be refused');
+        } catch (OauthUnverifiedLocalAccountException) {
+            $this->addToAssertionCount(1);
+        }
+    }
+
+    /** An account created from a provider profile counts as verified. */
+    public function testAutoRegisteredAccountIsMarkedEmailVerified(): void
+    {
+        $identities = $this->createMock(OauthIdentityMapper::class);
+        $identities->method('findByProviderAndId')->willReturn(null);
+
+        $saved = null;
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByEmail')->willReturn(null);
+        $users->method('findByUsername')->willReturn(null);
+        $users->method('save')->willReturnCallback(function (User $u) use (&$saved) {
+            $saved = $u;
+            return $u;
+        });
+
+        $service = $this->makeService(
+            $this->enabledSettings('google'),
+            [$this->googleUserinfoResponse()],
+            $users,
+            $identities,
+        );
+
+        $service->resolveUser('google', new AccessToken(['access_token' => 'tok']));
+
+        $this->assertNotNull($saved);
+        $this->assertSame(1, $saved->email_verified);
+    }
+
+    /**
+     * An identity row pointing at a deleted user must be cleared before the
+     * re-link. oauth_identities has a UNIQUE key on (provider,
+     * provider_user_id), so leaving it made the insert below fail on that
+     * constraint and locked the provider identity out of the site for good.
+     */
+    public function testOrphanedIdentityIsRemovedBeforeRelinking(): void
+    {
+        $orphan                    = new OauthIdentity();
+        $orphan->oauth_identity_id = 77;
+        $orphan->provider          = 'google';
+        $orphan->provider_user_id  = 'g-123';
+        $orphan->user_id           = 404;
+
+        $identities = $this->createMock(OauthIdentityMapper::class);
+        $identities->method('findByProviderAndId')->willReturn($orphan);
+        $identities->expects($this->once())->method('delete')->with(77);
+        $identities->expects($this->once())->method('save');
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('load')->with(404)->willReturn(null);   // the orphan
+        $users->method('findByEmail')->willReturn($this->makeUser(9, 'alice@example.com'));
+
+        $service = $this->makeService(
+            $this->enabledSettings('google'),
+            [$this->googleUserinfoResponse()],
+            $users,
+            $identities,
+        );
+
+        $result = $service->resolveUser('google', new AccessToken(['access_token' => 'tok']));
+        $this->assertSame(9, $result->user_id);
     }
 }

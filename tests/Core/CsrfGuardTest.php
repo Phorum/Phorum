@@ -91,4 +91,45 @@ class CsrfGuardTest extends TestCase
         $this->assertStringContainsString('name="csrf_token"', $html);
         $this->assertStringContainsString(CsrfGuard::token(), $html);
     }
+
+    // -------------------------------------------------------------------------
+    // rotate()
+    // -------------------------------------------------------------------------
+
+    /**
+     * Rotation must give the visitor a different session id. The CSRF token
+     * lives in $_SESSION, so a session id an attacker fixed before login would
+     * otherwise carry into the authenticated session along with a token they
+     * already know.
+     */
+    public function testRotateChangesTheSessionId(): void
+    {
+        CsrfGuard::token();
+        $before = session_id();
+
+        CsrfGuard::rotate();
+
+        $this->assertNotSame('', $before);
+        $this->assertNotSame($before, session_id());
+    }
+
+    /** Rotation must also invalidate whatever token was already issued. */
+    public function testRotateInvalidatesThePreviousToken(): void
+    {
+        $old = CsrfGuard::token();
+
+        CsrfGuard::rotate();
+
+        $this->assertFalse(CsrfGuard::validate($old), 'token survived rotation');
+        $this->assertNotSame($old, CsrfGuard::token());
+    }
+
+    /** The freshly issued token works normally afterwards. */
+    public function testTokenIssuedAfterRotateValidates(): void
+    {
+        CsrfGuard::token();
+        CsrfGuard::rotate();
+
+        $this->assertTrue(CsrfGuard::validate(CsrfGuard::token()));
+    }
 }

@@ -13,7 +13,9 @@ use Phorum\Mapper\ForumMapper;
 use Phorum\Mapper\MessageMapper;
 use Phorum\Mapper\SubscriberMapper;
 use Phorum\Mapper\UserMapper;
+use Phorum\Mapper\UserPermissionMapper;
 use Phorum\Service\MailService;
+use Phorum\Service\PermissionService;
 use Phorum\Service\SubscriptionService;
 use Twig\Environment;
 
@@ -22,6 +24,7 @@ class SubscriptionController extends Controller
     private readonly SubscriptionService $subscriptionService;
     private readonly MessageMapper       $messages;
     private readonly ForumMapper         $forums;
+    private readonly PermissionService   $perms;
 
     public function __construct(
         Config                $config,
@@ -29,11 +32,13 @@ class SubscriptionController extends Controller
         ?SubscriptionService  $subscriptionService = null,
         ?MessageMapper        $messages            = null,
         ?ForumMapper          $forums              = null,
+        ?PermissionService    $perms               = null,
     ) {
         parent::__construct($config, $twig);
         $this->messages            = $messages            ?? new MessageMapper();
         $this->forums              = $forums              ?? new ForumMapper();
         $this->subscriptionService = $subscriptionService ?? new SubscriptionService(new SubscriberMapper(), new UserMapper(), new MailService($config), $config);
+        $this->perms               = $perms               ?? new PermissionService(new UserPermissionMapper());
     }
 
     /**
@@ -59,6 +64,14 @@ class SubscriptionController extends Controller
         $forum  = $this->forums->load($root->forum_id);
         if ($forum === null) {
             return $this->notFound();
+        }
+
+        // Both templates below print the thread subject and forum name, and a
+        // successful subscribe would go on mailing this user the subject of
+        // every future reply — so this needs the same read permission the
+        // thread view does.
+        if (!$this->perms->canRead($forum, $user)) {
+            return $this->forbidden();
         }
 
         $service = $this->subscriptionService;
@@ -131,6 +144,12 @@ class SubscriptionController extends Controller
         $forum   = $this->forums->load($forumId);
         if ($forum === null || $forum->folder_flag) {
             return $this->notFound();
+        }
+
+        // Forum-wide subscriptions mail out every new thread and reply, so an
+        // unreadable forum must refuse here too.
+        if (!$this->perms->canRead($forum, $user)) {
+            return $this->forbidden();
         }
 
         $service = $this->subscriptionService;

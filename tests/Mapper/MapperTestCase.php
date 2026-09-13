@@ -40,6 +40,7 @@ abstract class MapperTestCase extends TestCase
         'phorum_messages_edittrack',
         'phorum_mod_log',
         'phorum_reports',
+        'phorum_login_attempts',
     ];
 
     public static function setUpBeforeClass(): void

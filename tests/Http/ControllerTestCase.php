@@ -57,7 +57,7 @@ abstract class ControllerTestCase extends TestCase
             'base_url'             => 'http://localhost',
             'require_confirmation' => false,
             'track_edits'          => false,
-            'admin_secret'         => 'test-secret',
+            'admin_secret'         => 'a1b2c3d4e5f6071829304a5b6c7d8e9f00112233445566778899aabbccddeeff',
         ];
         $config = $this->createMock(Config::class);
         $config->method('get')->willReturnCallback(

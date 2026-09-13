@@ -175,7 +175,9 @@ class MessageController extends Controller
         if ($threaded) {
             // Threaded mode always renders the whole reply tree in one page —
             // an OFFSET window could split a parent from its child.
-            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId);
+            // Scoped to $forumId: permission was resolved from the forum in the
+            // URL, so the messages must come from that same forum.
+            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId, forumId: $forumId);
             if ($threadMessages === null) {
                 return $this->notFound();
             }
@@ -197,7 +199,7 @@ class MessageController extends Controller
             $perPage = $forum->read_length ?: 25;
             $page    = max(1, (int) ($request->query['page'] ?? 1));
 
-            $root = $this->messages->findRoot($threadId, $viewerUserId);
+            $root = $this->messages->findRoot($threadId, $viewerUserId, forumId: $forumId);
             if ($root === null) {
                 return $this->notFound();
             }
@@ -224,7 +226,7 @@ class MessageController extends Controller
             }
             $offset = ($page - 1) * $perPage;
 
-            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId, $perPage, $offset);
+            $threadMessages = $this->messages->findByThread($threadId, $viewerUserId, $perPage, $offset, $forumId);
             if ($threadMessages === null) {
                 return $this->notFound();
             }

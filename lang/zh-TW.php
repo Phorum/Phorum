@@ -115,6 +115,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => '登入',
+    'auth.logout_title'       => '登出',
+    'auth.logout_confirm'       => '確定要登出嗎？',
+    'auth.logout_submit'       => '登出',
+    'auth.logout_already'       => '您尚未登入。',
     'auth.username'          => '使用者名稱',
     'auth.password'          => '密碼',
     'auth.remember_me'       => '記住我',
@@ -142,6 +146,7 @@ return [
     'auth.confirm_pending_body'   => '我們已寄送確認連結至 {email}，請點擊以啟用您的帳號。',
     'auth.confirm_pending_resend' => '重新寄送確認電子郵件',
     'auth.confirm_invalid'        => '此確認連結無效或已過期。',
+    'auth.confirm_success_login'        => '您的電子郵件地址已確認。請登入。',
     'auth.resend_title'           => '重新寄送確認電子郵件',
     'auth.resend_email_label'     => '電子郵件地址',
     'auth.resend_submit'          => '重新寄送',
@@ -150,6 +155,7 @@ return [
     'auth.pending_approval_body'  => '謝謝！您的帳號現在正在等待版主審核與核准。審核通過後您就可以登入了。',
     'auth.error_missing_credentials'  => '請輸入您的使用者名稱和密碼。',
     'auth.error_invalid_credentials'  => '使用者名稱或密碼錯誤。',
+    'auth.error_throttled'  => '嘗試次數過多。請等待 {seconds} 秒後再試。',
     'auth.error_registration_blocked' => '您的帳號目前無法註冊。',
     'auth.error_invalid_email'        => '請輸入有效的電子郵件地址。',
     'auth.error_password_min_length'  => '密碼至少須為 6 個字元。',
@@ -158,6 +164,7 @@ return [
     'auth.error_username_length'      => '使用者名稱長度須介於 2 到 50 個字元之間。',
     'auth.error_email_required'       => '請輸入有效的電子郵件地址。',
     'auth.error_username_taken'       => '此使用者名稱已被使用。',
+    'auth.error_email_taken'       => '該電子郵件地址已被註冊。請嘗試登入，或使用「忘記密碼」。',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -170,6 +177,7 @@ return [
     'oauth.error_email_not_verified'    => '您的電子郵件地址尚未在該提供者處驗證，因此我們無法為您登入。請在提供者處驗證您的電子郵件後再試一次。',
     'oauth.error_login_failed'          => '登入時發生問題。請再試一次。',
     'oauth.error_account_inactive'      => '您的帳戶尚未啟用。請查看您的電子郵件以取得確認連結。',
+    'oauth.error_account_exists'      => '本站已有帳號使用該電子郵件地址。請用密碼登入，或先透過「忘記密碼」確認該地址，之後即可使用此登入方式。',
     'oauth.error_not_configured'        => '該登入選項目前無法使用。',
 
     // -------------------------------------------------------------------------
@@ -199,6 +207,8 @@ return [
     'settings.hide_email'        => '在個人資料中隱藏我的電子郵件地址',
     'settings.password_section'  => '密碼',
     'settings.password_hint'     => '留白則保持目前密碼不變。',
+    'settings.current_password'      => '目前密碼',
+    'settings.current_password_hint'      => '僅在變更密碼或電子郵件地址時需要。',
     'settings.new_password'      => '新密碼',
     'settings.confirm_password'  => '確認新密碼',
     'settings.signature_section' => '簽名檔',
@@ -226,6 +236,7 @@ return [
     'settings.error_email_required'        => '請輸入有效的電子郵件地址。',
     'settings.error_email_taken'           => '此電子郵件地址已被其他帳號使用。',
     'settings.error_password_min_length'   => '新密碼至少須為 6 個字元。',
+    'settings.error_current_password'   => '請輸入目前密碼以變更密碼或電子郵件地址。如果您使用 Google 或 GitHub 註冊且從未設定過密碼，請先透過「忘記密碼」連結設定一組。',
     'settings.error_passwords_mismatch'    => '兩次輸入的密碼不一致。',
     'settings.error_tz_offset'             => '時區偏移必須介於 -12 至 +14 之間，或為 -99（伺服器時間）。',
     'settings.error_email_notify'          => '請選擇一個有效的關注選項。',

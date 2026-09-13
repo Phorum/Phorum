@@ -115,6 +115,10 @@ return [
     // Auth
     // -------------------------------------------------------------------------
     'auth.login_title'       => 'Masuk',
+    'auth.logout_title'       => 'Keluar',
+    'auth.logout_confirm'       => 'Yakin ingin keluar?',
+    'auth.logout_submit'       => 'Keluar',
+    'auth.logout_already'       => 'Anda belum masuk.',
     'auth.username'          => 'Nama Pengguna',
     'auth.password'          => 'Kata Sandi',
     'auth.remember_me'       => 'Ingat saya',
@@ -142,6 +146,7 @@ return [
     'auth.confirm_pending_body'   => 'Kami mengirimkan tautan konfirmasi ke {email}. Klik untuk mengaktifkan akun Anda.',
     'auth.confirm_pending_resend' => 'Kirim ulang email konfirmasi',
     'auth.confirm_invalid'        => 'Tautan konfirmasi ini tidak valid atau telah kedaluwarsa.',
+    'auth.confirm_success_login'        => 'Alamat email Anda telah dikonfirmasi. Silakan masuk.',
     'auth.resend_title'           => 'Kirim Ulang Email Konfirmasi',
     'auth.resend_email_label'     => 'Alamat Email',
     'auth.resend_submit'          => 'Kirim Ulang',
@@ -150,6 +155,7 @@ return [
     'auth.pending_approval_body'  => 'Terima kasih! Akun Anda kini menunggu peninjauan dan persetujuan dari moderator. Anda akan bisa masuk setelah itu terjadi.',
     'auth.error_missing_credentials'  => 'Silakan masukkan nama pengguna dan kata sandi Anda.',
     'auth.error_invalid_credentials'  => 'Nama pengguna atau kata sandi tidak valid.',
+    'auth.error_throttled'  => 'Terlalu banyak percobaan. Harap tunggu {seconds} detik lalu coba lagi.',
     'auth.error_registration_blocked' => 'Pendaftaran tidak diizinkan dari akun Anda.',
     'auth.error_invalid_email'        => 'Silakan masukkan alamat email yang valid.',
     'auth.error_password_min_length'  => 'Kata sandi harus terdiri dari minimal 6 karakter.',
@@ -158,6 +164,7 @@ return [
     'auth.error_username_length'      => 'Nama pengguna harus terdiri antara 2 hingga 50 karakter.',
     'auth.error_email_required'       => 'Alamat email yang valid wajib diisi.',
     'auth.error_username_taken'       => 'Nama pengguna tersebut sudah digunakan.',
+    'auth.error_email_taken'       => 'Alamat email itu sudah terdaftar. Coba masuk, atau gunakan "Lupa kata sandi".',
 
     // -------------------------------------------------------------------------
     // OAuth login
@@ -170,6 +177,7 @@ return [
     'oauth.error_email_not_verified'    => 'Alamat email Anda belum diverifikasi dengan penyedia tersebut, sehingga kami tidak dapat masuk untuk Anda. Silakan verifikasi email Anda dengan penyedia dan coba lagi.',
     'oauth.error_login_failed'          => 'Terjadi kesalahan saat masuk. Silakan coba lagi.',
     'oauth.error_account_inactive'      => 'Akun Anda belum aktif. Periksa email Anda untuk tautan konfirmasi.',
+    'oauth.error_account_exists'      => 'Sebuah akun di situs ini sudah menggunakan alamat email tersebut. Masuk dengan kata sandi Anda, atau gunakan "Lupa kata sandi" untuk mengonfirmasi alamat terlebih dahulu — setelah itu Anda dapat menggunakan penyedia ini.',
     'oauth.error_not_configured'        => 'Opsi login tersebut saat ini tidak tersedia.',
 
     // -------------------------------------------------------------------------
@@ -199,6 +207,8 @@ return [
     'settings.hide_email'        => 'Sembunyikan alamat email saya dari profil saya',
     'settings.password_section'  => 'Kata Sandi',
     'settings.password_hint'     => 'Kosongkan untuk mempertahankan kata sandi Anda saat ini.',
+    'settings.current_password'      => 'Kata sandi saat ini',
+    'settings.current_password_hint'      => 'Hanya diperlukan saat mengubah kata sandi atau alamat email.',
     'settings.new_password'      => 'Kata Sandi Baru',
     'settings.confirm_password'  => 'Konfirmasi Kata Sandi Baru',
     'settings.signature_section' => 'Tanda Tangan',
@@ -226,6 +236,7 @@ return [
     'settings.error_email_required'        => 'Alamat email yang valid wajib diisi.',
     'settings.error_email_taken'           => 'Alamat email tersebut sudah digunakan oleh akun lain.',
     'settings.error_password_min_length'   => 'Kata sandi baru harus terdiri dari minimal 6 karakter.',
+    'settings.error_current_password'   => 'Masukkan kata sandi Anda saat ini untuk mengubah kata sandi atau alamat email. Jika Anda mendaftar dengan Google atau GitHub dan belum pernah menyetel kata sandi, gunakan tautan "Lupa kata sandi" untuk menyetelnya terlebih dahulu.',
     'settings.error_passwords_mismatch'    => 'Kata sandi tidak cocok.',
     'settings.error_tz_offset'             => 'Selisih zona waktu harus antara -12 dan +14, atau -99 untuk waktu server.',
     'settings.error_email_notify'          => 'Pilih opsi mengikuti yang valid.',

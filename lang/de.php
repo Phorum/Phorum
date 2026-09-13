@@ -99,6 +99,10 @@ return [
 
     // Authentication
     'auth.login_title'       => 'Anmelden',
+    'auth.logout_title'       => 'Abmelden',
+    'auth.logout_confirm'       => 'Möchten Sie sich wirklich abmelden?',
+    'auth.logout_submit'       => 'Abmelden',
+    'auth.logout_already'       => 'Sie sind nicht angemeldet.',
     'auth.username'          => 'Benutzername',
     'auth.password'          => 'Passwort',
     'auth.remember_me'       => 'Angemeldet bleiben',
@@ -126,6 +130,7 @@ return [
     'auth.confirm_pending_body'   => 'Wir haben einen Bestätigungslink an {email} gesendet. Klicken Sie darauf, um Ihr Konto zu aktivieren.',
     'auth.confirm_pending_resend' => 'Bestätigungs-E-Mail erneut senden',
     'auth.confirm_invalid'        => 'Dieser Bestätigungslink ist ungültig oder abgelaufen.',
+    'auth.confirm_success_login'        => 'Ihre E-Mail-Adresse ist bestätigt. Bitte melden Sie sich an.',
     'auth.resend_title'           => 'Bestätigungs-E-Mail erneut senden',
     'auth.resend_email_label'     => 'E-Mail-Adresse',
     'auth.resend_submit'          => 'Erneut senden',
@@ -134,6 +139,7 @@ return [
     'auth.pending_approval_body'  => 'Danke! Ihr Konto wartet nun darauf, von einem Moderator geprüft und freigegeben zu werden. Sie können sich anmelden, sobald das geschehen ist.',
     'auth.error_missing_credentials'  => 'Bitte geben Sie Ihren Benutzernamen und Ihr Passwort ein.',
     'auth.error_invalid_credentials'  => 'Ungültiger Benutzername oder ungültiges Passwort.',
+    'auth.error_throttled'  => 'Zu viele Versuche. Bitte warten Sie {seconds} Sekunde(n) und versuchen Sie es erneut.',
     'auth.error_registration_blocked' => 'Die Registrierung ist für Ihr Konto nicht erlaubt.',
     'auth.error_invalid_email'        => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
     'auth.error_password_min_length'  => 'Das Passwort muss mindestens 6 Zeichen lang sein.',
@@ -142,6 +148,7 @@ return [
     'auth.error_username_length'      => 'Der Benutzername muss zwischen 2 und 50 Zeichen lang sein.',
     'auth.error_email_required'       => 'Eine gültige E-Mail-Adresse ist erforderlich.',
     'auth.error_username_taken'       => 'Dieser Benutzername ist bereits vergeben.',
+    'auth.error_email_taken'       => 'Diese E-Mail-Adresse ist bereits registriert. Melden Sie sich an oder nutzen Sie „Passwort vergessen“.',
 
     // OAuth login
     'oauth.button_google' => 'Mit Google anmelden',
@@ -152,6 +159,7 @@ return [
     'oauth.error_email_not_verified'    => 'Ihre E-Mail-Adresse ist bei diesem Anbieter nicht bestätigt, daher können wir Sie nicht anmelden. Bitte bestätigen Sie Ihre E-Mail-Adresse beim Anbieter und versuchen Sie es erneut.',
     'oauth.error_login_failed'          => 'Bei der Anmeldung ist etwas schiefgelaufen. Bitte versuchen Sie es erneut.',
     'oauth.error_account_inactive'      => 'Ihr Konto ist noch nicht aktiv. Prüfen Sie Ihre E-Mails auf einen Bestätigungslink.',
+    'oauth.error_account_exists'      => 'Ein Konto auf dieser Website verwendet diese E-Mail-Adresse bereits. Melden Sie sich mit Ihrem Passwort an oder bestätigen Sie die Adresse zuerst über „Passwort vergessen“ — danach können Sie diesen Anbieter nutzen.',
     'oauth.error_not_configured'        => 'Diese Anmeldeoption ist derzeit nicht verfügbar.',
 
     // Profile
@@ -177,6 +185,8 @@ return [
     'settings.hide_email'        => 'Meine E-Mail-Adresse in meinem Profil ausblenden',
     'settings.password_section'  => 'Passwort',
     'settings.password_hint'     => 'Lassen Sie dieses Feld leer, um Ihr aktuelles Passwort beizubehalten.',
+    'settings.current_password'      => 'Aktuelles Passwort',
+    'settings.current_password_hint'      => 'Nur beim Ändern des Passworts oder der E-Mail-Adresse erforderlich.',
     'settings.new_password'      => 'Neues Passwort',
     'settings.confirm_password'  => 'Neues Passwort bestätigen',
     'settings.signature_section' => 'Signatur',
@@ -204,6 +214,7 @@ return [
     'settings.error_email_required'        => 'Eine gültige E-Mail-Adresse ist erforderlich.',
     'settings.error_email_taken'           => 'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.',
     'settings.error_password_min_length'   => 'Das neue Passwort muss mindestens 6 Zeichen lang sein.',
+    'settings.error_current_password'   => 'Bitte geben Sie Ihr aktuelles Passwort ein, um Passwort oder E-Mail-Adresse zu ändern. Wenn Sie sich mit Google oder GitHub registriert und nie ein Passwort festgelegt haben, setzen Sie zuerst über „Passwort vergessen“ eines.',
     'settings.error_passwords_mismatch'    => 'Die Passwörter stimmen nicht überein.',
     'settings.error_tz_offset'             => 'Der Zeitzonenversatz muss zwischen -12 und +14 liegen, oder -99 für Serverzeit.',
     'settings.error_email_notify'          => 'Bitte wählen Sie eine gültige Option für die Folgeeinstellung.',

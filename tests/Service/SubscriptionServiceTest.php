@@ -11,6 +11,8 @@ use Phorum\Mapper\UserMapper;
 use Phorum\Model\Forum;
 use Phorum\Model\Message;
 use Phorum\Service\MailService;
+use Phorum\Model\User;
+use Phorum\Service\PermissionService;
 use Phorum\Service\SubscriptionService;
 use PHPUnit\Framework\TestCase;
 
@@ -28,19 +30,71 @@ class SubscriptionServiceTest extends TestCase
         SiteSettings::clear();
     }
 
+    /**
+     * Build a SubscriptionService with mocked collaborators.
+     *
+     * $perms defaults to granting read access to everyone, so existing cases
+     * exercise the notification path rather than the permission filter; the
+     * filter has its own tests below.
+     */
     private function makeService(
-        ?SubscriberMapper $subscribers = null,
-        ?UserMapper       $users       = null,
-        ?MailService      $mailer      = null,
-        ?Config           $config      = null,
+        ?SubscriberMapper  $subscribers = null,
+        ?UserMapper        $users       = null,
+        ?MailService       $mailer      = null,
+        ?Config            $config      = null,
+        ?PermissionService $perms       = null,
     ): SubscriptionService {
         $config ??= $this->createConfigMock(['base_url' => 'http://example.com']);
+
+        if ($perms === null) {
+            $perms = $this->createMock(PermissionService::class);
+            $perms->method('canRead')->willReturn(true);
+        }
+
+        if ($users === null) {
+            // notifySubscribers() now resolves each recipient to a User so it
+            // can re-check read permission at send time; hand back one per id.
+            $users = $this->createMock(UserMapper::class);
+            $users->method('findByIds')->willReturnCallback(
+                static function (array $ids): array {
+                    $out = [];
+                    foreach ($ids as $id) {
+                        $u          = new User();
+                        $u->user_id = (int) $id;
+                        $u->active  = 1;
+                        $out[(int) $id] = $u;
+                    }
+                    return $out;
+                }
+            );
+        }
+
         return new SubscriptionService(
             $subscribers ?? $this->createMock(SubscriberMapper::class),
-            $users       ?? $this->createMock(UserMapper::class),
+            $users,
             $mailer      ?? $this->createMock(MailService::class),
             $config,
+            $perms,
         );
+    }
+
+    /** A minimal approved Message for the notification tests. */
+    private function makeMessage(): Message
+    {
+        $msg             = new Message();
+        $msg->forum_id   = 10;
+        $msg->thread     = 100;
+        $msg->message_id = 200;
+        $msg->subject    = 'Test topic';
+        return $msg;
+    }
+
+    /** A minimal Forum for the notification tests. */
+    private function makeForum(): Forum
+    {
+        $forum           = new Forum();
+        $forum->forum_id = 10;
+        return $forum;
     }
 
     private function createConfigMock(array $values): Config
@@ -284,5 +338,79 @@ class SubscriptionServiceTest extends TestCase
 
         $svc = $this->makeService(users: $users, mailer: $mailer);
         $svc->notifyModerators($msg, $forum);
+    }
+
+    // -------------------------------------------------------------------------
+    // notifySubscribers — read permission at send time
+    // -------------------------------------------------------------------------
+
+    /**
+     * A subscription row outlives the permission that created it. If a user is
+     * removed from a group, or the forum is made private afterwards, they must
+     * stop receiving the subject line of every new post in it.
+     */
+    public function testNotifySubscribersSkipsRecipientsWhoCanNoLongerRead(): void
+    {
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn([
+            ['user_id' => 7, 'email' => 'a@example.com', 'display_name' => 'A', 'username' => 'a', 'matched_thread' => 0],
+        ]);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->never())->method('send');
+
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturn(false);
+
+        $svc = $this->makeService(subscribers: $mapper, mailer: $mailer, perms: $perms);
+        $svc->notifySubscribers($this->makeMessage(), $this->makeForum(), excludeUserId: 0);
+    }
+
+    /** Only the recipients who still have read access are mailed. */
+    public function testNotifySubscribersMailsOnlyPermittedRecipients(): void
+    {
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn([
+            ['user_id' => 7, 'email' => 'keep@example.com', 'display_name' => 'K', 'username' => 'k', 'matched_thread' => 0],
+            ['user_id' => 8, 'email' => 'drop@example.com', 'display_name' => 'D', 'username' => 'd', 'matched_thread' => 0],
+        ]);
+
+        $sentTo = [];
+        $mailer = $this->createMock(MailService::class);
+        $mailer->method('send')->willReturnCallback(
+            function (string $toAddress, string $toName, string $subject, string $body) use (&$sentTo): bool {
+                $sentTo[] = $toAddress;
+                return true;
+            }
+        );
+
+        // Only user 7 can still read the forum.
+        $perms = $this->createMock(PermissionService::class);
+        $perms->method('canRead')->willReturnCallback(
+            static fn($forum, $user): bool => $user !== null && $user->user_id === 7
+        );
+
+        $svc = $this->makeService(subscribers: $mapper, mailer: $mailer, perms: $perms);
+        $svc->notifySubscribers($this->makeMessage(), $this->makeForum(), excludeUserId: 0);
+
+        $this->assertSame(['keep@example.com'], $sentTo);
+    }
+
+    /** A subscriber whose account no longer exists is skipped, not fatal. */
+    public function testNotifySubscribersSkipsMissingUsers(): void
+    {
+        $mapper = $this->createMock(SubscriberMapper::class);
+        $mapper->method('listEmailSubscribers')->willReturn([
+            ['user_id' => 99, 'email' => 'gone@example.com', 'display_name' => 'G', 'username' => 'g', 'matched_thread' => 0],
+        ]);
+
+        $users = $this->createMock(UserMapper::class);
+        $users->method('findByIds')->willReturn([]);
+
+        $mailer = $this->createMock(MailService::class);
+        $mailer->expects($this->never())->method('send');
+
+        $svc = $this->makeService(subscribers: $mapper, users: $users, mailer: $mailer);
+        $svc->notifySubscribers($this->makeMessage(), $this->makeForum(), excludeUserId: 0);
     }
 }
