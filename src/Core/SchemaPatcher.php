@@ -6,6 +6,7 @@ namespace Phorum\Core;
 use Phorum\Core\Concerns\HasCrud;
 use Phorum\Core\Concerns\SplitsSqlStatements;
 use Phorum\Mapper\SettingMapper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Applies numbered patch files under db/patches/ against the configured
@@ -45,13 +46,28 @@ class SchemaPatcher
         1061, // ER_DUP_KEYNAME — index/key already exists
     ];
 
+    /** Directory holding the numbered *.sql patch files. */
     private readonly string $patchDir;
+
+    /** Storage for the 'schema_patch_level' setting tracking applied patches. */
     private readonly SettingMapper $settings;
 
-    public function __construct(?string $patchDir = null, ?SettingMapper $settings = null)
-    {
+    /** Destination for skipped-statement notices; error_log() by default. */
+    private readonly LoggerInterface $logger;
+
+    /**
+     * @param string|null          $patchDir Patch directory; defaults to db/patches under ROOT_PATH.
+     * @param SettingMapper|null   $settings Setting storage; defaults to a plain SettingMapper.
+     * @param LoggerInterface|null $logger   Log destination; defaults to ErrorLogLogger.
+     */
+    public function __construct(
+        ?string $patchDir = null,
+        ?SettingMapper $settings = null,
+        ?LoggerInterface $logger = null,
+    ) {
         $this->patchDir = $patchDir ?? ROOT_PATH . '/db/patches';
         $this->settings = $settings ?? new SettingMapper();
+        $this->logger   = $logger ?? new ErrorLogLogger();
     }
 
     /** Run every not-yet-applied patch in order, recording progress after each. */
@@ -68,11 +84,10 @@ class SchemaPatcher
                     if (!$this->isAlreadyAppliedError($e)) {
                         throw $e;
                     }
-                    error_log(sprintf(
-                        'SchemaPatcher: patch %d statement already applied, skipping (%s)',
-                        $number,
-                        $e->getMessage()
-                    ));
+                    $this->logger->warning(
+                        'SchemaPatcher: patch {patch} statement already applied, skipping ({error})',
+                        ['patch' => $number, 'error' => $e->getMessage()]
+                    );
                 }
             }
             $this->settings->saveSetting(self::SETTING_KEY, $number);

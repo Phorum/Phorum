@@ -8,13 +8,32 @@ use DealNews\DB\PDO as DbPDO;
 use PHPUnit\Framework\TestCase;
 use Phorum\Core\SchemaPatcher;
 use Phorum\Mapper\SettingMapper;
+use Phorum\Tests\Support\SpyLogger;
 
+/**
+ * Covers SchemaPatcher: applying pending patch files in order, recording the
+ * schema_patch_level setting, tolerating already-applied DDL, and rethrowing
+ * every other database error.
+ *
+ * Runs against a real in-memory SQLite database rather than a mocked CRUD, so
+ * the ALTER statements genuinely execute. Two things are substituted in:
+ * anonymous subclasses override the protected crud() seam to hand the patcher
+ * that SQLite handle (and, for the failure cases, a fault-injecting wrapper
+ * around it), and a spy logger is injected everywhere so skipped-statement
+ * notices are captured and asserted on instead of being written to stderr by
+ * the default ErrorLogLogger.
+ */
 class SchemaPatcherTest extends TestCase
 {
     private DbPDO  $pdo;
     private CRUD   $crud;
     private string $patchDir;
 
+    /**
+     * Builds a fresh in-memory SQLite database with the settings and widgets
+     * tables, plus a temporary patch directory holding two ALTER patches
+     * (0001 adds a color column, 0002 adds size).
+     */
     protected function setUp(): void
     {
         $this->pdo = new DbPDO('sqlite::memory:');
@@ -38,6 +57,7 @@ class SchemaPatcherTest extends TestCase
         );
     }
 
+    /** Removes the temporary patch directory created for the test. */
     protected function tearDown(): void
     {
         foreach (glob($this->patchDir . '/*') ?: [] as $file) {
@@ -46,6 +66,7 @@ class SchemaPatcherTest extends TestCase
         rmdir($this->patchDir);
     }
 
+    /** Builds a SettingMapper backed by the test's in-memory SQLite database. */
     private function makeSettings(): SettingMapper
     {
         $crud = $this->crud;
@@ -64,15 +85,27 @@ class SchemaPatcherTest extends TestCase
         };
     }
 
-    private function makePatcher(?SettingMapper $settings = null): SchemaPatcher
+    /**
+     * Builds a SchemaPatcher pointed at the test's patch directory and SQLite
+     * database, with a spy logger so nothing leaks to stderr.
+     */
+    private function makePatcher(?SettingMapper $settings = null, ?SpyLogger $logger = null): SchemaPatcher
     {
-        $crud = $this->crud;
-        return new class($this->patchDir, $settings ?? $this->makeSettings(), $crud) extends SchemaPatcher {
+        return $this->makePatcherWithCrud($this->crud, $settings ?? $this->makeSettings(), $logger);
+    }
+
+    /**
+     * Builds a SchemaPatcher using an explicit CRUD, so a failure case can pass
+     * a fault-injecting wrapper. Defaults to a fresh spy logger when none given.
+     */
+    private function makePatcherWithCrud(CRUD $crud, SettingMapper $settings, ?SpyLogger $logger = null): SchemaPatcher
+    {
+        return new class($this->patchDir, $settings, $logger ?? new SpyLogger(), $crud) extends SchemaPatcher {
             private readonly CRUD $testCrud;
 
-            public function __construct(string $patchDir, SettingMapper $settings, CRUD $testCrud)
+            public function __construct(string $patchDir, SettingMapper $settings, SpyLogger $logger, CRUD $testCrud)
             {
-                parent::__construct($patchDir, $settings);
+                parent::__construct($patchDir, $settings, $logger);
                 $this->testCrud = $testCrud;
             }
 
@@ -83,6 +116,7 @@ class SchemaPatcherTest extends TestCase
         };
     }
 
+    /** True when phorum_widgets currently has the named column. */
     private function widgetHasColumn(string $column): bool
     {
         $rows = $this->crud->runFetch('PRAGMA table_info(phorum_widgets)', []);
@@ -98,6 +132,10 @@ class SchemaPatcherTest extends TestCase
     // apply()
     // -------------------------------------------------------------------------
 
+    /**
+     * Both pending patches run in ascending order and the highest applied
+     * patch number is recorded in schema_patch_level.
+     */
     public function testApplyRunsAllPendingPatchesInOrderAndRecordsLevel(): void
     {
         $settings = $this->makeSettings();
@@ -108,6 +146,10 @@ class SchemaPatcherTest extends TestCase
         $this->assertSame('2', (string) $settings->getSetting('schema_patch_level'));
     }
 
+    /**
+     * A second apply() finds nothing pending, so it neither throws nor moves
+     * schema_patch_level.
+     */
     public function testApplyIsIdempotentOnSecondCall(): void
     {
         $settings = $this->makeSettings();
@@ -119,6 +161,10 @@ class SchemaPatcherTest extends TestCase
         $this->assertSame('2', (string) $settings->getSetting('schema_patch_level'));
     }
 
+    /**
+     * With an empty patch directory, apply() runs no SQL and never writes the
+     * schema_patch_level setting.
+     */
     public function testApplyWithNoPatchesDoesNothing(): void
     {
         foreach (glob($this->patchDir . '/*') ?: [] as $file) {
@@ -166,6 +212,10 @@ class SchemaPatcherTest extends TestCase
         };
     }
 
+    /**
+     * A \PDOException carrying MySQL's ER_DUP_FIELDNAME (1060) driver code —
+     * the "column already exists" error SchemaPatcher treats as already done.
+     */
     private function makeDuplicateColumnException(): \PDOException
     {
         $e             = new \PDOException("Duplicate column name 'color'");
@@ -173,33 +223,37 @@ class SchemaPatcherTest extends TestCase
         return $e;
     }
 
+    /**
+     * An "already exists" DDL error is swallowed so later patches still run,
+     * schema_patch_level still advances, and the skip is logged once with the
+     * patch number and the driver message.
+     */
     public function testApplySkipsAlreadyAppliedColumnAndStillRecordsLevel(): void
     {
         $settings = $this->makeSettings();
+        $logger   = new SpyLogger();
         $crud     = $this->makeFaultInjectingCrud($this->crud, 'ADD COLUMN color', $this->makeDuplicateColumnException());
 
-        $patcher = new class($this->patchDir, $settings, $crud) extends SchemaPatcher {
-            private readonly CRUD $testCrud;
-            public function __construct(string $patchDir, SettingMapper $settings, CRUD $testCrud)
-            {
-                parent::__construct($patchDir, $settings);
-                $this->testCrud = $testCrud;
-            }
-            protected function crud(): CRUD
-            {
-                return $this->testCrud;
-            }
-        };
-
-        $patcher->apply();
+        $this->makePatcherWithCrud($crud, $settings, $logger)->apply();
 
         // color's ADD COLUMN was "already applied" (skipped); size's still ran.
         $this->assertFalse($this->widgetHasColumn('color'));
         $this->assertTrue($this->widgetHasColumn('size'));
         $this->assertSame('2', (string) $settings->getSetting('schema_patch_level'));
         $this->assertSame(1, $crud->matchedCalls);
+
+        // The skip is not silent: it is reported once, naming the patch and cause.
+        $record = $logger->onlyRecord();
+        $this->assertSame('warning', $record['level']);
+        $this->assertStringContainsString('already applied, skipping', $record['message']);
+        $this->assertSame(1, $record['context']['patch']);
+        $this->assertSame("Duplicate column name 'color'", $record['context']['error']);
     }
 
+    /**
+     * A database error that is not an "already exists" DDL error (here a
+     * syntax error) propagates instead of being swallowed.
+     */
     public function testApplyRethrowsErrorsThatArentAlreadyAppliedDdl(): void
     {
         $settings  = $this->makeSettings();
@@ -207,18 +261,7 @@ class SchemaPatcherTest extends TestCase
         $otherError->errorInfo = ['42000', 1064, 'syntax error near foo'];
         $crud      = $this->makeFaultInjectingCrud($this->crud, 'ADD COLUMN color', $otherError);
 
-        $patcher = new class($this->patchDir, $settings, $crud) extends SchemaPatcher {
-            private readonly CRUD $testCrud;
-            public function __construct(string $patchDir, SettingMapper $settings, CRUD $testCrud)
-            {
-                parent::__construct($patchDir, $settings);
-                $this->testCrud = $testCrud;
-            }
-            protected function crud(): CRUD
-            {
-                return $this->testCrud;
-            }
-        };
+        $patcher = $this->makePatcherWithCrud($crud, $settings);
 
         $this->expectException(\PDOException::class);
         $this->expectExceptionMessage('syntax error near foo');
@@ -229,6 +272,10 @@ class SchemaPatcherTest extends TestCase
     // markAllApplied()
     // -------------------------------------------------------------------------
 
+    /**
+     * markAllApplied() records the highest patch number without executing any
+     * patch SQL — the fresh-install path, where the base schema is current.
+     */
     public function testMarkAllAppliedRecordsHighestNumberWithoutRunningPatches(): void
     {
         $settings = $this->makeSettings();
@@ -239,6 +286,7 @@ class SchemaPatcherTest extends TestCase
         $this->assertFalse($this->widgetHasColumn('size'));
     }
 
+    /** After markAllApplied(), apply() finds nothing pending and runs no SQL. */
     public function testApplyDoesNothingAfterMarkAllApplied(): void
     {
         $settings = $this->makeSettings();
@@ -254,12 +302,14 @@ class SchemaPatcherTest extends TestCase
     // pendingPatchDescriptions()
     // -------------------------------------------------------------------------
 
+    /** Every unapplied patch is described by its de-numbered, de-underscored filename. */
     public function testPendingPatchDescriptionsBeforeApply(): void
     {
         $patcher = $this->makePatcher();
         $this->assertSame(['add color', 'add size'], $patcher->pendingPatchDescriptions());
     }
 
+    /** Once every patch has been applied, no pending descriptions remain. */
     public function testPendingPatchDescriptionsEmptyAfterApply(): void
     {
         $settings = $this->makeSettings();

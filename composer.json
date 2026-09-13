@@ -16,6 +16,7 @@
         "league/oauth2-google": "^5.0",
         "pagemill/router": "^3.0",
         "phpmailer/phpmailer": "^7.1",
+        "psr/log": "^3.0",
         "sebastian/diff": "^6.0",
         "symfony/filesystem": "^7.4",
         "twig/twig": "^3.28"

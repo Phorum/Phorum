@@ -6,6 +6,8 @@ namespace Phorum\Mod\Webhooks;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Phorum\Core\ErrorLogLogger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Fires outgoing webhook deliveries synchronously and best-effort — there is
@@ -26,13 +28,26 @@ class WebhookDispatcher
         'pm.sent'                 => 'Private message sent',
     ];
 
+    /** HTTP client used for deliveries. */
     private readonly ClientInterface $http;
+
+    /** Target check applied before every delivery. */
     private readonly WebhookUrlGuard $urlGuard;
 
+    /** Destination for refused/failed delivery notices; error_log() by default. */
+    private readonly LoggerInterface $logger;
+
+    /**
+     * @param WebhookMapper        $webhooks Source of the subscribed webhook rows.
+     * @param ClientInterface|null $http     HTTP client; defaults to a short-timeout Guzzle client.
+     * @param WebhookUrlGuard|null $urlGuard Target check; defaults to a plain WebhookUrlGuard.
+     * @param LoggerInterface|null $logger   Log destination; defaults to ErrorLogLogger.
+     */
     public function __construct(
         private readonly WebhookMapper $webhooks,
         ?ClientInterface  $http     = null,
         ?WebhookUrlGuard  $urlGuard = null,
+        ?LoggerInterface  $logger   = null,
     ) {
         // Redirects are deliberately not followed: a public URL that 302s to
         // http://169.254.169.254/ would otherwise walk straight past the
@@ -43,6 +58,7 @@ class WebhookDispatcher
             'allow_redirects' => false,
         ]);
         $this->urlGuard = $urlGuard ?? new WebhookUrlGuard();
+        $this->logger   = $logger ?? new ErrorLogLogger();
     }
 
     /** Fire $event to every active webhook subscribed to it. Never throws. */
@@ -65,14 +81,20 @@ class WebhookDispatcher
         // answers change, and rows predating this check are still in the table.
         $blocked = $this->urlGuard->problem($webhook->url);
         if ($blocked !== null) {
-            error_log("Webhooks: refusing delivery for webhook #{$webhook->id}: {$blocked}");
+            $this->logger->warning(
+                'Webhooks: refusing delivery for webhook #{webhook}: {reason}',
+                ['webhook' => $webhook->id, 'reason' => $blocked]
+            );
             return;
         }
 
         try {
             $body = $this->buildBody($webhook, $event, $timestamp, $data);
         } catch (\Throwable $e) {
-            error_log("Webhooks: payload build failed for webhook #{$webhook->id}: {$e->getMessage()}");
+            $this->logger->error(
+                'Webhooks: payload build failed for webhook #{webhook}: {error}',
+                ['webhook' => $webhook->id, 'error' => $e->getMessage()]
+            );
             return;
         }
 
@@ -88,7 +110,10 @@ class WebhookDispatcher
                 'body' => $body,
             ]);
         } catch (GuzzleException $e) {
-            error_log("Webhooks: delivery failed for webhook #{$webhook->id}: {$e->getMessage()}");
+            $this->logger->error(
+                'Webhooks: delivery failed for webhook #{webhook}: {error}',
+                ['webhook' => $webhook->id, 'error' => $e->getMessage()]
+            );
         }
     }
 

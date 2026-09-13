@@ -5,7 +5,9 @@ namespace Phorum\Mod\S3Storage;
 
 use Aws\S3\S3Client;
 use Aws\S3\S3ClientInterface;
+use Phorum\Core\ErrorLogLogger;
 use Phorum\Mapper\SettingMapper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Thin wrapper around the AWS S3 client. Uses the explicit
@@ -38,12 +40,24 @@ class S3StorageService
         'webm' => 'video/webm',
     ];
 
+    /** Lazily-created S3 client; null until first use. */
     private ?S3ClientInterface $client = null;
 
+    /** Destination for AWS failure notices; error_log() by default. */
+    private readonly LoggerInterface $logger;
+
+    /**
+     * @param SettingMapper          $settings       Source of bucket/region/credential settings.
+     * @param S3ClientInterface|null $injectedClient Client to use instead of building one from settings.
+     * @param LoggerInterface|null   $logger         Log destination; defaults to ErrorLogLogger.
+     */
     public function __construct(
         private readonly SettingMapper       $settings,
         private readonly ?S3ClientInterface  $injectedClient = null,
-    ) {}
+        ?LoggerInterface                     $logger = null,
+    ) {
+        $this->logger = $logger ?? new ErrorLogLogger();
+    }
 
     /** The S3 object key for a given file_id — deterministic, no separate mapping table needed. */
     public function keyForFile(int $fileId): string
@@ -71,7 +85,10 @@ class S3StorageService
             ]));
             return true;
         } catch (\Throwable $e) {
-            error_log("S3Storage: putObject failed for key {$key}: {$e->getMessage()}");
+            $this->logger->error(
+                'S3Storage: putObject failed for key {key}: {error}',
+                ['key' => $key, 'error' => $e->getMessage()]
+            );
             return false;
         }
     }
@@ -86,7 +103,10 @@ class S3StorageService
             ]));
             return (string) $result['Body'];
         } catch (\Throwable $e) {
-            error_log("S3Storage: getObject failed for key {$key}: {$e->getMessage()}");
+            $this->logger->error(
+                'S3Storage: getObject failed for key {key}: {error}',
+                ['key' => $key, 'error' => $e->getMessage()]
+            );
             return null;
         }
     }
@@ -100,7 +120,10 @@ class S3StorageService
                 'Key'    => $key,
             ]));
         } catch (\Throwable $e) {
-            error_log("S3Storage: deleteObject failed for key {$key}: {$e->getMessage()}");
+            $this->logger->error(
+                'S3Storage: deleteObject failed for key {key}: {error}',
+                ['key' => $key, 'error' => $e->getMessage()]
+            );
         }
     }
 
@@ -128,7 +151,10 @@ class S3StorageService
             $request = $this->client()->createPresignedRequest($command, "+{$ttlSeconds} seconds");
             return (string) $request->getUri();
         } catch (\Throwable $e) {
-            error_log("S3Storage: presign failed for key {$key}: {$e->getMessage()}");
+            $this->logger->error(
+                'S3Storage: presign failed for key {key}: {error}',
+                ['key' => $key, 'error' => $e->getMessage()]
+            );
             return null;
         }
     }

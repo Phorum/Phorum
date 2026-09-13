@@ -14,11 +14,26 @@ use Phorum\Mod\Webhooks\Webhook;
 use Phorum\Mod\Webhooks\WebhookDispatcher;
 use Phorum\Mod\Webhooks\WebhookMapper;
 use Phorum\Mod\Webhooks\WebhookUrlGuard;
+use Phorum\Tests\Support\SpyLogger;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Covers WebhookDispatcher: building the delivery body, signing it, honouring
+ * the per-delivery target check, and swallowing every delivery failure rather
+ * than letting it escape into the request that triggered it.
+ *
+ * No real HTTP is performed — Guzzle is driven by a MockHandler and the
+ * request history is asserted on. A SpyLogger is injected in place of the
+ * default ErrorLogLogger so refusal and failure notices are asserted on
+ * instead of reaching stderr.
+ */
 class WebhookDispatcherTest extends TestCase
 {
+    /** Collects the dispatcher's log output for the duration of one test. */
+    private SpyLogger $logger;
+
+    /** Loads the mod classes, which live outside the composer autoload map. */
     public static function setUpBeforeClass(): void
     {
         $base = dirname(__DIR__, 2) . '/mods/webhooks';
@@ -26,6 +41,21 @@ class WebhookDispatcherTest extends TestCase
         require_once $base . '/WebhookMapper.php';
         require_once $base . '/WebhookUrlGuard.php';
         require_once $base . '/WebhookDispatcher.php';
+    }
+
+    /** Gives each test a fresh spy logger. */
+    protected function setUp(): void
+    {
+        $this->logger = new SpyLogger();
+    }
+
+    /** Builds the dispatcher under test with the spy logger injected. */
+    private function makeDispatcher(
+        WebhookMapper $webhooks,
+        ?\GuzzleHttp\ClientInterface $http = null,
+        ?WebhookUrlGuard $urlGuard = null,
+    ): WebhookDispatcher {
+        return new WebhookDispatcher($webhooks, $http, $urlGuard, $this->logger);
     }
 
     /**
@@ -70,7 +100,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$this->makeWebhook()]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', ['subject' => 'Hi', 'author' => 'alice']);
 
         $this->assertCount(1, $history);
@@ -89,7 +119,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', ['x' => 1]);
 
         $request     = $history[0]['request'];
@@ -109,7 +139,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', ['subject' => 'Hello World', 'author' => 'alice']);
 
         $body = (string) $history[0]['request']->getBody();
@@ -128,7 +158,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', ['subject' => 'Hi']);
 
         $request     = $history[0]['request'];
@@ -146,7 +176,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', []);
 
         $this->assertSame(
@@ -165,7 +195,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$a, $b]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', []);
 
         $this->assertCount(2, $history);
@@ -181,7 +211,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
         $dispatcher->dispatch('message.created', []);
 
         $this->assertCount(0, $history);
@@ -198,11 +228,17 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$this->makeWebhook()]);
 
-        $dispatcher = new WebhookDispatcher($webhooks, $client, $this->permissiveGuard());
+        $dispatcher = $this->makeDispatcher($webhooks, $client, $this->permissiveGuard());
 
         // Must not throw.
         $dispatcher->dispatch('message.created', []);
         $this->assertCount(1, $history);
+
+        $record = $this->logger->onlyRecord();
+        $this->assertSame('error', $record['level']);
+        $this->assertStringContainsString('delivery failed', $record['message']);
+        $this->assertSame(1, $record['context']['webhook']);
+        $this->assertStringContainsString('Could not resolve host', $record['context']['error']);
     }
 
     /**
@@ -219,7 +255,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        (new WebhookDispatcher($webhooks, $client, $this->permissiveGuard()))->dispatch('message.created', []);
+        ($this->makeDispatcher($webhooks, $client, $this->permissiveGuard()))->dispatch('message.created', []);
 
         $this->assertCount(1, $history);
         $this->assertSame('{{ this is not a placeholder %}', (string) $history[0]['request']->getBody());
@@ -245,7 +281,7 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
-        (new WebhookDispatcher($webhooks, $client, $this->permissiveGuard()))->dispatch('message.created', $data);
+        ($this->makeDispatcher($webhooks, $client, $this->permissiveGuard()))->dispatch('message.created', $data);
 
         return (string) $history[0]['request']->getBody();
     }
@@ -364,10 +400,17 @@ class WebhookDispatcherTest extends TestCase
         $webhooks->method('findActiveForEvent')->willReturn([$webhook]);
 
         // A real, restrictive guard — the one the application uses by default.
-        (new WebhookDispatcher($webhooks, $client, new WebhookUrlGuard()))
+        ($this->makeDispatcher($webhooks, $client, new WebhookUrlGuard()))
             ->dispatch('message.created', []);
 
         $this->assertCount(0, $history, 'a request was made to an internal address');
+
+        // The refusal is recorded, with the guard's reason, rather than silent.
+        $record = $this->logger->onlyRecord();
+        $this->assertSame('warning', $record['level']);
+        $this->assertStringContainsString('refusing delivery', $record['message']);
+        $this->assertSame(1, $record['context']['webhook']);
+        $this->assertStringContainsString('169.254.169.254', $record['context']['reason']);
     }
 
     /** Refusing one target doesn't stop the others from being delivered. */
@@ -382,10 +425,16 @@ class WebhookDispatcherTest extends TestCase
         $webhooks = $this->createMock(WebhookMapper::class);
         $webhooks->method('findActiveForEvent')->willReturn([$blocked, $allowed]);
 
-        (new WebhookDispatcher($webhooks, $client, new WebhookUrlGuard()))
+        ($this->makeDispatcher($webhooks, $client, new WebhookUrlGuard()))
             ->dispatch('message.created', []);
 
         $this->assertCount(1, $history);
         $this->assertSame('8.8.8.8', $history[0]['request']->getUri()->getHost());
+
+        // Only the blocked webhook is logged; the delivered one is not.
+        $record = $this->logger->onlyRecord();
+        $this->assertSame('warning', $record['level']);
+        $this->assertSame(1, $record['context']['webhook']);
+        $this->assertStringContainsString('10.0.0.5', $record['context']['reason']);
     }
 }
