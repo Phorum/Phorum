@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18a449aeeb0aefc9d3582d285cbb657a",
+    "content-hash": "672c22448988d5960deddd9e90487c3c",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.390.0",
+            "version": "3.395.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1aaa45bad3638400da3a7682c9d9f0a96ca46de4"
+                "reference": "c8f42d03b697a61b4910d162d753b13d2de297fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1aaa45bad3638400da3a7682c9d9f0a96ca46de4",
-                "reference": "1aaa45bad3638400da3a7682c9d9f0a96ca46de4",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c8f42d03b697a61b4910d162d753b13d2de297fc",
+                "reference": "c8f42d03b697a61b4910d162d753b13d2de297fc",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.390.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.395.0"
             },
-            "time": "2026-07-30T18:09:09+00:00"
+            "time": "2026-09-11T18:07:54+00:00"
         },
         {
             "name": "dealnews/console",
@@ -418,16 +418,16 @@
         },
         {
             "name": "dealnews/schema-org",
-            "version": "v0.1.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dealnews/schema-org.git",
-                "reference": "7fd95ac5c934c865f9d46dd085df01d5ce12ed6d"
+                "reference": "720726d8dd78b1dc810ae78eba364a6af5c4c648"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dealnews/schema-org/zipball/7fd95ac5c934c865f9d46dd085df01d5ce12ed6d",
-                "reference": "7fd95ac5c934c865f9d46dd085df01d5ce12ed6d",
+                "url": "https://api.github.com/repos/dealnews/schema-org/zipball/720726d8dd78b1dc810ae78eba364a6af5c4c648",
+                "reference": "720726d8dd78b1dc810ae78eba364a6af5c4c648",
                 "shasum": ""
             },
             "require": {
@@ -450,9 +450,9 @@
             "description": "Schema.org value objects with JSON-LD emission",
             "support": {
                 "issues": "https://github.com/dealnews/schema-org/issues",
-                "source": "https://github.com/dealnews/schema-org/tree/v0.1.0"
+                "source": "https://github.com/dealnews/schema-org/tree/v1.3.0"
             },
-            "time": "2026-07-10T22:06:10+00:00"
+            "time": "2026-08-28T17:37:15+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -862,16 +862,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.8.3",
+            "version": "2.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "1902f60f984235023acbe03db6ad614a37b3c3e7"
+                "reference": "9d489ab67a02960fd8ffe624d93f751daf95439e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/1902f60f984235023acbe03db6ad614a37b3c3e7",
-                "reference": "1902f60f984235023acbe03db6ad614a37b3c3e7",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/9d489ab67a02960fd8ffe624d93f751daf95439e",
+                "reference": "9d489ab67a02960fd8ffe624d93f751daf95439e",
                 "shasum": ""
             },
             "require": {
@@ -908,7 +908,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "2.9-dev"
+                    "dev-main": "2.11-dev"
                 }
             },
             "autoload": {
@@ -965,7 +965,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-12T15:29:16+00:00"
+            "time": "2026-09-07T13:44:26+00:00"
         },
         {
             "name": "league/config",
@@ -4342,5 +4342,5 @@
         "php": ">=8.3"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
