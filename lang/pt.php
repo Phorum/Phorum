@@ -9,6 +9,8 @@ return [
 
     // Metadata (not rendered as UI text)
     '_name' => 'Português',
+    '_thousands_sep' => '.',
+    '_decimal_sep'   => ',',
 
     // -------------------------------------------------------------------------
     // Navigation

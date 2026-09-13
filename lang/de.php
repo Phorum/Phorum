@@ -7,6 +7,8 @@ declare(strict_types=1);
  */
 return [
     '_name' => 'Deutsch',
+    '_thousands_sep' => '.',
+    '_decimal_sep'   => ',',
 
     // Navigation
     'nav.forum_index'   => 'Forum-Übersicht',

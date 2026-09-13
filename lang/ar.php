@@ -8,6 +8,10 @@ declare(strict_types=1);
 return [
     '_name' => 'العربية',
     '_dir'  => 'rtl',
+    // Western digits and separators, as used for numerals across most Arabic
+    // locales. Only consulted when ext-intl is missing.
+    '_thousands_sep' => ',',
+    '_decimal_sep'   => '.',
 
     // Navigation
     'nav.forum_index'   => 'فهرس المنتدى',

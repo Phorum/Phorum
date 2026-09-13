@@ -22,7 +22,7 @@
     <div class="col s12 m6 l3">
         <div class="card stat-card z-depth-1">
             <div class="card-content">
-                <div class="stat-value">{{ stats.users }}</div>
+                <div class="stat-value">{{ stats.users|number }}</div>
                 <div class="stat-label"><i class="material-icons tiny">people</i> Active Users</div>
             </div>
         </div>
@@ -30,7 +30,7 @@
     <div class="col s12 m6 l3">
         <div class="card stat-card z-depth-1">
             <div class="card-content">
-                <div class="stat-value">{{ stats.posts }}</div>
+                <div class="stat-value">{{ stats.posts|number }}</div>
                 <div class="stat-label"><i class="material-icons tiny">message</i> Posts</div>
             </div>
         </div>
@@ -38,7 +38,7 @@
     <div class="col s12 m6 l3">
         <div class="card stat-card z-depth-1">
             <div class="card-content">
-                <div class="stat-value">{{ stats.forums }}</div>
+                <div class="stat-value">{{ stats.forums|number }}</div>
                 <div class="stat-label"><i class="material-icons tiny">forum</i> Forums</div>
             </div>
         </div>
@@ -46,7 +46,7 @@
     <div class="col s12 m6 l3">
         <div class="card stat-card {{ stats.unapproved > 0 ? 'warn' : '' }} z-depth-1">
             <div class="card-content">
-                <div class="stat-value">{{ stats.unapproved }}</div>
+                <div class="stat-value">{{ stats.unapproved|number }}</div>
                 <div class="stat-label"><i class="material-icons tiny">pending</i> Unapproved Posts</div>
             </div>
             {% if stats.unapproved > 0 %}

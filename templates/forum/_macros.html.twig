@@ -56,8 +56,8 @@
             <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a>
             {% if forum.description %}<br><small class="forum-desc">{{ forum.description|raw }}</small>{% endif %}
         </td>
-        <td class="col-posts">{{ forum.message_count }}</td>
-        <td class="col-threads">{{ forum.thread_count }}</td>
+        <td class="col-posts">{{ forum.message_count|number }}</td>
+        <td class="col-threads">{{ forum.thread_count|number }}</td>
         <td class="col-last">{{ forum.last_post_time ? forum.last_post_time|relative_time : '&mdash;'|raw }}</td>
     </tr>
 {% endmacro %}

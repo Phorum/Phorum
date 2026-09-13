@@ -61,8 +61,8 @@
                             <i class="material-icons tiny grey-text">cancel</i>
                         {% endif %}
                     </td>
-                    <td>{{ f.message_count }}</td>
-                    <td>{{ f.thread_count }}</td>
+                    <td>{{ f.message_count|number }}</td>
+                    <td>{{ f.thread_count|number }}</td>
                     <td class="admin-actions">
                         <form method="post" action="{{ path('/admin/forums/' ~ f.forum_id ~ '/move-up') }}">
                             {{ csrf_field() }}

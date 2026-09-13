@@ -256,6 +256,7 @@ See [Audit Log](#audit-log) under Moderation & Trust and Safety.
 - **Multi-locale UI translation** — 16 locales shipped (`ar, bn, de, en, es, fr, fr-CA, hi, id, nl, pt, pt-PT, ru, ur, zh-CN, zh-TW`); English is the canonical reference. `lang/*.php`
 - **Three-layer locale fallback** — `en.php` → base-language file → exact-locale file; a missing key falls back through the chain, ultimately to the key itself. `src/Core/Lang.php`
 - **RTL language support** — Locale files can declare `_dir => 'rtl'` (used by `ar`/`ur`).
+- **Locale-aware number formatting** — Post/thread/user counts and other displayed numbers are grouped per locale (`15,619` in English, `15.619` in German, `12,34,567` in Hindi) via the `|number` Twig filter. Uses ext-intl's `NumberFormatter` when the extension is installed; otherwise falls back to `number_format()` with the `_thousands_sep`/`_decimal_sep` separators declared in each locale file, so intl is an optional dependency. `Phorum\Core\Lang::number()`, `Phorum\Twig\PhorumExtension::formatNumber()`
 - **Site-wide default locale setting** — Admin picks the default UI language; available locales are auto-discovered from `lang/`.
 - **Six built-in themes** — `amethyst, diamond, emerald, ruby, sapphire, topaz`. `themes/`
 - **Shared base stylesheet** — Only `emerald/phorum.css` is a full stylesheet; the other five `@import` it and override a handful of CSS custom properties for palette — so structural/layout fixes to Emerald apply to all themes automatically.

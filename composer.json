@@ -24,6 +24,9 @@
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },
+    "suggest": {
+        "ext-intl": "Locale-correct number grouping (Indian lakh/crore, Bengali digits). Without it, numbers fall back to the separators declared in lang/*.php with uniform 3-digit grouping."
+    },
     "autoload": {
         "psr-4": {
             "Phorum\\": "src/"

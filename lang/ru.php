@@ -7,6 +7,9 @@ declare(strict_types=1);
  */
 return [
     '_name' => 'Русский',
+    // No-break space (U+00A0) is the CLDR group separator for Russian.
+    '_thousands_sep' => "\u{00A0}",
+    '_decimal_sep'   => ',',
 
     // Navigation
     'nav.forum_index'   => 'Список форумов',

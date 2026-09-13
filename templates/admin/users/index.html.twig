@@ -24,7 +24,7 @@
 
 <div class="card z-depth-1">
     <div class="card-content" style="padding:0">
-        <p class="grey-text" style="padding:12px 16px 0;font-size:.85rem">{{ total }} user{{ total != 1 ? 's' : '' }}</p>
+        <p class="grey-text" style="padding:12px 16px 0;font-size:.85rem">{{ total|number }} user{{ total != 1 ? 's' : '' }}</p>
         {% if users is empty %}
             <p class="grey-text" style="padding:12px 16px">No users found.</p>
         {% else %}
@@ -46,7 +46,7 @@
                         <td>{{ u.username|e }}</td>
                         <td>{{ u.display_name|e }}</td>
                         <td style="font-size:.85rem">{{ u.email|e }}</td>
-                        <td>{{ u.posts }}</td>
+                        <td>{{ u.posts|number }}</td>
                         <td style="font-size:.85rem">{{ u.date_added|datestamp }}</td>
                         <td>
                             {% if u.admin %}    <span class="badge-admin">admin</span>{% endif %}

@@ -8,6 +8,9 @@ class Lang
     private static array  $strings = [];
     private static string $locale  = 'en';
 
+    /** Cached NumberFormatter instances, keyed by "<locale>|<decimals>". */
+    private static array  $formatters = [];
+
     /**
      * Load translations for a locale using a fallback chain:
      *   lang/en.php → lang/<base>.php → lang/<locale>.php
@@ -72,6 +75,52 @@ class Lang
         }
 
         return $str;
+    }
+
+    /**
+     * Format a number for display in the active locale.
+     *
+     * Uses ext-intl's NumberFormatter when the extension is available, which
+     * handles per-locale grouping rules that number_format() cannot express —
+     * for example the Indian lakh/crore grouping used by hi/bn/ur (1234567
+     * becomes 12,34,567) and the Bengali digits used by bn.
+     *
+     * When intl is not installed the result falls back to number_format() with
+     * the separators declared by the locale file's '_thousands_sep' and
+     * '_decimal_sep' keys. That fallback always groups in threes, so locales
+     * with non-uniform grouping degrade to Western grouping rather than
+     * failing outright.
+     */
+    public static function number(int|float $value, int $decimals = 0): string
+    {
+        $formatted = false;
+
+        if (extension_loaded('intl')) {
+            $cache_key = self::$locale . '|' . $decimals;
+
+            if (!isset(self::$formatters[$cache_key])) {
+                $formatter = new \NumberFormatter(self::$locale, \NumberFormatter::DECIMAL);
+                $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+                // ICU rounds half-to-even by default; number_format() rounds
+                // half-up, so match it and keep both paths in agreement.
+                $formatter->setAttribute(\NumberFormatter::ROUNDING_MODE, \NumberFormatter::ROUND_HALFUP);
+                self::$formatters[$cache_key] = $formatter;
+            }
+
+            $formatted = self::$formatters[$cache_key]->format($value);
+        }
+
+        if ($formatted === false) {
+            $formatted = number_format(
+                (float) $value,
+                $decimals,
+                self::$strings['_decimal_sep']   ?? '.',
+                self::$strings['_thousands_sep'] ?? ','
+            );
+        }
+
+        return $formatted;
     }
 
     public static function locale(): string
