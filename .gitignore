@@ -1,4 +1,4 @@
-vendor/
+/vendor/
 etc/phorum.php
 etc/config.ini
 *.cache
