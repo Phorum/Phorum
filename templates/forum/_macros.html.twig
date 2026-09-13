@@ -49,15 +49,23 @@
     {% endfor %}
 {% endmacro %}
 
+{# Folders hold forums rather than messages, so their rows leave the
+   Posts/Threads/Last Post cells empty instead of showing zeros. #}
 {% macro forum_row(forum, indented) %}
     {% set indented = indented ?? false %}
-    <tr class="forum-row{{ indented ? ' forum-row--indented' : '' }}">
+    <tr class="forum-row{{ indented ? ' forum-row--indented' : '' }}{{ forum.folder_flag ? ' forum-row--folder' : '' }}">
         <td class="col-forum">
             <a href="{{ path('/forum/' ~ forum.forum_id) }}">{{ forum.name }}</a>
             {% if forum.description %}<br><small class="forum-desc">{{ forum.description|raw }}</small>{% endif %}
         </td>
-        <td class="col-posts">{{ forum.message_count|number }}</td>
-        <td class="col-threads">{{ forum.thread_count|number }}</td>
-        <td class="col-last">{{ forum.last_post_time ? forum.last_post_time|relative_time : '&mdash;'|raw }}</td>
+        {% if forum.folder_flag %}
+            <td class="col-posts"></td>
+            <td class="col-threads"></td>
+            <td class="col-last"></td>
+        {% else %}
+            <td class="col-posts">{{ forum.message_count|number }}</td>
+            <td class="col-threads">{{ forum.thread_count|number }}</td>
+            <td class="col-last">{{ forum.last_post_time ? forum.last_post_time|relative_time : '&mdash;'|raw }}</td>
+        {% endif %}
     </tr>
 {% endmacro %}
